@@ -1,6 +1,6 @@
 # Weight Docket Maker - Frontend
 
-Inital Commands
+Initial Commands
 
 cd ./
 
