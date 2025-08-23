@@ -1,22 +1,18 @@
-import { useEffect, useState } from "react";
-import InvoiceForm from "./components/InvoiceForm";
-import InvoiceList from "./components/InvoiceList";
-import { getInvoices } from "./api";
+// frontend/src/App.jsx
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
 
-function App() {
-  const [invoices, setInvoices] = useState([]);
+// Importing components for different routes
+import Home from './pages/Home.jsx'
+import DocketMaker from './pages/DocketMaker.jsx'
+import InvoiceMaker from './pages/InvoiceMaker.jsx'
 
-  useEffect(() => {
-    getInvoices().then(data => setInvoices(data));
-  }, []);
-
+export default function App() {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Invoice Maker</h1>
-      <InvoiceForm onNewInvoice={setInvoices} />
-      <InvoiceList invoices={invoices} />
-    </div>
-  );
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/docket" element={<DocketMaker />} />
+      <Route path="/invoice" element={<InvoiceMaker />} />
+    </Routes>
+  )
 }
-
-export default App;

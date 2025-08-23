@@ -1,0 +1,50 @@
+/* frontend/src/styles/Home.css */
+
+/* Page background */
+.home-container {
+  background-color: #ffffff; /* white */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: #000000; /* black text */
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Typography */
+.home-container h1,
+.home-container .ant-typography {
+  color: #000000;
+  text-align: center;
+}
+
+/* Paragraphs */
+.home-container p {
+  color: #333333;
+  font-size: 16px;
+  max-width: 600px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* Buttons wrapper */
+.home-buttons {
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+}
+
+/* Ant Design button overrides */
+.home-buttons .ant-btn-primary {
+  background-color: #e60023; /* red accent */
+  border-color: #e60023;
+  font-weight: 600;
+}
+
+.home-buttons .ant-btn-primary:hover,
+.home-buttons .ant-btn-primary:focus {
+  background-color: #b3001b; /* darker red on hover */
+  border-color: #b3001b;
+}
