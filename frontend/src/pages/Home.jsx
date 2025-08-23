@@ -1,5 +1,4 @@
 // frontend/src/pages/Home.jsx
-import React from 'react'
 import { Link } from 'react-router-dom'
 import { Button, Typography } from 'antd'
 import '../styles/Home.css'
@@ -17,7 +16,7 @@ export default function Home() {
         <Link to="/docket">
           <Button type="primary">Create Docket</Button>
         </Link>
-        <Link to="/invoice">
+        <Link to="/InvoiceHome">
           <Button type="primary">Create Invoice</Button>
         </Link>
       </div>
