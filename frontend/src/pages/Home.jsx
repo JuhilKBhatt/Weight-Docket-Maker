@@ -7,7 +7,9 @@ import '../styles/Home.css'
 export default function Home() {
   return (
     <div className="home-container">
-      <Typography.Title>Welcome!</Typography.Title>
+      <Typography.Title level={1}>
+        Welcome!
+      </Typography.Title>
       <Typography.Paragraph>
         Use this application to create weight dockets and invoices.
       </Typography.Paragraph>
