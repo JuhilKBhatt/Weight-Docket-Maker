@@ -7,6 +7,7 @@ import '../styles/NewInvoiceForm.css'
 export default function NewInvoiceForm() {
   const [items, setItems] = useState([])
   const [invoiceType, setInvoiceType] = useState('Container') // default
+  const [includeGST, setIncludeGST] = useState(true)
 
   // Columns for Container
   const containerColumns = [
@@ -114,11 +115,46 @@ export default function NewInvoiceForm() {
               <Form.Item label="Notes"><Input.TextArea rows={4} /></Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Sub-Total"><InputNumber style={{ width: '100%' }} /></Form.Item>
-              <Button type="dashed">+ Add Discount</Button>
-              <Form.Item label="GST"><InputNumber style={{ width: '100%' }} /></Form.Item>
-              <Form.Item label="Total"><InputNumber style={{ width: '100%' }} /></Form.Item>
-              <Button type="dashed">+ Add Discount</Button>
+              {/* Subtotal OR Total depending on GST */}
+              <Form.Item label={includeGST ? "Sub-Total" : "Total"}>
+                <InputNumber disabled style={{ width: '100%' }} />
+              </Form.Item>
+
+              {/* GST Checkbox + GST field */}
+              {includeGST && (
+                <>
+                  <Row gutter={10} align="middle">
+                    <Col flex="none">
+                      <Checkbox 
+                        checked={includeGST} 
+                        onChange={(e) => setIncludeGST(e.target.checked)}
+                      >
+                        GST
+                      </Checkbox>
+                    </Col>
+                    <Col flex="auto">
+                      <Form.Item style={{ marginBottom: 0 }}>
+                        <InputNumber id="GST" disabled style={{ width: '100%' }} />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+
+                  {/* Final Total */}
+                  <Form.Item label="Total">
+                    <InputNumber disabled style={{ width: '100%' }} />
+                  </Form.Item>
+                </>
+              )}
+
+              {/* If GST unchecked, show only the checkbox */}
+              {!includeGST && (
+                <Checkbox 
+                  checked={includeGST} 
+                  onChange={(e) => setIncludeGST(e.target.checked)}
+                >
+                  GST
+                </Checkbox>
+              )}
             </Col>
           </Row>
 
