@@ -1,0 +1,22 @@
+/* frontend/src/styles/NewInvoiceForm.css */
+
+/* Page background */
+.home-container {
+    background-color: #ffffff; /* light gray */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+/* Form container */
+.form-container {
+    background-color: #f9f9f9; /* white */
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    width: 100%;
+    max-width: 1200px;
+}

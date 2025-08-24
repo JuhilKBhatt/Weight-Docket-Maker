@@ -14,7 +14,7 @@ export default function InvoiceMaker() {
       </Typography.Paragraph>
       <div className="home-buttons">
         <Link to="/new-invoice">
-          <Button type="primary">Make Invoice</Button>
+          <Button type="primary">Make New Invoice</Button>
         </Link>
         <Link to="/view-invoice">
           <Button type="primary">View All Invoice</Button>
