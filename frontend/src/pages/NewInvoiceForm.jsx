@@ -1,13 +1,23 @@
 // frontend/src/pages/NewInvoiceForm.jsx
 import { Link } from 'react-router-dom'
 import React, { useState } from 'react'
-import { Form, Input, InputNumber, Select, DatePicker, Button, Table, Typography, Checkbox, Row, Col } from 'antd'
+import { Form, Input, InputNumber, Select, DatePicker, Button, Table, Typography, Checkbox, Row, Col, Popconfirm } from 'antd'
 import '../styles/NewInvoiceForm.css'
 
 export default function NewInvoiceForm() {
   const [items, setItems] = useState([])
-  const [invoiceType, setInvoiceType] = useState('Container') // default
+  const [invoiceType, setInvoiceType] = useState('Container')
   const [includeGST, setIncludeGST] = useState(true)
+
+  // Add unique keys to rows
+  const addRow = () => {
+    const newItem = { key: Date.now() }
+    setItems([...items, newItem])
+  }
+
+  const removeRow = (key) => {
+    setItems(items.filter(item => item.key !== key))
+  }
 
   // Columns for Container
   const containerColumns = [
@@ -17,6 +27,14 @@ export default function NewInvoiceForm() {
     { title: 'Net Weight (in Ton)', dataIndex: 'weight', render: () => <InputNumber style={{ width: '100%' }} /> },
     { title: '$AUD/Ton', dataIndex: 'price', render: () => <InputNumber style={{ width: '100%' }} /> },
     { title: 'Total', dataIndex: 'total', render: () => <InputNumber style={{ width: '100%' }} disabled /> },
+    {
+      title: 'Actions',
+      dataIndex: 'actions',
+      render: (_, record) =>
+        <Popconfirm title="Remove this row?" onConfirm={() => removeRow(record.key)}>
+          <Button danger type="link">Remove</Button>
+        </Popconfirm>
+    }
   ]
 
   // Columns for Pickup
@@ -27,6 +45,14 @@ export default function NewInvoiceForm() {
     { title: 'Net Weight (in Ton)', dataIndex: 'weight', render: () => <InputNumber style={{ width: '100%' }} /> },
     { title: '$AUD/Ton', dataIndex: 'price', render: () => <InputNumber style={{ width: '100%' }} /> },
     { title: 'Total', dataIndex: 'total', render: () => <InputNumber style={{ width: '100%' }} disabled /> },
+    {
+      title: 'Actions',
+      dataIndex: 'actions',
+      render: (_, record) =>
+        <Popconfirm title="Remove this row?" onConfirm={() => removeRow(record.key)}>
+          <Button danger type="link">Remove</Button>
+        </Popconfirm>
+    }
   ]
 
   return (
@@ -98,7 +124,7 @@ export default function NewInvoiceForm() {
             bordered
           />
           <div style={{ marginTop: 10 }}>
-            <Button type="dashed" onClick={() => setItems([...items, {}])}>
+            <Button type="dashed" onClick={addRow}>
               + Add Row
             </Button>
           </div>
@@ -106,7 +132,6 @@ export default function NewInvoiceForm() {
           {/* Checkboxes */}
           <div style={{ marginTop: 20 }}>
             <Checkbox>Transport</Checkbox>
-            <Checkbox style={{ marginLeft: 10 }}>Overweight</Checkbox>
           </div>
 
           {/* Notes and Totals */}
