@@ -30,7 +30,14 @@ const [items, setItems] = useState([])
           {/* Top section: Bill From / Bill To */}
           <Row gutter={24}>
             <Col span={8}>
-              <Typography.Title level={4}>Bill From:<Select /></Typography.Title>
+              <Typography.Title level={4}>Bill From:
+                <Select 
+                  defaultValue="" 
+                  options={[{ }]}
+                  allowClear
+                  placeholder="New Company"
+                />
+              </Typography.Title>
               <Form.Item label="Company Name"><Input /></Form.Item>
               <Form.Item label="Phone"><InputNumber style={{ width: '100%' }} /></Form.Item>
               <Form.Item label="Email"><Input /></Form.Item>
@@ -39,7 +46,14 @@ const [items, setItems] = useState([])
             </Col>
 
             <Col span={8}>
-              <Typography.Title level={4}>Bill To:<Select /></Typography.Title>
+              <Typography.Title level={4}>Bill To:
+                <Select 
+                  defaultValue="" 
+                  options={[{ }]}
+                  allowClear
+                  placeholder="New Company"
+                />
+              </Typography.Title>
               <Form.Item label="Company Name"><Input /></Form.Item>
               <Form.Item label="Phone"><InputNumber style={{ width: '100%' }} /></Form.Item>
               <Form.Item label="Email"><Input /></Form.Item>
@@ -48,9 +62,17 @@ const [items, setItems] = useState([])
             </Col>
 
             <Col span={8}>
-              <Form.Item label="SCR No."><InputNumber style={{ width: '100%' }} /></Form.Item>
+              <Form.Item label="SCR No."><InputNumber disabled style={{ width: '100%' }} /></Form.Item>
               <Form.Item label="Date"><DatePicker style={{ width: '100%' }} /></Form.Item>
-              <Form.Item label="Invoice Type"><Select /></Form.Item>
+              <Form.Item label="Invoice Type">
+                <Select 
+                  defaultValue="Container" 
+                  options={[
+                    { value: 'Container' },
+                    { value: 'Pickup' }
+                  ]}
+                />
+              </Form.Item>
             </Col>
           </Row>
 
@@ -92,7 +114,14 @@ const [items, setItems] = useState([])
           <Typography.Title level={4} style={{ marginTop: 30 }}>Pay To</Typography.Title>
           <Row gutter={24}>
             <Col span={8}>
-              <Form.Item label="Acc Name"><Select /></Form.Item>
+              <Form.Item label="Acc Name">
+                <Select 
+                  defaultValue="" 
+                  options={[{ }]}
+                  allowClear
+                  placeholder="New Bank Account"
+                />
+              </Form.Item>
               <Form.Item label="Bank Name"><Input /></Form.Item>
               <Form.Item label="BSB #"><InputNumber style={{ width: '100%' }} /></Form.Item>
               <Form.Item label="Account #"><InputNumber style={{ width: '100%' }} /></Form.Item>
