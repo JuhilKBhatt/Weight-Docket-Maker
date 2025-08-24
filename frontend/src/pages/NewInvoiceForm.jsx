@@ -5,13 +5,24 @@ import { Form, Input, InputNumber, Select, DatePicker, Button, Table, Typography
 import '../styles/NewInvoiceForm.css'
 
 export default function NewInvoiceForm() {
-const [items, setItems] = useState([])
+  const [items, setItems] = useState([])
+  const [invoiceType, setInvoiceType] = useState('Container') // default
 
-  // Columns for line items table
-  const columns = [
-    { title: '', dataIndex: 'seal', render: () => <Input /> },
-    { title: '', dataIndex: 'container', render: () => <Input /> },
-    { title: '', dataIndex: 'description', render: () => <Input /> },
+  // Columns for Container
+  const containerColumns = [
+    { title: 'Seal #', dataIndex: 'seal', render: () => <Input /> },
+    { title: 'Container #', dataIndex: 'container', render: () => <Input /> },
+    { title: 'Description', dataIndex: 'description', render: () => <Input /> },
+    { title: 'Net Weight (in Ton)', dataIndex: 'weight', render: () => <InputNumber style={{ width: '100%' }} /> },
+    { title: '$AUD/Ton', dataIndex: 'price', render: () => <InputNumber style={{ width: '100%' }} /> },
+    { title: 'Total', dataIndex: 'total', render: () => <InputNumber style={{ width: '100%' }} disabled /> },
+  ]
+
+  // Columns for Pickup
+  const pickupColumns = [
+    { title: '#', dataIndex: 'seal', render: () => <Input /> },
+    { title: 'Metal', dataIndex: 'container', render: () => <Input /> },
+    { title: 'Description', dataIndex: 'description', render: () => <Input /> },
     { title: 'Net Weight (in Ton)', dataIndex: 'weight', render: () => <InputNumber style={{ width: '100%' }} /> },
     { title: '$AUD/Ton', dataIndex: 'price', render: () => <InputNumber style={{ width: '100%' }} /> },
     { title: 'Total', dataIndex: 'total', render: () => <InputNumber style={{ width: '100%' }} disabled /> },
@@ -66,10 +77,11 @@ const [items, setItems] = useState([])
               <Form.Item label="Date"><DatePicker style={{ width: '100%' }} /></Form.Item>
               <Form.Item label="Invoice Type">
                 <Select 
-                  defaultValue="Container" 
+                  value={invoiceType}
+                  onChange={(val) => setInvoiceType(val)}
                   options={[
-                    { value: 'Container' },
-                    { value: 'Pickup' }
+                    { value: 'Container', label: 'Container' },
+                    { value: 'Pickup', label: 'Pickup' }
                   ]}
                 />
               </Form.Item>
@@ -79,7 +91,7 @@ const [items, setItems] = useState([])
           {/* Line items table */}
           <Typography.Title level={5}>Line Items</Typography.Title>
           <Table
-            columns={columns}
+            columns={invoiceType === 'Container' ? containerColumns : pickupColumns}
             dataSource={items}
             pagination={false}
             bordered
