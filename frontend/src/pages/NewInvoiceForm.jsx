@@ -195,7 +195,7 @@ export default function NewInvoiceForm() {
           <Typography.Title level={4} style={{ marginTop: 30 }}>Pay To</Typography.Title>
           <Row gutter={24}>
             <Col span={8}>
-              <Form.Item label="Acc Name"><Input /></Form.Item>
+              <Form.Item label="Acc Name"><Select defaultValue="" options={[{ }]} allowClear placeholder="New Bank Account" /></Form.Item>
               <Form.Item label="Bank Name"><Input /></Form.Item>
               <Form.Item label="BSB #"><InputNumber style={{ width: '100%' }} /></Form.Item>
               <Form.Item label="Account #"><InputNumber style={{ width: '100%' }} /></Form.Item>
