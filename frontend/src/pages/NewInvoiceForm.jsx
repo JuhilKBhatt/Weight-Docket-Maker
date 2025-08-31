@@ -8,6 +8,7 @@ export default function NewInvoiceForm() {
   const [items, setItems] = useState([])
   const [invoiceType, setInvoiceType] = useState('Container')
   const [includeGST, setIncludeGST] = useState(true)
+  const [showTransport, setShowTransport] = useState(false)
 
   // Deductions (arrays of {key, label, amount})
   const [preGstDeductions, setPreGstDeductions] = useState([])
@@ -65,6 +66,26 @@ export default function NewInvoiceForm() {
     }
   ]
 
+  // Transport rows
+  const transportData = [
+    { key: '1', name: 'Containers' },
+    { key: '2', name: 'Overweight' }
+  ]
+
+  const transportColumns = [
+    { title: 'Item', dataIndex: 'name' },
+    {
+      title: 'Number for Containers',
+      dataIndex: 'NumOfCTR',
+      render: () => <InputNumber addonAfter="CTR" style={{ width: '100%' }} />
+    },
+    {
+      title: 'Price/CTR',
+      dataIndex: 'PricePreCTR',
+      render: () => <InputNumber addonBefore="$" style={{ width: '100%' }} />
+    }
+  ]
+
   return (
     <div className="home-container">
       <Typography.Title level={1}>Create New Invoice</Typography.Title>
@@ -112,7 +133,7 @@ export default function NewInvoiceForm() {
             </Col>
           </Row>
 
-          {/* Line Items */}
+          {/* Invoice Items */}
           <Typography.Title level={5}>Invoice Items</Typography.Title>
           <Table
             columns={invoiceType === 'Container' ? containerColumns : pickupColumns}
@@ -123,6 +144,24 @@ export default function NewInvoiceForm() {
           <Button type="dashed" onClick={addRow} style={{ marginTop: 10 }}>
             + Add Row
           </Button>
+
+          {/* Transport Section */}
+          <div style={{ marginTop: 20 }}>
+            <Checkbox checked={showTransport} onChange={(e) => setShowTransport(e.target.checked)}>
+              Add Transport
+            </Checkbox>
+          </div>
+          {showTransport && (
+            <div style={{ marginTop: 10 }}>
+              <Typography.Title level={5}>Transport Charges</Typography.Title>
+              <Table
+                columns={transportColumns}
+                dataSource={transportData}
+                pagination={false}
+                bordered
+              />
+            </div>
+          )}
 
           {/* Totals, Deductions, Notes */}
           <Row gutter={24} style={{ marginTop: 20 }}>
