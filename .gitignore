@@ -15,3 +15,5 @@ backend/.env
 backend/WrittenDockets/*.png
 backend/train/
 backend/*.json
+
+.vscode

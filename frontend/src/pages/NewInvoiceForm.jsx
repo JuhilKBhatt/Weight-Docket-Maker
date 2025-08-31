@@ -1,7 +1,7 @@
 // frontend/src/pages/NewInvoiceForm.jsx
-import { Link } from 'react-router-dom'
 import React, { useState } from 'react'
 import { Form, Input, InputNumber, Select, DatePicker, Button, Table, Typography, Checkbox, Row, Col, Popconfirm } from 'antd'
+import dayjs from 'dayjs'
 import '../styles/NewInvoiceForm.css'
 
 export default function NewInvoiceForm() {
@@ -12,6 +12,8 @@ export default function NewInvoiceForm() {
   // Deductions (arrays of {key, label, amount})
   const [preGstDeductions, setPreGstDeductions] = useState([])
   const [postGstDeductions, setPostGstDeductions] = useState([])
+
+  const dateFormat = 'DD/MM/YYYY';
 
   // Add/remove rows
   const addRow = () => setItems([...items, { key: Date.now() }])
@@ -96,7 +98,7 @@ export default function NewInvoiceForm() {
 
             <Col span={8}>
               <Form.Item label="SCR No."><InputNumber disabled style={{ width: '100%' }} /></Form.Item>
-              <Form.Item label="Date"><DatePicker style={{ width: '100%' }} /></Form.Item>
+              <Form.Item label="Date"><DatePicker defaultValue={dayjs()} format={dateFormat} style={{ width: '100%' }} /></Form.Item>
               <Form.Item label="Invoice Type">
                 <Select
                   value={invoiceType}
