@@ -9,3 +9,7 @@
     box-sizing: border-box;
     font-family: 'Lexend', sans-serif;
 }
+
+.ant-layout, .ant-layout-content, .ant-layout-header, .ant-layout-sider {
+  background: transparent;
+}
