@@ -35,9 +35,9 @@ export default function NewInvoiceForm() {
     { title: 'Seal #', dataIndex: 'seal', render: () => <Input /> },
     { title: 'Container #', dataIndex: 'container', render: () => <Input /> },
     { title: 'Description', dataIndex: 'description', render: () => <Input /> },
-    { title: 'Net Weight (in Ton)', dataIndex: 'weight', render: () => <InputNumber style={{ width: '100%' }} /> },
-    { title: '$AUD/Ton', dataIndex: 'price', render: () => <InputNumber style={{ width: '100%' }} /> },
-    { title: 'Total', dataIndex: 'total', render: () => <InputNumber style={{ width: '100%' }} disabled /> },
+    { title: 'Net Weight (in Tonne)', dataIndex: 'weight', render: () => <InputNumber addonAfter="t" style={{ width: '100%' }} /> },
+    { title: '$AUD/Ton', dataIndex: 'price', render: () => <InputNumber addonBefore="$" style={{ width: '100%' }} /> },
+    { title: 'Total', dataIndex: 'total', render: () => <InputNumber addonBefore="$" style={{ width: '100%' }} disabled /> },
     {
       title: 'Actions',
       dataIndex: 'actions',
@@ -113,7 +113,7 @@ export default function NewInvoiceForm() {
           </Row>
 
           {/* Line Items */}
-          <Typography.Title level={5}>Line Items</Typography.Title>
+          <Typography.Title level={5}>Invoice Items</Typography.Title>
           <Table
             columns={invoiceType === 'Container' ? containerColumns : pickupColumns}
             dataSource={items}
@@ -135,7 +135,7 @@ export default function NewInvoiceForm() {
               {preGstDeductions.map(d => (
                 <Row gutter={10} key={d.key} style={{ marginBottom: 5 }}>
                   <Col span={12}><Input placeholder="Reason" /></Col>
-                  <Col span={8}><InputNumber placeholder="Amount" style={{ width: '100%' }} /></Col>
+                  <Col span={8}><InputNumber addonBefore="$" placeholder="Amount" style={{ width: '100%' }} /></Col>
                   <Col span={4}>
                     <Button danger type="link" onClick={() => removeDeduction('pre', d.key)}>Remove</Button>
                   </Col>
@@ -145,7 +145,7 @@ export default function NewInvoiceForm() {
 
               {/* Subtotal & GST */}
               <Form.Item label={includeGST ? "Sub-Total" : "Total"} style={{ marginTop: 20 }}>
-                <InputNumber disabled style={{ width: '100%' }} />
+                <InputNumber addonBefore="$" disabled style={{ width: '100%' }} />
               </Form.Item>
 
               {/* GST Checkbox + GST field */}
@@ -157,7 +157,7 @@ export default function NewInvoiceForm() {
                 </Col>
                 <Col flex="auto">
                   {includeGST && (
-                    <InputNumber disabled style={{ width: '100%' }} />
+                    <InputNumber addonBefore="$" disabled style={{ width: '100%' }} />
                   )}
                 </Col>
               </Row>
@@ -172,7 +172,7 @@ export default function NewInvoiceForm() {
                   {postGstDeductions.map(d => (
                     <Row gutter={10} key={d.key} style={{ marginBottom: 5 }}>
                       <Col span={12}><Input placeholder="Reason" /></Col>
-                      <Col span={8}><InputNumber placeholder="Amount" style={{ width: '100%' }} /></Col>
+                      <Col span={8}><InputNumber addonBefore="$" placeholder="Amount" style={{ width: '100%' }} /></Col>
                       <Col span={4}>
                         <Button danger type="link" onClick={() => removeDeduction('post', d.key)}>Remove</Button>
                       </Col>
@@ -184,7 +184,7 @@ export default function NewInvoiceForm() {
 
                   {/* Final Total */}
                   <Form.Item label="Total" style={{ marginTop: 20 }}>
-                    <InputNumber disabled style={{ width: '100%' }} />
+                    <InputNumber addonBefore="$" disabled style={{ width: '100%' }} />
                   </Form.Item>
                 </>
               )}
