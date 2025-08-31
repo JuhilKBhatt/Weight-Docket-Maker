@@ -73,7 +73,9 @@ export default function NewInvoiceForm() {
           {/* Top Section */}
           <Row gutter={24}>
             <Col span={8}>
-              <Typography.Title level={4}>Bill From:</Typography.Title>
+              <Typography.Title level={4}>Bill From:
+                <Select defaultValue="" options={[{ }]} allowClear placeholder="New Company" />
+              </Typography.Title>
               <Form.Item label="Company Name"><Input /></Form.Item>
               <Form.Item label="Phone"><InputNumber style={{ width: '100%' }} /></Form.Item>
               <Form.Item label="Email"><Input /></Form.Item>
@@ -82,7 +84,9 @@ export default function NewInvoiceForm() {
             </Col>
 
             <Col span={8}>
-              <Typography.Title level={4}>Bill To:</Typography.Title>
+              <Typography.Title level={4}>Bill To:
+                <Select defaultValue="" options={[{ }]} allowClear placeholder="New Company" />
+              </Typography.Title>
               <Form.Item label="Company Name"><Input /></Form.Item>
               <Form.Item label="Phone"><InputNumber style={{ width: '100%' }} /></Form.Item>
               <Form.Item label="Email"><Input /></Form.Item>
@@ -143,36 +147,45 @@ export default function NewInvoiceForm() {
               </Form.Item>
 
               {/* GST Checkbox + GST field */}
+              <Row gutter={10} align="middle">
+                <Col flex="none">
+                  <Checkbox checked={includeGST} onChange={(e) => setIncludeGST(e.target.checked)}>
+                    GST
+                  </Checkbox>
+                </Col>
+                <Col flex="auto">
+                  {includeGST && (
+                    <InputNumber disabled style={{ width: '100%' }} />
+                  )}
+                </Col>
+              </Row>
+
+              {/* Post-GST deductions + Final Total (only if GST is checked) */}
               {includeGST && (
                 <>
-                  <Row gutter={10} align="middle">
-                    <Col flex="none">
-                      <Checkbox checked={includeGST} onChange={(e) => setIncludeGST(e.target.checked)}>GST</Checkbox>
-                    </Col>
-                    <Col flex="auto">
-                      <InputNumber disabled style={{ width: '100%' }} />
-                    </Col>
-                  </Row>
+                  {/* Post-GST deductions */}
+                  <Typography.Title level={5} style={{ marginTop: 20 }}>
+                    Deductions (After GST)
+                  </Typography.Title>
+                  {postGstDeductions.map(d => (
+                    <Row gutter={10} key={d.key} style={{ marginBottom: 5 }}>
+                      <Col span={12}><Input placeholder="Reason" /></Col>
+                      <Col span={8}><InputNumber placeholder="Amount" style={{ width: '100%' }} /></Col>
+                      <Col span={4}>
+                        <Button danger type="link" onClick={() => removeDeduction('post', d.key)}>Remove</Button>
+                      </Col>
+                    </Row>
+                  ))}
+                  <Button type="dashed" size="small" onClick={() => addDeduction('post')}>
+                    + Add Deduction
+                  </Button>
+
+                  {/* Final Total */}
+                  <Form.Item label="Total" style={{ marginTop: 20 }}>
+                    <InputNumber disabled style={{ width: '100%' }} />
+                  </Form.Item>
                 </>
               )}
-
-              {/* Post-GST deductions */}
-              <Typography.Title level={5} style={{ marginTop: 20 }}>Deductions (After GST)</Typography.Title>
-              {postGstDeductions.map(d => (
-                <Row gutter={10} key={d.key} style={{ marginBottom: 5 }}>
-                  <Col span={12}><Input placeholder="Reason" /></Col>
-                  <Col span={8}><InputNumber placeholder="Amount" style={{ width: '100%' }} /></Col>
-                  <Col span={4}>
-                    <Button danger type="link" onClick={() => removeDeduction('post', d.key)}>Remove</Button>
-                  </Col>
-                </Row>
-              ))}
-              <Button type="dashed" size="small" onClick={() => addDeduction('post')}>+ Add Deduction</Button>
-
-              {/* Final Total */}
-              <Form.Item label="Final Total" style={{ marginTop: 20 }}>
-                <InputNumber disabled style={{ width: '100%' }} />
-              </Form.Item>
             </Col>
           </Row>
 
@@ -186,6 +199,23 @@ export default function NewInvoiceForm() {
               <Form.Item label="Account #"><InputNumber style={{ width: '100%' }} /></Form.Item>
             </Col>
           </Row>
+
+          {/* Submit Button */}
+          <Row gutter={24}>
+            <Col span={24} style={{ textAlign: 'right' }}>
+              <Form.Item>
+                <Button type="primary" size='large' htmlType="submit" style={{ marginRight: 10, marginTop: 30, padding: '25px' }}>
+                  Send Invoice
+                </Button>
+              </Form.Item>
+              <Form.Item>
+                <Button type="dashed" size='small' htmlType='reset' style={{ marginRight: 10 }}>
+                  Reset Invoice
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+
         </Form>
       </div>
     </div>
