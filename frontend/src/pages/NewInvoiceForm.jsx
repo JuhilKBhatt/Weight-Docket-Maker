@@ -5,7 +5,12 @@ import dayjs from 'dayjs'
 import '../styles/NewInvoiceForm.css'
 
 export default function NewInvoiceForm() {
-  const [items, setItems] = useState([])
+  const [items, setItems] = useState([
+    { key: Date.now() + 1 },
+    { key: Date.now() + 2 },
+    { key: Date.now() + 3 },
+    { key: Date.now() + 4 }
+  ])
   const [invoiceType, setInvoiceType] = useState('Container')
   const [includeGST, setIncludeGST] = useState(true)
   const [showTransport, setShowTransport] = useState(false)
@@ -40,11 +45,11 @@ export default function NewInvoiceForm() {
     { title: '$AUD/Ton', dataIndex: 'price', render: () => <InputNumber addonBefore="$" style={{ width: '100%' }} /> },
     { title: 'Total', dataIndex: 'total', render: () => <InputNumber addonBefore="$" style={{ width: '100%' }} disabled /> },
     {
-      title: 'Actions',
+      title: '',
       dataIndex: 'actions',
       render: (_, record) =>
         <Popconfirm title="Remove this row?" onConfirm={() => removeRow(record.key)}>
-          <Button danger type="link">Remove</Button>
+          <Button danger type="link">X</Button>
         </Popconfirm>
     }
   ]
@@ -53,15 +58,15 @@ export default function NewInvoiceForm() {
     { title: '#', dataIndex: 'seal', render: () => <Input /> },
     { title: 'Metal', dataIndex: 'container', render: () => <Input /> },
     { title: 'Description', dataIndex: 'description', render: () => <Input /> },
-    { title: 'Net Weight (in Ton)', dataIndex: 'weight', render: () => <InputNumber style={{ width: '100%' }} /> },
-    { title: '$AUD/Ton', dataIndex: 'price', render: () => <InputNumber style={{ width: '100%' }} /> },
-    { title: 'Total', dataIndex: 'total', render: () => <InputNumber style={{ width: '100%' }} disabled /> },
+    { title: 'Net Weight (in Tonne)', dataIndex: 'weight', render: () => <InputNumber addonAfter="t" style={{ width: '100%' }} /> },
+    { title: '$AUD/Ton', dataIndex: 'price', render: () => <InputNumber addonBefore="$" style={{ width: '100%' }} /> },
+    { title: 'Total', dataIndex: 'total', render: () => <InputNumber addonBefore="$" style={{ width: '100%' }} disabled /> },
     {
-      title: 'Actions',
+      title: '',
       dataIndex: 'actions',
       render: (_, record) =>
         <Popconfirm title="Remove this row?" onConfirm={() => removeRow(record.key)}>
-          <Button danger type="link">Remove</Button>
+          <Button danger type="link">X</Button>
         </Popconfirm>
     }
   ]
@@ -108,7 +113,7 @@ export default function NewInvoiceForm() {
 
             <Col span={8}>
               <Typography.Title level={4}>Bill To:
-                <Select defaultValue="" options={[{ }]} allowClear placeholder="New Company" />
+                <Select options={[{ }]} allowClear placeholder="New Company" />
               </Typography.Title>
               <Form.Item label="Company Name"><Input /></Form.Item>
               <Form.Item label="Phone"><InputNumber style={{ width: '100%' }} /></Form.Item>
@@ -176,7 +181,7 @@ export default function NewInvoiceForm() {
                   <Col span={12}><Input placeholder="Reason" /></Col>
                   <Col span={8}><InputNumber addonBefore="$" placeholder="Amount" style={{ width: '100%' }} /></Col>
                   <Col span={4}>
-                    <Button danger type="link" onClick={() => removeDeduction('pre', d.key)}>Remove</Button>
+                    <Button danger type="link" onClick={() => removeDeduction('pre', d.key)}>X</Button>
                   </Col>
                 </Row>
               ))}
@@ -213,7 +218,7 @@ export default function NewInvoiceForm() {
                       <Col span={12}><Input placeholder="Reason" /></Col>
                       <Col span={8}><InputNumber addonBefore="$" placeholder="Amount" style={{ width: '100%' }} /></Col>
                       <Col span={4}>
-                        <Button danger type="link" onClick={() => removeDeduction('post', d.key)}>Remove</Button>
+                        <Button danger type="link" onClick={() => removeDeduction('post', d.key)}>X</Button>
                       </Col>
                     </Row>
                   ))}
