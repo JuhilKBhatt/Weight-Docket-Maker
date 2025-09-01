@@ -92,7 +92,7 @@
 
 .ant-table .ant-input-number-group-addon {
   background-color: #ffffff;
-  border-color: #000000;
+  border-color: #999999;
 }
 
 /* Buttons */
@@ -136,4 +136,25 @@
   padding: 10px;
   border: 1px solid #dddddd;
   border-radius: 4px;
+}
+
+/* Make disabled InputNumber look like normal ones */
+.ant-input-number.ant-input-number-disabled {
+  background-color: #ffffff !important; /* white background */
+  border-color: #999999 !important;     /* normal border */
+  opacity: 1 !important;                /* remove faded look */
+  cursor: default !important;
+}
+
+.ant-input-number.ant-input-number-disabled .ant-input-number-input {
+  color: #000000 !important;            /* normal text color */
+  -webkit-text-fill-color: #000000 !important; /* Safari fix */
+  opacity: 1 !important;
+}
+
+/* Also fix the prefix/suffix addons for disabled InputNumber */
+.ant-input-number.ant-input-number-disabled .ant-input-number-group-addon {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #999999 !important;
 }

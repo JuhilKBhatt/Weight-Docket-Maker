@@ -101,8 +101,8 @@ export default function NewInvoiceForm() {
           {/* Top Section */}
           <Row gutter={24}>
             <Col span={8}>
-              <Typography.Title level={4}>Bill From:
-                <Select defaultValue="" options={[{ }]} allowClear placeholder="New Company" />
+              <Typography.Title level={4} style={{ backgroundColor: '#2c2c2cff', color:'#ffffff', padding: '10px'}} >Bill From:
+                <Select style={{marginLeft: 10}}  defaultValue="" options={[{ }]} allowClear placeholder="New Company" />
               </Typography.Title>
               <Form.Item label="Company Name"><Input /></Form.Item>
               <Form.Item label="Phone"><InputNumber style={{ width: '100%' }} /></Form.Item>
@@ -112,8 +112,8 @@ export default function NewInvoiceForm() {
             </Col>
 
             <Col span={8}>
-              <Typography.Title level={4}>Bill To:
-                <Select options={[{ }]} allowClear placeholder="New Company" />
+              <Typography.Title level={4} style={{ backgroundColor: '#2c2c2cff', color:'#ffffff', padding: '10px'}} >Bill To:
+                <Select style={{marginLeft: 10}} options={[{ }]} allowClear placeholder="New Company" />
               </Typography.Title>
               <Form.Item label="Company Name"><Input /></Form.Item>
               <Form.Item label="Phone"><InputNumber style={{ width: '100%' }} /></Form.Item>
@@ -123,7 +123,9 @@ export default function NewInvoiceForm() {
             </Col>
 
             <Col span={8}>
-              <Form.Item label="SCR No."><InputNumber disabled style={{ width: '100%' }} /></Form.Item>
+              <Typography.Title level={4} style={{ backgroundColor: '#2c2c2cff', color:'#ffffff', padding: '10px'}} >SCR No.:
+                <InputNumber style={{marginLeft: 10}} disabled />
+              </Typography.Title>
               <Form.Item label="Date"><DatePicker defaultValue={dayjs()} format={dateFormat} style={{ width: '100%' }} /></Form.Item>
               <Form.Item label="Invoice Type">
                 <Select
