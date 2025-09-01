@@ -261,7 +261,6 @@ export default function NewInvoiceForm() {
               </Form.Item>
             </Col>
           </Row>
-
         </Form>
       </div>
     </div>
