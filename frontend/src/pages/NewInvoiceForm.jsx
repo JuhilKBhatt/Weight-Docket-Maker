@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import { Form, Input, InputNumber, Select, DatePicker, Button, Table, Typography, Checkbox, Row, Col, Popconfirm } from 'antd'
 import dayjs from 'dayjs'
-import '../styles/NewInvoiceForm.css'
+import '../styles/InvoiceForm.css'
 
 export default function NewInvoiceForm() {
   const [items, setItems] = useState([
