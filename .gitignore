@@ -11,6 +11,7 @@ backend/.DS_Store
 backend/*.log
 backend/__pycache__
 backend/.venv
+backend/venv
 backend/.env
 backend/WrittenDockets/*.png
 backend/train/
