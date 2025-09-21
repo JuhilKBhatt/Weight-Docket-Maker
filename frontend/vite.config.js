@@ -6,6 +6,6 @@ export default defineConfig({
   plugins: [react()],
   base: '/',
   server: {
-    allowedHosts: true
+    allowedHosts: true // For Cloudflare Tunnel compatibility
   }
 })
