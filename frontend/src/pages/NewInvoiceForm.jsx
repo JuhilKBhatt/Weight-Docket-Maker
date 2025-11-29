@@ -67,8 +67,8 @@ export default function NewInvoiceForm() {
   // --- DYNAMIC TABLE COLUMNS ---
   const sharedColumns = [
     { title: 'Description', dataIndex: 'description', render: (_, record) => <Input value={record.description} onChange={(e) => handleItemChange(record.key, 'description', e.target.value)} /> },
-    { title: 'Net Weight (in Tonne)', dataIndex: 'weight', render: (_, record) => <InputNumber addonAfter="t" style={{ width: '100%' }} value={record.weight} onChange={(val) => handleItemChange(record.key, 'weight', val)} /> },
-    { title: '$AUD/Ton', dataIndex: 'price', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.price} onChange={(val) => handleItemChange(record.key, 'price', val)} /> },
+    { title: 'Net Weight (in tonne)', dataIndex: 'weight', render: (_, record) => <InputNumber addonAfter="t" style={{ width: '100%' }} value={record.weight} onChange={(val) => handleItemChange(record.key, 'weight', val)} /> },
+    { title: '$AUD/tonne', dataIndex: 'price', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.price} onChange={(val) => handleItemChange(record.key, 'price', val)} /> },
     { title: 'Total', dataIndex: 'total', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.total} precision={2} disabled /> },
     { title: '', dataIndex: 'actions', render: (_, record) => <Popconfirm title="Remove row?" onConfirm={() => removeRow(record.key)}><Button danger type="link">X</Button></Popconfirm> }
   ];
@@ -129,7 +129,7 @@ export default function NewInvoiceForm() {
               </Typography.Title>
               <Form.Item label="Date"><DatePicker defaultValue={dayjs()} format={dateFormat} style={{ width: '100%' }} /></Form.Item>
               <Form.Item label="Invoice Type">
-                <Select value={invoiceType} onChange={setInvoiceType} options={[{ value: 'Container', label: 'Container' }, { value: 'Pickup', label: 'Pickup' }]} />
+                <Select value={invoiceType} onChange={setInvoiceType} options={[{ value: 'Container', label: 'Container' }, { value: 'Pickup', label: 'Pickup / Drop Off' }]} />
               </Form.Item>
             </Col>
           </Row>
