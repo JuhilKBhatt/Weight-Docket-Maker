@@ -7,6 +7,9 @@ Run venv: source venv/bin/activate
 Install Requirements: pip3 install -r requirements.txt
 
 
+Update Database Connection URL in .env
+
+Run via | uvicorn app.main:app --reload
 
 ---
 

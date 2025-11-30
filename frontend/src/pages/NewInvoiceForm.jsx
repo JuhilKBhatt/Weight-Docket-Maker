@@ -91,13 +91,48 @@ export default function NewInvoiceForm() {
     { title: 'Price/CTR', dataIndex: 'PricePreCTR', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.PricePreCTR} onChange={(val) => handleTransportChange(record.key, 'PricePreCTR', val)} /> }
   ];
 
+    const onFinish = async () => {
+    const payload = {
+      invoice_type: invoiceType,
+      date: dayjs().format("DD/MM/YYYY"),
+      include_gst: includeGST,
+
+      gross_total: calculatedTotals.grossTotal,
+      gst_amount: calculatedTotals.gstAmount,
+      final_total: calculatedTotals.finalTotal,
+
+      items: calculatedTotals.itemsWithTotals.map(i => ({
+        description: i.description,
+        seal: i.seal,
+        container: i.container,
+        weight: i.weight,
+        price: i.price,
+        total: i.total
+      })),
+
+      deductions: [
+        ...preGstDeductions.map(d => ({ label: d.label, amount: d.amount, post_gst: false })),
+        ...postGstDeductions.map(d => ({ label: d.label, amount: d.amount, post_gst: true })),
+      ]
+    };
+
+    const res = await fetch("http://127.0.0.1:8000/invoice/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    console.log("Saved:", data);
+  };
+
   return (
     <div className="home-container">
       <Typography.Title level={1}>Create New Invoice</Typography.Title>
       <Typography.Paragraph>Use the form below to create a new invoice.</Typography.Paragraph>
 
       <div className="form-container">
-        <Form layout="vertical">
+        <Form layout="vertical" onFinish={onFinish}>
           {/* Top Section */}
           <Row gutter={24}>
             {/* Bill From, Bill To, and Invoice Details columns... */}

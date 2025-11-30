@@ -16,5 +16,6 @@ backend/.env
 backend/WrittenDockets/*.png
 backend/train/
 backend/*.json
+backend/app/__pycache__
 
 .vscode

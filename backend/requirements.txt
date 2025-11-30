@@ -2,3 +2,7 @@ flask
 Flask-Cors
 python-dotenv
 psycopg2-binary
+fastapi
+uvicorn
+sqlalchemy
+pydantic
