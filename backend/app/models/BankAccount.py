@@ -1,6 +1,6 @@
 # backend/app/models/BankAccount.py
 from sqlalchemy import Column, Integer, String
-from database import Base
+from ..database import Base
 
 class BankAccount(Base):
     __tablename__ = "bank_account"

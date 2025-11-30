@@ -1,6 +1,6 @@
 # backend/app/models/TransportCharge.py
 from sqlalchemy import Column, Integer, String, Numeric, ForeignKey
-from database import Base
+from ..database import Base
 
 class TransportCharge(Base):
     __tablename__ = "transport_charge"

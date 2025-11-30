@@ -1,6 +1,6 @@
 # backend/app/models/InvoiceDeduction.py
 from sqlalchemy import Column, Integer, String, Boolean, Numeric, ForeignKey
-from database import Base
+from ..database import Base
 
 class InvoiceDeduction(Base):
     __tablename__ = "invoice_deduction"

@@ -1,6 +1,6 @@
 # backend/app/models/company.py
 from sqlalchemy import Column, Integer, String, Boolean
-from database import Base
+from ..database import Base
 
 class Company(Base):
     __tablename__ = "company"

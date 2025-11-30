@@ -1,6 +1,6 @@
 # backend/app/models/InvoiceItem.py
 from sqlalchemy import Column, Integer, String, Numeric, ForeignKey
-from database import Base
+from ..database import Base
 
 class InvoiceItem(Base):
     __tablename__ = "invoice_item"

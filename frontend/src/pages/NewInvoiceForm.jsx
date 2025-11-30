@@ -1,5 +1,6 @@
 // frontend/src/pages/NewInvoiceForm.jsx
 import React, { useState, useMemo } from 'react';
+import axios from 'axios';
 import { Form, Input, InputNumber, Select, DatePicker, Button, Table, Typography, Checkbox, Row, Col, Popconfirm } from 'antd';
 import dayjs from 'dayjs';
 import '../styles/InvoiceForm.css';
@@ -91,40 +92,30 @@ export default function NewInvoiceForm() {
     { title: 'Price/CTR', dataIndex: 'PricePreCTR', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.PricePreCTR} onChange={(val) => handleTransportChange(record.key, 'PricePreCTR', val)} /> }
   ];
 
-    const onFinish = async () => {
+  const handleSubmit = async (values) => {
     const payload = {
-      invoice_type: invoiceType,
-      date: dayjs().format("DD/MM/YYYY"),
-      include_gst: includeGST,
+        scrNumber: values.scrNumber,
+        date: values.date.format("YYYY-MM-DD"),
+        invoiceType,
+        includeGST,
+        grossTotal: calculatedTotals.grossTotal,
+        gstAmount: calculatedTotals.gstAmount,
+        finalTotal: calculatedTotals.finalTotal,
 
-      gross_total: calculatedTotals.grossTotal,
-      gst_amount: calculatedTotals.gstAmount,
-      final_total: calculatedTotals.finalTotal,
+        fromCompany: values.fromCompany,
+        toCompany: values.toCompany,
+        bankAccount: values.bankAccount,
 
-      items: calculatedTotals.itemsWithTotals.map(i => ({
-        description: i.description,
-        seal: i.seal,
-        container: i.container,
-        weight: i.weight,
-        price: i.price,
-        total: i.total
-      })),
-
-      deductions: [
-        ...preGstDeductions.map(d => ({ label: d.label, amount: d.amount, post_gst: false })),
-        ...postGstDeductions.map(d => ({ label: d.label, amount: d.amount, post_gst: true })),
-      ]
+        items,                    // item rows
+        transportItems: showTransport ? transportItems : [],
+        preGstDeductions,
+        postGstDeductions,
     };
 
-    const res = await fetch("http://127.0.0.1:8000/invoice/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    await axios.post("http://localhost:8000/invoice/create", payload);
 
-    const data = await res.json();
-    console.log("Saved:", data);
-  };
+    alert("Invoice saved!");
+};
 
   return (
     <div className="home-container">
@@ -132,7 +123,7 @@ export default function NewInvoiceForm() {
       <Typography.Paragraph>Use the form below to create a new invoice.</Typography.Paragraph>
 
       <div className="form-container">
-        <Form layout="vertical" onFinish={onFinish}>
+        <Form layout="vertical" onFinish={handleSubmit}>
           {/* Top Section */}
           <Row gutter={24}>
             {/* Bill From, Bill To, and Invoice Details columns... */}
@@ -162,7 +153,9 @@ export default function NewInvoiceForm() {
               <Typography.Title level={4} style={{ backgroundColor: '#2c2c2cff', color:'#ffffff', padding: '10px'}} >SCR No.:
                 <InputNumber style={{marginLeft: 10}} disabled />
               </Typography.Title>
-              <Form.Item label="Date"><DatePicker defaultValue={dayjs()} format={dateFormat} style={{ width: '100%' }} /></Form.Item>
+              <Form.Item label="Date" name="date" initialValue={dayjs()}>
+                <DatePicker format={dateFormat} style={{ width: '100%' }} />
+              </Form.Item>
               <Form.Item label="Invoice Type">
                 <Select value={invoiceType} onChange={setInvoiceType} options={[{ value: 'Container', label: 'Container' }, { value: 'Pickup', label: 'Pickup / Drop Off' }]} />
               </Form.Item>
