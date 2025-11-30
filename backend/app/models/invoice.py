@@ -5,7 +5,7 @@ from database import Base
 class Invoice(Base):
     __tablename__ = "invoice"
 
-    SCRNumber = Column(Integer, primary_key=True)
+    SCRNumber = Column(Integer, primary_key=True)  # primary key
     InvoiceType = Column(String)
     Date = Column(Date)
     IncludeGST = Column(Boolean, default=True)
@@ -16,4 +16,5 @@ class Invoice(Base):
     FromCompanyid = Column(Integer, ForeignKey("company.id"))
     ToCompanyid = Column(Integer, ForeignKey("company.id"))
     BankAccountid = Column(Integer, ForeignKey("bank_account.id"))
+
     IsPaid = Column(Boolean, default=False)

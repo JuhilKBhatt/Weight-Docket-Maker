@@ -6,7 +6,7 @@ class InvoiceDeduction(Base):
     __tablename__ = "invoice_deduction"
 
     id = Column(Integer, primary_key=True)
-    Invoiceid = Column(Integer, ForeignKey("invoice.id", ondelete="CASCADE"))
+    Invoiceid = Column(Integer, ForeignKey("invoice.SCRNumber", ondelete="CASCADE"))
     Label = Column(String)
     Amount = Column(Numeric(10,2))
     PostGST = Column(Boolean, default=False)

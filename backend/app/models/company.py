@@ -1,5 +1,5 @@
 # backend/app/models/company.py
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from database import Base
 
 class Company(Base):
@@ -11,4 +11,4 @@ class Company(Base):
     Email = Column(String)
     ABN = Column(String)
     Address = Column(String)
-    IsOurCompany = Column(Integer)  # 1 for True, 0 for False
+    IsOurCompany = Column(Boolean)

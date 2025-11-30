@@ -6,7 +6,7 @@ class InvoiceItem(Base):
     __tablename__ = "invoice_item"
 
     id = Column(Integer, primary_key=True)
-    Invoiceid = Column(Integer, ForeignKey("invoice.id", ondelete="CASCADE"))
+    Invoiceid = Column(Integer, ForeignKey("invoice.SCRNumber", ondelete="CASCADE"))
 
     Description = Column(String)
     SealNumber = Column(String)
