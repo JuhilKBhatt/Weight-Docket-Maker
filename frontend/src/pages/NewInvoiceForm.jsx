@@ -92,29 +92,72 @@ export default function NewInvoiceForm() {
     { title: 'Price/CTR', dataIndex: 'PricePreCTR', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.PricePreCTR} onChange={(val) => handleTransportChange(record.key, 'PricePreCTR', val)} /> }
   ];
 
-  const handleSubmit = async (values) => {
+const handleSubmit = async (values) => {
+  try {
     const payload = {
-        scrNumber: values.scrNumber,
-        date: values.date.format("YYYY-MM-DD"),
-        invoiceType,
-        includeGST,
-        grossTotal: calculatedTotals.grossTotal,
-        gstAmount: calculatedTotals.gstAmount,
-        finalTotal: calculatedTotals.finalTotal,
+      scrNumber: Number(values.scrNumber),
+      date: values.date.format("YYYY-MM-DD"), // ensure it's a string in 'YYYY-MM-DD'
+      invoiceType,
+      includeGST,
+      grossTotal: Number(calculatedTotals.grossTotal || 0),
+      gstAmount: Number(calculatedTotals.gstAmount || 0),
+      finalTotal: Number(calculatedTotals.finalTotal || 0),
 
-        fromCompany: values.fromCompany,
-        toCompany: values.toCompany,
-        bankAccount: values.bankAccount,
+      fromCompany: {
+        name: values.fromCompanyName || "",
+        phone: values.fromCompanyPhone || "",
+        email: values.fromCompanyEmail || "",
+        abn: values.fromCompanyABN || "",
+        address: values.fromCompanyAddress || "",
+      },
+      toCompany: {
+        name: values.toCompanyName || "",
+        phone: values.toCompanyPhone || "",
+        email: values.toCompanyEmail || "",
+        abn: values.toCompanyABN || "",
+        address: values.toCompanyAddress || "",
+      },
+      bankAccount: {
+        accName: values.accName || "",
+        bankName: values.bankName || "",
+        bsb: values.bsb || "",
+        accountNumber: values.accountNumber || "",
+      },
 
-        items,                    // item rows
-        transportItems: showTransport ? transportItems : [],
-        preGstDeductions,
-        postGstDeductions,
+      items: items.map(item => ({
+        description: item.description || "",
+        seal: item.seal || null,
+        container: item.container || null,
+        weight: item.weight ? Number(item.weight) : 0,
+        price: item.price ? Number(item.price) : 0,
+        total: item.total ? Number(item.total) : 0,
+      })),
+
+      transportItems: showTransport
+        ? transportItems.map(t => ({
+            name: t.name || "",
+            NumOfCTR: t.NumOfCTR ? Number(t.NumOfCTR) : 0,
+            PricePreCTR: t.PricePreCTR ? Number(t.PricePreCTR) : 0,
+          }))
+        : [],
+
+      preGstDeductions: preGstDeductions.map(d => ({
+        label: d.label || "",
+        amount: d.amount ? Number(d.amount) : 0,
+      })),
+
+      postGstDeductions: postGstDeductions.map(d => ({
+        label: d.label || "",
+        amount: d.amount ? Number(d.amount) : 0,
+      })),
     };
 
-    await axios.post("http://localhost:8000/invoice/create", payload);
-
-    alert("Invoice saved!");
+    const response = await axios.post("http://localhost:8000/invoice/create", payload);
+    alert("✅ Invoice saved!");
+    console.log(response.data);
+  } catch (error) {
+    console.error("❌ Failed to save invoice:", error.response?.data || error.message);
+  }
 };
 
   return (
@@ -131,22 +174,22 @@ export default function NewInvoiceForm() {
               <Typography.Title level={4} style={{ backgroundColor: '#2c2c2cff', color:'#ffffff', padding: '10px'}} >Bill From:
                 <Select style={{marginLeft: 10}}  defaultValue="" options={[{ }]} allowClear placeholder="New Company" />
               </Typography.Title>
-              <Form.Item label="Company Name"><Input /></Form.Item>
-              <Form.Item label="Phone"><InputNumber style={{ width: '100%' }} /></Form.Item>
-              <Form.Item label="Email"><Input /></Form.Item>
-              <Form.Item label="ABN"><InputNumber style={{ width: '100%' }} /></Form.Item>
-              <Form.Item label="Address"><Input /></Form.Item>
+              <Form.Item label="Company Name" name="fromCompanyName"><Input /></Form.Item>
+              <Form.Item label="Phone" name="fromCompanyPhone"><InputNumber style={{ width: '100%' }} /></Form.Item>
+              <Form.Item label="Email" name="fromCompanyEmail"><Input /></Form.Item>
+              <Form.Item label="ABN" name="fromCompanyABN"><InputNumber style={{ width: '100%' }} /></Form.Item>
+              <Form.Item label="Address" name="fromCompanyAddress"><Input /></Form.Item>
             </Col>
 
             <Col span={8}>
               <Typography.Title level={4} style={{ backgroundColor: '#2c2c2cff', color:'#ffffff', padding: '10px'}} >Bill To:
                 <Select style={{marginLeft: 10}} options={[{ }]} allowClear placeholder="New Company" />
               </Typography.Title>
-              <Form.Item label="Company Name"><Input /></Form.Item>
-              <Form.Item label="Phone"><InputNumber style={{ width: '100%' }} /></Form.Item>
-              <Form.Item label="Email"><Input /></Form.Item>
-              <Form.Item label="ABN"><InputNumber style={{ width: '100%' }} /></Form.Item>
-              <Form.Item label="Address"><Input /></Form.Item>
+              <Form.Item label="Company Name" name="toCompanyName"><Input /></Form.Item>
+              <Form.Item label="Phone" name="toCompanyPhone"><InputNumber style={{ width: '100%' }} /></Form.Item>
+              <Form.Item label="Email" name="toCompanyEmail"><Input /></Form.Item>
+              <Form.Item label="ABN" name="toCompanyABN"><InputNumber style={{ width: '100%' }} /></Form.Item>
+              <Form.Item label="Address" name="toCompanyAddress"><Input /></Form.Item>
             </Col>
 
             <Col span={8}>

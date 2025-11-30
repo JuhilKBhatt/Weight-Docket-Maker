@@ -7,7 +7,7 @@ from ..models.InvoiceItem import InvoiceItem
 from ..models.TransportCharge import TransportCharge
 from ..models.InvoiceDeduction import InvoiceDeduction
 
-router = APIRouter(prefix="/Invoice", tags=["Invoice"])
+router = APIRouter(prefix="/invoice", tags=["Invoice"])
 
 
 @router.post("/create")
