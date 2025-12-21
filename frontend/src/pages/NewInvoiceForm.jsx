@@ -39,6 +39,14 @@ export default function NewInvoiceForm() {
     updater(prev => prev.map(d => (d.key === key ? { ...d, [field]: value } : d)));
   };
 
+  // --- FORMATTERS & PARSERS ---
+  const audFormatter = (value) =>
+  value !== undefined
+    ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    : '';
+  const audParser = (value) =>
+  value ? value.replace(/\$\s?|(,*)/g, '') : '';
+
   // --- REAL-TIME CALCULATIONS ---
   const calculatedTotals = useMemo(() => {
     const calculator = new InvoiceCalculationHandler({
@@ -69,8 +77,8 @@ export default function NewInvoiceForm() {
   const sharedColumns = [
     { title: 'Description', dataIndex: 'description', render: (_, record) => <Input value={record.description} onChange={(e) => handleItemChange(record.key, 'description', e.target.value)} /> },
     { title: 'Net Weight (in tonne)', dataIndex: 'weight', render: (_, record) => <InputNumber addonAfter="t" style={{ width: '100%' }} value={record.weight} onChange={(val) => handleItemChange(record.key, 'weight', val)} /> },
-    { title: '$AUD/tonne', dataIndex: 'price', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.price} onChange={(val) => handleItemChange(record.key, 'price', val)} /> },
-    { title: 'Total', dataIndex: 'total', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.total} precision={2} disabled /> },
+    { title: '$AUD/tonne', dataIndex: 'price', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.price} formatter={audFormatter} parser={audParser} onChange={(val) => handleItemChange(record.key, 'price', val)} /> },
+    { title: 'Total', dataIndex: 'total', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.total} formatter={audFormatter} parser={audParser} precision={2} disabled /> },
     { title: '', dataIndex: 'actions', render: (_, record) => <Popconfirm title="Remove row?" onConfirm={() => removeRow(record.key)}><Button danger type="link">X</Button></Popconfirm> }
   ];
 
@@ -89,7 +97,7 @@ export default function NewInvoiceForm() {
   const transportColumns = [
     { title: 'Item', dataIndex: 'name' },
     { title: 'Number of CTRs', dataIndex: 'NumOfCTR', render: (_, record) => <InputNumber addonAfter="CTR" style={{ width: '100%' }} value={record.NumOfCTR} onChange={(val) => handleTransportChange(record.key, 'NumOfCTR', val)} /> },
-    { title: 'Price/CTR', dataIndex: 'PricePreCTR', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.PricePreCTR} onChange={(val) => handleTransportChange(record.key, 'PricePreCTR', val)} /> }
+    { title: 'Price/CTR', dataIndex: 'PricePreCTR', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.PricePreCTR} formatter={audFormatter} parser={audParser} onChange={(val) => handleTransportChange(record.key, 'PricePreCTR', val)} /> }
   ];
 
 const handleSubmit = async (values) => {
@@ -237,7 +245,7 @@ const handleSubmit = async (values) => {
               {preGstDeductions.map(d => (
                 <Row gutter={10} key={d.key} style={{ marginBottom: 5 }}>
                   <Col span={12}><Input placeholder="Reason" value={d.label} onChange={(e) => handleDeductionChange('pre', d.key, 'label', e.target.value)} /></Col>
-                  <Col span={8}><InputNumber addonBefore="$" placeholder="Amount" style={{ width: '100%' }} value={d.amount} onChange={(val) => handleDeductionChange('pre', d.key, 'amount', val)} /></Col>
+                  <Col span={8}><InputNumber addonBefore="$" placeholder="Amount" style={{ width: '100%' }} value={d.amount} formatter={audFormatter} parser={audParser} onChange={(val) => handleDeductionChange('pre', d.key, 'amount', val)} /></Col>
                   <Col span={4}><Button danger type="link" onClick={() => removeDeduction('pre', d.key)}>X</Button></Col>
                 </Row>
               ))}
@@ -245,12 +253,12 @@ const handleSubmit = async (values) => {
 
               {/* Subtotal & GST */}
               <Form.Item label={includeGST ? "Sub-Total" : "Total"} style={{ marginTop: 20 }}>
-                <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={includeGST ? calculatedTotals.grossTotal : calculatedTotals.finalTotal} precision={2} />
+                <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={includeGST ? calculatedTotals.grossTotal : calculatedTotals.finalTotal} formatter={audFormatter} parser={audParser} precision={2} />
               </Form.Item>
 
               <Row gutter={10} align="middle">
                 <Col flex="none"><Checkbox checked={includeGST} onChange={(e) => setIncludeGST(e.target.checked)}>GST (10%)</Checkbox></Col>
-                <Col flex="auto">{includeGST && <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={calculatedTotals.gstAmount} precision={2} />}</Col>
+                <Col flex="auto">{includeGST && <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={calculatedTotals.gstAmount} formatter={audFormatter} parser={audParser} precision={2} />}</Col>
               </Row>
 
               {/* Post-GST deductions + Final Total */}
@@ -260,13 +268,13 @@ const handleSubmit = async (values) => {
                   {postGstDeductions.map(d => (
                      <Row gutter={10} key={d.key} style={{ marginBottom: 5 }}>
                       <Col span={12}><Input placeholder="Reason" value={d.label} onChange={(e) => handleDeductionChange('post', d.key, 'label', e.target.value)} /></Col>
-                      <Col span={8}><InputNumber addonBefore="$" placeholder="Amount" style={{ width: '100%' }} value={d.amount} onChange={(val) => handleDeductionChange('post', d.key, 'amount', val)} /></Col>
+                      <Col span={8}><InputNumber addonBefore="$" placeholder="Amount" style={{ width: '100%' }} value={d.amount} formatter={audFormatter} parser={audParser} onChange={(val) => handleDeductionChange('post', d.key, 'amount', val)} /></Col>
                       <Col span={4}><Button danger type="link" onClick={() => removeDeduction('post', d.key)}>X</Button></Col>
                     </Row>
                   ))}
                   <Button type="dashed" size="small" onClick={() => addDeduction('post')}>+ Add Deduction</Button>
                   <Form.Item label="Total" style={{ marginTop: 20, fontWeight: 'bold' }}>
-                    <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={calculatedTotals.finalTotal} precision={2} />
+                    <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={calculatedTotals.finalTotal} formatter={audFormatter} parser={audParser} precision={2} />
                   </Form.Item>
                 </>
               )}
