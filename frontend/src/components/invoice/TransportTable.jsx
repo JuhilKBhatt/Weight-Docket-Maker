@@ -1,5 +1,3 @@
-// ./frontend/src/components/invoice/TransportTable.jsx
-
 import { Table, InputNumber, Typography } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
 
@@ -8,18 +6,37 @@ export default function TransportTable({
   transportItems,
   handleTransportChange,
 }) {
-  // Shared transport columns
-  const baseColumns = [
+  // Determine unit label and row labels based on invoice type
+  const isContainer = invoiceType === 'Container';
+  const unitLabel = isContainer ? 'CTR' : 'Trip';
+
+  // Map transport items row names based on invoice type
+  const mappedItems = transportItems.map((item, index) => {
+    // Default row name from item.name
+    let name = item.name;
+
+    if (isContainer) {
+      // Row labels for Container invoices
+      name = index === 0 ? 'Containers' : index === 1 ? 'Overweight' : item.name;
+    } else {
+      // Row labels for Pickup invoices
+      name = index === 0 ? 'Pickup' : index === 1 ? 'Overweight' : item.name;
+    }
+
+    return { ...item, name };
+  });
+
+  const columns = [
     {
       title: 'Item',
       dataIndex: 'name',
     },
     {
-      title: 'Number of CTRs',
+      title: `Number of ${unitLabel}s`,
       dataIndex: 'NumOfCTR',
       render: (_, record) => (
         <InputNumber
-          addonAfter="CTR"
+          addonAfter={unitLabel}
           style={{ width: '100%' }}
           value={record.NumOfCTR}
           onChange={(val) =>
@@ -29,7 +46,7 @@ export default function TransportTable({
       ),
     },
     {
-      title: 'Price / CTR',
+      title: `Price / ${unitLabel}`,
       dataIndex: 'PricePreCTR',
       render: (_, record) => (
         <InputNumber
@@ -65,17 +82,6 @@ export default function TransportTable({
     },
   ];
 
-  /**
-   * Invoice type logic
-   * (future-proofing)
-   */
-  const columns =
-    invoiceType === 'Container'
-      ? baseColumns
-      : invoiceType === 'Pickup'
-      ? baseColumns
-      : baseColumns; // Custom uses same layout for now
-
   if (!transportItems.length) return null;
 
   return (
@@ -86,7 +92,7 @@ export default function TransportTable({
 
       <Table
         columns={columns}
-        dataSource={transportItems}
+        dataSource={mappedItems}
         pagination={false}
         bordered
       />

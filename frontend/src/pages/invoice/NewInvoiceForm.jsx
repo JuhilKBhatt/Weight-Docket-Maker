@@ -2,7 +2,11 @@
 
 import axios from 'axios';
 import { Form, Input, Button, Typography, Checkbox, Row, Col } from 'antd';
+
+// Styles
 import '../../styles/InvoiceForm.css';
+
+// Custom hooks and components
 import useInvoiceForm from '../../hooks/invoice/useInvoiceForm';
 import useInvoiceCalculations from '../../hooks/invoice/useInvoiceCalculations';
 import BillingInfo from '../../components/invoice/BillingInfo';
@@ -12,9 +16,7 @@ import InvoiceTotalsSummary from '../../components/invoice/InvoiceTotalsSummary'
 import PayAccountSection from '../../components/invoice/PayAccountSection';
 
 export default function NewInvoiceForm() {
-  const dateFormat = 'DD/MM/YYYY';
   const invoice = useInvoiceForm();
-
   const {
   items,
   transportItems,
@@ -34,10 +36,8 @@ export default function NewInvoiceForm() {
   addDeduction,
   removeDeduction,
 } = invoice;
-
-  // REAL-TIME CALCULATIONS
   const calculatedTotals = useInvoiceCalculations(invoice);
-
+  const dateFormat = 'DD/MM/YYYY';
   return (
     <div className="home-container">
       <Typography.Title level={1}>Create New Invoice</Typography.Title>
