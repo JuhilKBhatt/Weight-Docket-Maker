@@ -8,7 +8,7 @@ import useInvoiceForm from '../../hooks/invoice/useInvoiceForm';
 import useInvoiceCalculations from '../../hooks/invoice/useInvoiceCalculations';
 import BillingInfo from '../../components/invoice/BillingInfo';
 import InvoiceItemsTable from '../../components/invoice/InvoiceItemsTable';
-
+import TransportTable from '../../components/invoice/TransportTable';
 
 
 export default function NewInvoiceForm() {
@@ -37,31 +37,6 @@ export default function NewInvoiceForm() {
 
   // --- REAL-TIME CALCULATIONS ---
   const calculatedTotals = useInvoiceCalculations(invoice);
-
-  const transportColumns = [
-    { title: 'Item', dataIndex: 'name' },
-    { title: 'Number of CTRs', dataIndex: 'NumOfCTR', render: (_, record) => <InputNumber addonAfter="CTR" style={{ width: '100%' }} value={record.NumOfCTR} onChange={(val) => handleTransportChange(record.key, 'NumOfCTR', val)} /> },
-    { title: 'Price/CTR', dataIndex: 'PricePreCTR', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.PricePreCTR} formatter={audFormatter} parser={audParser} onChange={(val) => handleTransportChange(record.key, 'PricePreCTR', val)} /> },
-    { title: 'Total',
-      dataIndex: 'total',
-      render: (_, record) => {
-        const total =
-          (Number(record.NumOfCTR) || 0) *
-          (Number(record.PricePreCTR) || 0);
-
-        return (
-          <InputNumber
-            addonBefore="$"
-            style={{ width: '100%' }}
-            value={total}
-            formatter={audFormatterFixed}
-            precision={2}
-            disabled
-          />
-        );
-      },
-    },
-  ];
 
 const handleSubmit = async (values) => {
   try {
@@ -159,13 +134,20 @@ const handleSubmit = async (values) => {
 
           {/* Transport Section */}
           <div style={{ marginTop: 20 }}>
-            <Checkbox checked={showTransport} onChange={(e) => setShowTransport(e.target.checked)}>Add Transport</Checkbox>
+            <Checkbox
+              checked={showTransport}
+              onChange={(e) => setShowTransport(e.target.checked)}
+            >
+              Add Transport
+            </Checkbox>
           </div>
+
           {showTransport && (
-            <div style={{ marginTop: 10 }}>
-              <Typography.Title level={5}>Transport Charges</Typography.Title>
-              <Table columns={transportColumns} dataSource={transportItems} pagination={false} bordered />
-            </div>
+            <TransportTable
+              invoiceType={invoiceType}
+              transportItems={transportItems}
+              handleTransportChange={handleTransportChange}
+            />
           )}
 
           {/* Totals, Deductions, Notes */}
