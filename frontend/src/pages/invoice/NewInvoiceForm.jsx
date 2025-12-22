@@ -55,7 +55,6 @@ export default function NewInvoiceForm() {
   ];
 
   const pickupColumns = [
-    { title: '#', dataIndex: 'seal', render: (_, record) => <Input value={record.seal} onChange={(e) => handleItemChange(record.key, 'seal', e.target.value)} /> },
     { title: 'Metal', dataIndex: 'container', render: (_, record) => <Input value={record.container} onChange={(e) => handleItemChange(record.key, 'container', e.target.value)} /> },
     ...sharedColumns
   ];
@@ -63,7 +62,26 @@ export default function NewInvoiceForm() {
   const transportColumns = [
     { title: 'Item', dataIndex: 'name' },
     { title: 'Number of CTRs', dataIndex: 'NumOfCTR', render: (_, record) => <InputNumber addonAfter="CTR" style={{ width: '100%' }} value={record.NumOfCTR} onChange={(val) => handleTransportChange(record.key, 'NumOfCTR', val)} /> },
-    { title: 'Price/CTR', dataIndex: 'PricePreCTR', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.PricePreCTR} formatter={audFormatter} parser={audParser} onChange={(val) => handleTransportChange(record.key, 'PricePreCTR', val)} /> }
+    { title: 'Price/CTR', dataIndex: 'PricePreCTR', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.PricePreCTR} formatter={audFormatter} parser={audParser} onChange={(val) => handleTransportChange(record.key, 'PricePreCTR', val)} /> },
+    { title: 'Total',
+      dataIndex: 'total',
+      render: (_, record) => {
+        const total =
+          (Number(record.NumOfCTR) || 0) *
+          (Number(record.PricePreCTR) || 0);
+
+        return (
+          <InputNumber
+            addonBefore="$"
+            style={{ width: '100%' }}
+            value={total}
+            formatter={audFormatterFixed}
+            precision={2}
+            disabled
+          />
+        );
+      },
+    },
   ];
 
 const handleSubmit = async (values) => {
