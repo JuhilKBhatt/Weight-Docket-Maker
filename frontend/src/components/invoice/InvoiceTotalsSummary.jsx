@@ -1,5 +1,3 @@
-// ./frontend/src/components/invoice/InvoiceTotalsSummary.jsx
-
 import { Row, Col, Typography, Input, InputNumber, Button, Checkbox } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
 
@@ -57,28 +55,28 @@ export default function InvoiceTotalsSummary({
         + Add Deduction
       </Button>
 
-      {/* Subtotal */}
-      <InputNumber
-        addonBefore="$"
-        disabled
-        style={{ width: '100%', marginTop: 20 }}
-        value={
-          includeGST
-            ? calculatedTotals.grossTotal
-            : calculatedTotals.finalTotal
-        }
-        formatter={audFormatterFixed}
-        precision={2}
-      />
+      {/* Subtotal / Total */}
+      <Row align="middle" style={{ marginTop: 20 }}>
+        <Col flex="120px">
+          <Typography.Text strong>{includeGST ? 'Sub-Total:' : 'Total:'}</Typography.Text>
+        </Col>
+        <Col flex="auto">
+          <InputNumber
+            addonBefore="$"
+            disabled
+            style={{ width: '100%' }}
+            value={includeGST ? calculatedTotals.grossTotal : calculatedTotals.finalTotal}
+            formatter={audFormatterFixed}
+            precision={2}
+          />
+        </Col>
+      </Row>
 
-      {/* GST */}
-      <Row gutter={10} align="middle" style={{ marginTop: 10 }}>
-        <Col flex="none">
-          <Checkbox
-            checked={includeGST}
-            onChange={(e) => setIncludeGST(e.target.checked)}
-          >
-            GST (10%)
+      {/* GST Checkbox & Amount */}
+      <Row align="middle" style={{ marginTop: 10 }}>
+        <Col flex="120px">
+          <Checkbox checked={includeGST} onChange={(e) => setIncludeGST(e.target.checked)}>
+            GST (10%):
           </Checkbox>
         </Col>
         <Col flex="auto">
@@ -146,14 +144,21 @@ export default function InvoiceTotalsSummary({
           </Button>
 
           {/* Final total */}
-          <InputNumber
-            addonBefore="$"
-            disabled
-            style={{ width: '100%', marginTop: 20, fontWeight: 'bold' }}
-            value={calculatedTotals.finalTotal}
-            formatter={audFormatterFixed}
-            precision={2}
-          />
+          <Row align="middle" style={{ marginTop: 20 }}>
+            <Col flex="120px">
+              <Typography.Text strong>Total:</Typography.Text>
+            </Col>
+            <Col flex="auto">
+              <InputNumber
+                addonBefore="$"
+                disabled
+                style={{ width: '100%', fontWeight: 'bold' }}
+                value={calculatedTotals.finalTotal}
+                formatter={audFormatterFixed}
+                precision={2}
+              />
+            </Col>
+          </Row>
         </>
       )}
     </Col>

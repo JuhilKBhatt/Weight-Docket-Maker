@@ -84,7 +84,6 @@ export default function NewInvoiceForm() {
             <Col span={12}>
               <Form.Item label="Notes"><Input.TextArea rows={4} /></Form.Item>
             </Col>
-            <Col span={12}>
             <InvoiceTotalsSummary
               includeGST={includeGST}
               setIncludeGST={setIncludeGST}
@@ -95,7 +94,6 @@ export default function NewInvoiceForm() {
               addDeduction={addDeduction}
               removeDeduction={removeDeduction}
             />
-            </Col>
           </Row>
 
           {/* Pay To Section */}
