@@ -20,5 +20,12 @@ export default function useInvoiceCalculations({
       includeGST,
     });
     return calculator.getCalculations();
-  }, [items, transportItems, preGstDeductions, postGstDeductions, includeGST, showTransport]);
+  }, [
+    items,
+    transportItems,
+    preGstDeductions,
+    postGstDeductions,
+    includeGST,
+    showTransport,
+  ]);
 }

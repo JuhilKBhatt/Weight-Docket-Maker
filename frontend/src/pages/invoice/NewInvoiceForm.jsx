@@ -5,67 +5,39 @@ import axios from 'axios';
 import { Form, Input, InputNumber, Select, DatePicker, Button, Table, Typography, Checkbox, Row, Col, Popconfirm } from 'antd';
 import dayjs from 'dayjs';
 import '../../styles/InvoiceForm.css';
-import InvoiceCalculationHandler from '../../scripts/InvoiceCalculationHandler';
 import { audFormatter, audParser } from '../../scripts/utilities/AUDformatters';
+import useInvoiceForm from '../../hooks/invoice/useInvoiceForm';
+import useInvoiceCalculations from '../../hooks/invoice/useInvoiceCalculations';
 
 export default function NewInvoiceForm() {
-  // State for raw data inputs
-  const [items, setItems] = useState([
-    { key: Date.now() + 1, seal: '', container: '', description: '', weight: undefined, price: undefined },
-    { key: Date.now() + 2, seal: '', container: '', description: '', weight: undefined, price: undefined },
-  ]);
-  const [transportItems, setTransportItems] = useState([
-    { key: '1', name: 'Containers', NumOfCTR: undefined, PricePreCTR: undefined },
-    { key: '2', name: 'Overweight', NumOfCTR: undefined, PricePreCTR: undefined },
-  ]);
-  const [preGstDeductions, setPreGstDeductions] = useState([]);
-  const [postGstDeductions, setPostGstDeductions] = useState([]);
 
-  // State for form options/toggles
-  const [invoiceType, setInvoiceType] = useState('Container');
-  const [includeGST, setIncludeGST] = useState(true);
-  const [showTransport, setShowTransport] = useState(false);
+  const invoice = useInvoiceForm();
+
+  const {
+  items,
+  transportItems,
+  preGstDeductions,
+  postGstDeductions,
+  invoiceType,
+  includeGST,
+  showTransport,
+  setInvoiceType,
+  setIncludeGST,
+  setShowTransport,
+  handleItemChange,
+  handleTransportChange,
+  handleDeductionChange,
+  addRow,
+  removeRow,
+  addDeduction,
+  removeDeduction,
+} = invoice;
 
   // Date format for DatePicker
   const dateFormat = 'DD/MM/YYYY';
 
-  // --- HANDLERS TO UPDATE STATE ---
-  const handleItemChange = (key, field, value) => {
-    setItems(prev => prev.map(item => (item.key === key ? { ...item, [field]: value } : item)));
-  };
-  const handleTransportChange = (key, field, value) => {
-    setTransportItems(prev => prev.map(item => (item.key === key ? { ...item, [field]: value } : item)));
-  };
-  const handleDeductionChange = (type, key, field, value) => {
-    const updater = type === 'pre' ? setPreGstDeductions : setPostGstDeductions;
-    updater(prev => prev.map(d => (d.key === key ? { ...d, [field]: value } : d)));
-  };
-
   // --- REAL-TIME CALCULATIONS ---
-  const calculatedTotals = useMemo(() => {
-    const calculator = new InvoiceCalculationHandler({
-      items,
-      transportItems: showTransport ? transportItems : [],
-      preGstDeductions,
-      postGstDeductions,
-      includeGST,
-    });
-    return calculator.getCalculations();
-  }, [items, transportItems, preGstDeductions, postGstDeductions, includeGST, showTransport]);
-
-
-  // --- ROW MANAGEMENT ---
-  const addRow = () => setItems([...items, { key: Date.now(), weight: undefined, price: undefined }]);
-  const removeRow = (key) => setItems(items.filter(item => item.key !== key));
-  const addDeduction = (type) => {
-    const newDeduction = { key: Date.now(), label: '', amount: undefined };
-    if (type === 'pre') setPreGstDeductions([...preGstDeductions, newDeduction]);
-    else setPostGstDeductions([...postGstDeductions, newDeduction]);
-  };
-  const removeDeduction = (type, key) => {
-    if (type === 'pre') setPreGstDeductions(preGstDeductions.filter(d => d.key !== key));
-    else setPostGstDeductions(postGstDeductions.filter(d => d.key !== key));
-  };
+  const calculatedTotals = useInvoiceCalculations(invoice);
 
   // --- DYNAMIC TABLE COLUMNS ---
   const sharedColumns = [
