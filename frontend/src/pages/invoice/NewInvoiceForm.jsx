@@ -5,7 +5,7 @@ import axios from 'axios';
 import { Form, Input, InputNumber, Select, DatePicker, Button, Table, Typography, Checkbox, Row, Col, Popconfirm } from 'antd';
 import dayjs from 'dayjs';
 import '../../styles/InvoiceForm.css';
-import { audFormatter, audParser } from '../../scripts/utilities/AUDformatters';
+import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
 import useInvoiceForm from '../../hooks/invoice/useInvoiceForm';
 import useInvoiceCalculations from '../../hooks/invoice/useInvoiceCalculations';
 
@@ -44,7 +44,7 @@ export default function NewInvoiceForm() {
     { title: 'Description', dataIndex: 'description', render: (_, record) => <Input value={record.description} onChange={(e) => handleItemChange(record.key, 'description', e.target.value)} /> },
     { title: 'Net Weight (in tonne)', dataIndex: 'weight', render: (_, record) => <InputNumber addonAfter="t" style={{ width: '100%' }} value={record.weight} onChange={(val) => handleItemChange(record.key, 'weight', val)} /> },
     { title: '$AUD/tonne', dataIndex: 'price', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.price} formatter={audFormatter} parser={audParser} onChange={(val) => handleItemChange(record.key, 'price', val)} /> },
-    { title: 'Total', dataIndex: 'total', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.total} formatter={audFormatter} parser={audParser} precision={2} disabled /> },
+    { title: 'Total', dataIndex: 'total', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.total} formatter={audFormatterFixed} parser={audParser} precision={2} disabled /> },
     { title: '', dataIndex: 'actions', render: (_, record) => <Popconfirm title="Remove row?" onConfirm={() => removeRow(record.key)}><Button danger type="link">X</Button></Popconfirm> }
   ];
 
@@ -219,12 +219,12 @@ const handleSubmit = async (values) => {
 
               {/* Subtotal & GST */}
               <Form.Item label={includeGST ? "Sub-Total" : "Total"} style={{ marginTop: 20 }}>
-                <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={includeGST ? calculatedTotals.grossTotal : calculatedTotals.finalTotal} formatter={audFormatter} parser={audParser} precision={2} />
+                <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={includeGST ? calculatedTotals.grossTotal : calculatedTotals.finalTotal} formatter={audFormatterFixed} parser={audParser} precision={2} />
               </Form.Item>
 
               <Row gutter={10} align="middle">
                 <Col flex="none"><Checkbox checked={includeGST} onChange={(e) => setIncludeGST(e.target.checked)}>GST (10%)</Checkbox></Col>
-                <Col flex="auto">{includeGST && <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={calculatedTotals.gstAmount} formatter={audFormatter} parser={audParser} precision={2} />}</Col>
+                <Col flex="auto">{includeGST && <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={calculatedTotals.gstAmount} formatter={audFormatterFixed} parser={audParser} precision={2} />}</Col>
               </Row>
 
               {/* Post-GST deductions + Final Total */}
@@ -240,7 +240,7 @@ const handleSubmit = async (values) => {
                   ))}
                   <Button type="dashed" size="small" onClick={() => addDeduction('post')}>+ Add Deduction</Button>
                   <Form.Item label="Total" style={{ marginTop: 20, fontWeight: 'bold' }}>
-                    <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={calculatedTotals.finalTotal} formatter={audFormatter} parser={audParser} precision={2} />
+                    <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={calculatedTotals.finalTotal} formatter={audFormatterFixed} parser={audParser} precision={2} />
                   </Form.Item>
                 </>
               )}
