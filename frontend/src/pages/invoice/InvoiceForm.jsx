@@ -1,4 +1,4 @@
-// ./frontend/src/pages/NewInvoiceForm.jsx
+// ./frontend/src/pages/InvoiceForm.jsx
 
 import axios from 'axios';
 import { Form, Input, Button, Typography, Checkbox, Row, Col } from 'antd';
@@ -14,8 +14,10 @@ import InvoiceItemsTable from '../../components/invoice/InvoiceItemsTable';
 import TransportTable from '../../components/invoice/TransportTable';
 import InvoiceTotalsSummary from '../../components/invoice/InvoiceTotalsSummary';
 import PayAccountSection from '../../components/invoice/PayAccountSection';
+import { confirmReset } from '../../scripts/utilities/confirmReset';
 
 export default function NewInvoiceForm() {
+  const [form] = Form.useForm();
   const invoice = useInvoiceForm();
   const {
   items,
@@ -44,7 +46,7 @@ export default function NewInvoiceForm() {
       <Typography.Paragraph>Use the form below to create a new invoice.</Typography.Paragraph>
 
       <div className="form-container">
-        <Form layout="vertical">
+        <Form form={form} layout="vertical">
           {/* Bill From, Bill To, and Invoice Details columns... */}
           <BillingInfo
             invoiceType={invoiceType}
@@ -101,7 +103,18 @@ export default function NewInvoiceForm() {
 
           {/* Submit & Reset Button */}
           <Row justify="end" style={{ marginTop: 30 }}>
-            <Button type="dashed" htmlType='reset' style={{ marginRight: 10 }}>Reset Invoice</Button>
+            <Button
+              type="dashed"
+              style={{ marginRight: 10 }}
+              onClick={() =>
+                confirmReset(() => {
+                  form.resetFields();
+                  invoice.resetInvoice();
+                })
+              }
+            >
+              Reset Invoice
+            </Button>
             <Button type="primary" size='large' htmlType="submit">Send Invoice</Button>
           </Row>
         </Form>

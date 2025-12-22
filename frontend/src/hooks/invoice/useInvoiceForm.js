@@ -1,18 +1,36 @@
 // ./frontend/src/hooks/invoice/useInvoiceForm.js
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+
+// Utility to generate stable keys
+const uid = (() => {
+  let id = 0;
+  return () => ++id;
+})();
 
 export default function useInvoiceForm() {
-  const [items, setItems] = useState([
-    { key: Date.now() + 1, seal: '', container: '', description: '', weight: undefined, price: undefined },
-    { key: Date.now() + 2, seal: '', container: '', description: '', weight: undefined, price: undefined },
-  ]);
+  //DEFAULT STATE
+  const defaultItems = [
+    {
+      key: uid(),
+      description: '',
+      quantity: 0,
+      price: 0,
+    },
+  ];
 
-  const [transportItems, setTransportItems] = useState([
-    { key: '1', name: 'Containers', NumOfCTR: undefined, PricePreCTR: undefined },
-    { key: '2', name: 'Overweight', NumOfCTR: undefined, PricePreCTR: undefined },
-  ]);
+  const defaultTransportItems = [
+    {
+      key: uid(),
+      name: 'Primary',
+      NumOfCTR: 0,
+      PricePreCTR: 0,
+    },
+  ];
 
+  // STATE
+  const [items, setItems] = useState(defaultItems);
+  const [transportItems, setTransportItems] = useState([]);
   const [preGstDeductions, setPreGstDeductions] = useState([]);
   const [postGstDeductions, setPostGstDeductions] = useState([]);
 
@@ -20,58 +38,136 @@ export default function useInvoiceForm() {
   const [includeGST, setIncludeGST] = useState(true);
   const [showTransport, setShowTransport] = useState(false);
 
-  // ---------- handlers ----------
+  // ITEM HANDLERS
   const handleItemChange = (key, field, value) => {
-    setItems(prev => prev.map(i => i.key === key ? { ...i, [field]: value } : i));
+    setItems(prev =>
+      prev.map(item =>
+        item.key === key ? { ...item, [field]: value } : item
+      )
+    );
   };
 
+  const addRow = () => {
+    setItems(prev => [
+      ...prev,
+      {
+        key: uid(),
+        description: '',
+        quantity: 0,
+        price: 0,
+      },
+    ]);
+  };
+
+  const removeRow = key => {
+    setItems(prev => prev.filter(item => item.key !== key));
+  };
+
+  // TRANSPORT HANDLERS
   const handleTransportChange = (key, field, value) => {
-    setTransportItems(prev => prev.map(i => i.key === key ? { ...i, [field]: value } : i));
+    setTransportItems(prev =>
+      prev.map(item =>
+        item.key === key ? { ...item, [field]: value } : item
+      )
+    );
   };
 
-  const handleDeductionChange = (type, key, field, value) => {
-    const setter = type === 'pre' ? setPreGstDeductions : setPostGstDeductions;
-    setter(prev => prev.map(d => d.key === key ? { ...d, [field]: value } : d));
-  };
+  // DEDUCTIONS
+  const addDeduction = type => {
+    const deduction = {
+      key: uid(),
+      label: '',
+      amount: 0,
+    };
 
-  const addRow = () =>
-    setItems(prev => [...prev, { key: Date.now(), weight: undefined, price: undefined }]);
-
-  const removeRow = (key) =>
-    setItems(prev => prev.filter(i => i.key !== key));
-
-  const addDeduction = (type) => {
-    const newD = { key: Date.now(), label: '', amount: undefined };
-    type === 'pre'
-      ? setPreGstDeductions(prev => [...prev, newD])
-      : setPostGstDeductions(prev => [...prev, newD]);
+    if (type === 'pre') {
+      setPreGstDeductions(prev => [...prev, deduction]);
+    } else {
+      setPostGstDeductions(prev => [...prev, deduction]);
+    }
   };
 
   const removeDeduction = (type, key) => {
-    type === 'pre'
-      ? setPreGstDeductions(prev => prev.filter(d => d.key !== key))
-      : setPostGstDeductions(prev => prev.filter(d => d.key !== key));
+    if (type === 'pre') {
+      setPreGstDeductions(prev => prev.filter(d => d.key !== key));
+    } else {
+      setPostGstDeductions(prev => prev.filter(d => d.key !== key));
+    }
   };
 
+  const handleDeductionChange = (type, key, field, value) => {
+    const setter =
+      type === 'pre' ? setPreGstDeductions : setPostGstDeductions;
+
+    setter(prev =>
+      prev.map(d =>
+        d.key === key ? { ...d, [field]: value } : d
+      )
+    );
+  };
+
+  // TRANSPORT TOGGLE EFFECT
+  const toggleTransport = value => {
+    setShowTransport(value);
+
+    if (value && transportItems.length === 0) {
+      setTransportItems([
+        {
+          key: uid(),
+          name: invoiceType === 'Pickup' ? 'Pickup' : 'Container',
+          NumOfCTR: 0,
+          PricePreCTR: 0,
+        },
+        {
+          key: uid(),
+          name: 'Overweight',
+          NumOfCTR: 0,
+          PricePreCTR: 0,
+        },
+      ]);
+    }
+
+    if (!value) {
+      setTransportItems([]);
+    }
+  };
+
+  // RESET
+  const resetInvoice = () => {
+    setItems(defaultItems);
+    setTransportItems([]);
+    setPreGstDeductions([]);
+    setPostGstDeductions([]);
+
+    setInvoiceType('Container');
+    setIncludeGST(true);
+    setShowTransport(false);
+  };
+
+  // RETURN API
   return {
     items,
     transportItems,
     preGstDeductions,
     postGstDeductions,
+
     invoiceType,
     includeGST,
     showTransport,
 
     setInvoiceType,
     setIncludeGST,
-    setShowTransport,
+    setShowTransport: toggleTransport,
 
     handleItemChange,
     handleTransportChange,
+
     handleDeductionChange,
     addRow,
     removeRow,
     addDeduction,
     removeDeduction,
+
+    resetInvoice,
   };
 }

@@ -8,7 +8,7 @@ import PageHeader from './components/PageHeader.jsx'
 import Home from './pages/Home.jsx'
 import DocketMaker from './pages/DocketMaker.jsx'
 import InvoiceHome from './pages/InvoiceHome.jsx'
-import NewInvoice from './pages/invoice/NewInvoiceForm.jsx'
+import NewInvoice from './pages/invoice/InvoiceForm.jsx'
 import EditInvoice from './pages/EditInvoiceForm.jsx'
 import ViewInvoice from './pages/InvoiceList.jsx'
 
