@@ -7,6 +7,8 @@ export default function BillingInfo({
   invoiceType,
   setInvoiceType,
   dateFormat,
+  savedCompaniesFrom = [], // array of { id, label, phone, email, abn, address }
+  savedCompaniesTo = [],
 }) {
   return (
     <Row gutter={24}>
@@ -18,6 +20,17 @@ export default function BillingInfo({
         >
           Bill From
         </Typography.Title>
+
+        <Form.Item label="Saved Companies" name="fromSavedCompany">
+          <Select
+            allowClear
+            placeholder="Select a company"
+            options={savedCompaniesFrom.map(c => ({
+              label: c.label,
+              value: c.id,
+            }))}
+          />
+        </Form.Item>
 
         <Form.Item label="Company Name" name="fromCompanyName">
           <Input />
@@ -48,6 +61,17 @@ export default function BillingInfo({
         >
           Bill To
         </Typography.Title>
+
+        <Form.Item label="Saved Companies" name="toSavedCompany">
+          <Select
+            allowClear
+            placeholder="Select a company"
+            options={savedCompaniesTo.map(c => ({
+              label: c.label,
+              value: c.id,
+            }))}
+          />
+        </Form.Item>
 
         <Form.Item label="Company Name" name="toCompanyName">
           <Input />
