@@ -1,10 +1,12 @@
-// frontend/src/pages/NewInvoiceForm.jsx
+// ./frontend/src/pages/NewInvoiceForm.jsx
+
 import React, { useState, useMemo } from 'react';
 import axios from 'axios';
 import { Form, Input, InputNumber, Select, DatePicker, Button, Table, Typography, Checkbox, Row, Col, Popconfirm } from 'antd';
 import dayjs from 'dayjs';
-import '../styles/InvoiceForm.css';
-import InvoiceCalculationHandler from '../scripts/InvoiceCalculationHandler';
+import '../../styles/InvoiceForm.css';
+import InvoiceCalculationHandler from '../../scripts/InvoiceCalculationHandler';
+import { audFormatter, audParser } from '../../scripts/utilities/AUDformatters';
 
 export default function NewInvoiceForm() {
   // State for raw data inputs
@@ -38,14 +40,6 @@ export default function NewInvoiceForm() {
     const updater = type === 'pre' ? setPreGstDeductions : setPostGstDeductions;
     updater(prev => prev.map(d => (d.key === key ? { ...d, [field]: value } : d)));
   };
-
-  // --- FORMATTERS & PARSERS ---
-  const audFormatter = (value) =>
-  value !== undefined
-    ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    : '';
-  const audParser = (value) =>
-  value ? value.replace(/\$\s?|(,*)/g, '') : '';
 
   // --- REAL-TIME CALCULATIONS ---
   const calculatedTotals = useMemo(() => {
