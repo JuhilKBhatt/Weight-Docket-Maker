@@ -35,76 +35,8 @@ export default function NewInvoiceForm() {
   removeDeduction,
 } = invoice;
 
-  // --- REAL-TIME CALCULATIONS ---
+  // REAL-TIME CALCULATIONS
   const calculatedTotals = useInvoiceCalculations(invoice);
-
-const handleSubmit = async (values) => {
-  try {
-    const payload = {
-      scrNumber: Number(values.scrNumber),
-      date: values.date.format("YYYY-MM-DD"), // ensure it's a string in 'YYYY-MM-DD'
-      invoiceType,
-      includeGST,
-      grossTotal: Number(calculatedTotals.grossTotal || 0),
-      gstAmount: Number(calculatedTotals.gstAmount || 0),
-      finalTotal: Number(calculatedTotals.finalTotal || 0),
-
-      fromCompany: {
-        name: values.fromCompanyName || "",
-        phone: values.fromCompanyPhone || "",
-        email: values.fromCompanyEmail || "",
-        abn: values.fromCompanyABN || "",
-        address: values.fromCompanyAddress || "",
-      },
-      toCompany: {
-        name: values.toCompanyName || "",
-        phone: values.toCompanyPhone || "",
-        email: values.toCompanyEmail || "",
-        abn: values.toCompanyABN || "",
-        address: values.toCompanyAddress || "",
-      },
-      bankAccount: {
-        accName: values.accName || "",
-        bankName: values.bankName || "",
-        bsb: values.bsb || "",
-        accountNumber: values.accountNumber || "",
-      },
-
-      items: items.map(item => ({
-        description: item.description || "",
-        seal: item.seal || null,
-        container: item.container || null,
-        weight: item.weight ? Number(item.weight) : 0,
-        price: item.price ? Number(item.price) : 0,
-        total: item.total ? Number(item.total) : 0,
-      })),
-
-      transportItems: showTransport
-        ? transportItems.map(t => ({
-            name: t.name || "",
-            NumOfCTR: t.NumOfCTR ? Number(t.NumOfCTR) : 0,
-            PricePreCTR: t.PricePreCTR ? Number(t.PricePreCTR) : 0,
-          }))
-        : [],
-
-      preGstDeductions: preGstDeductions.map(d => ({
-        label: d.label || "",
-        amount: d.amount ? Number(d.amount) : 0,
-      })),
-
-      postGstDeductions: postGstDeductions.map(d => ({
-        label: d.label || "",
-        amount: d.amount ? Number(d.amount) : 0,
-      })),
-    };
-
-    const response = await axios.post("http://localhost:8000/invoice/create", payload);
-    alert("✅ Invoice saved!");
-    console.log(response.data);
-  } catch (error) {
-    console.error("❌ Failed to save invoice:", error.response?.data || error.message);
-  }
-};
 
   return (
     <div className="home-container">
@@ -112,7 +44,7 @@ const handleSubmit = async (values) => {
       <Typography.Paragraph>Use the form below to create a new invoice.</Typography.Paragraph>
 
       <div className="form-container">
-        <Form layout="vertical" onFinish={handleSubmit}>
+        <Form layout="vertical">
           {/* Bill From, Bill To, and Invoice Details columns... */}
           <BillingInfo
             invoiceType={invoiceType}
