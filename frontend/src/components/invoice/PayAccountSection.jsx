@@ -1,3 +1,5 @@
+// ./frontend/src/components/invoice/PayAccountSection.jsx
+
 import { Row, Col, Typography, Form, Input, InputNumber, Select } from 'antd';
 
 export default function PayAccountSection({
