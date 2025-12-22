@@ -1,20 +1,22 @@
 // frontend/src/main.jsx
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
-import { ConfigProvider } from 'antd'
-import { BrowserRouter } from 'react-router-dom'
+
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { ConfigProvider, App as AntdApp } from 'antd';
+
+import App from './App.jsx';
+import './index.css';
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  <React.StrictMode>
     <BrowserRouter>
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: '#e60023', // red accent
-            colorText: '#000000',    // black text
-            colorBgBase: '#ffffff',  // white background
+            colorPrimary: '#e60023',
+            colorText: '#000000',
+            colorBgBase: '#ffffff',
             fontSize: 18,
             fontSizeHeading1: 48,
             fontSizeHeading2: 36,
@@ -23,8 +25,8 @@ createRoot(document.getElementById('root')).render(
           components: {
             Button: {
               colorPrimary: '#e60023',
-              colorPrimaryHover: '#b3001b', // darker red hover
-              colorTextLightSolid: '#ffffff', // text inside primary buttons
+              colorPrimaryHover: '#b3001b',
+              colorTextLightSolid: '#ffffff',
               borderRadius: 6,
               fontWeight: 600,
             },
@@ -35,8 +37,11 @@ createRoot(document.getElementById('root')).render(
           },
         }}
       >
-        <App />
+        {/* ✅ THIS IS THE MISSING PIECE */}
+        <AntdApp>
+          <App />
+        </AntdApp>
       </ConfigProvider>
     </BrowserRouter>
-  </StrictMode>,
-)
+  </React.StrictMode>
+);

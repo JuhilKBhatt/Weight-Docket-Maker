@@ -14,10 +14,11 @@ import InvoiceItemsTable from '../../components/invoice/InvoiceItemsTable';
 import TransportTable from '../../components/invoice/TransportTable';
 import InvoiceTotalsSummary from '../../components/invoice/InvoiceTotalsSummary';
 import PayAccountSection from '../../components/invoice/PayAccountSection';
-import { confirmReset } from '../../scripts/utilities/confirmReset';
+import { useConfirmReset } from '../../scripts/utilities/confirmReset';
 
 export default function NewInvoiceForm() {
   const [form] = Form.useForm();
+  const confirmReset = useConfirmReset();
   const invoice = useInvoiceForm();
   const {
   items,
@@ -108,8 +109,8 @@ export default function NewInvoiceForm() {
               style={{ marginRight: 10 }}
               onClick={() =>
                 confirmReset(() => {
-                  form.resetFields();
-                  invoice.resetInvoice();
+                  invoice.resetInvoice(); // React state
+                  form.resetFields();     // AntD fields
                 })
               }
             >
