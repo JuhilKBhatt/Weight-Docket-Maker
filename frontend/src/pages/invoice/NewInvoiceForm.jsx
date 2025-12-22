@@ -1,16 +1,18 @@
 // ./frontend/src/pages/NewInvoiceForm.jsx
 
-import React, { useState, useMemo } from 'react';
 import axios from 'axios';
-import { Form, Input, InputNumber, Select, DatePicker, Button, Table, Typography, Checkbox, Row, Col, Popconfirm } from 'antd';
-import dayjs from 'dayjs';
+import { Form, Input, InputNumber, Select, Button, Table, Typography, Checkbox, Row, Col } from 'antd';
 import '../../styles/InvoiceForm.css';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
 import useInvoiceForm from '../../hooks/invoice/useInvoiceForm';
 import useInvoiceCalculations from '../../hooks/invoice/useInvoiceCalculations';
+import BillingInfo from '../../components/invoice/BillingInfo';
+import InvoiceItemsTable from '../../components/invoice/InvoiceItemsTable';
+
+
 
 export default function NewInvoiceForm() {
-
+  const dateFormat = 'DD/MM/YYYY';
   const invoice = useInvoiceForm();
 
   const {
@@ -33,31 +35,8 @@ export default function NewInvoiceForm() {
   removeDeduction,
 } = invoice;
 
-  // Date format for DatePicker
-  const dateFormat = 'DD/MM/YYYY';
-
   // --- REAL-TIME CALCULATIONS ---
   const calculatedTotals = useInvoiceCalculations(invoice);
-
-  // --- DYNAMIC TABLE COLUMNS ---
-  const sharedColumns = [
-    { title: 'Description', dataIndex: 'description', render: (_, record) => <Input value={record.description} onChange={(e) => handleItemChange(record.key, 'description', e.target.value)} /> },
-    { title: 'Net Weight (in tonne)', dataIndex: 'weight', render: (_, record) => <InputNumber addonAfter="t" style={{ width: '100%' }} value={record.weight} onChange={(val) => handleItemChange(record.key, 'weight', val)} /> },
-    { title: '$AUD/tonne', dataIndex: 'price', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.price} formatter={audFormatter} parser={audParser} onChange={(val) => handleItemChange(record.key, 'price', val)} /> },
-    { title: 'Total', dataIndex: 'total', render: (_, record) => <InputNumber addonBefore="$" style={{ width: '100%' }} value={record.total} formatter={audFormatterFixed} parser={audParser} precision={2} disabled /> },
-    { title: '', dataIndex: 'actions', render: (_, record) => <Popconfirm title="Remove row?" onConfirm={() => removeRow(record.key)}><Button danger type="link">X</Button></Popconfirm> }
-  ];
-
-  const containerColumns = [
-    { title: 'Seal #', dataIndex: 'seal', render: (_, record) => <Input value={record.seal} onChange={(e) => handleItemChange(record.key, 'seal', e.target.value)} /> },
-    { title: 'Container #', dataIndex: 'container', render: (_, record) => <Input value={record.container} onChange={(e) => handleItemChange(record.key, 'container', e.target.value)} /> },
-    ...sharedColumns
-  ];
-
-  const pickupColumns = [
-    { title: 'Metal', dataIndex: 'container', render: (_, record) => <Input value={record.container} onChange={(e) => handleItemChange(record.key, 'container', e.target.value)} /> },
-    ...sharedColumns
-  ];
 
   const transportColumns = [
     { title: 'Item', dataIndex: 'name' },
@@ -162,50 +141,21 @@ const handleSubmit = async (values) => {
           {/* Top Section */}
           <Row gutter={24}>
             {/* Bill From, Bill To, and Invoice Details columns... */}
-            <Col span={8}>
-              <Typography.Title level={4} style={{ backgroundColor: '#2c2c2cff', color:'#ffffff', padding: '10px'}} >Bill From:
-                <Select style={{marginLeft: 10}}  defaultValue="" options={[{ }]} allowClear placeholder="New Company" />
-              </Typography.Title>
-              <Form.Item label="Company Name" name="fromCompanyName"><Input /></Form.Item>
-              <Form.Item label="Phone" name="fromCompanyPhone"><InputNumber style={{ width: '100%' }} /></Form.Item>
-              <Form.Item label="Email" name="fromCompanyEmail"><Input /></Form.Item>
-              <Form.Item label="ABN" name="fromCompanyABN"><InputNumber style={{ width: '100%' }} /></Form.Item>
-              <Form.Item label="Address" name="fromCompanyAddress"><Input /></Form.Item>
-            </Col>
-
-            <Col span={8}>
-              <Typography.Title level={4} style={{ backgroundColor: '#2c2c2cff', color:'#ffffff', padding: '10px'}} >Bill To:
-                <Select style={{marginLeft: 10}} options={[{ }]} allowClear placeholder="New Company" />
-              </Typography.Title>
-              <Form.Item label="Company Name" name="toCompanyName"><Input /></Form.Item>
-              <Form.Item label="Phone" name="toCompanyPhone"><InputNumber style={{ width: '100%' }} /></Form.Item>
-              <Form.Item label="Email" name="toCompanyEmail"><Input /></Form.Item>
-              <Form.Item label="ABN" name="toCompanyABN"><InputNumber style={{ width: '100%' }} /></Form.Item>
-              <Form.Item label="Address" name="toCompanyAddress"><Input /></Form.Item>
-            </Col>
-
-            <Col span={8}>
-              <Typography.Title level={4} style={{ backgroundColor: '#2c2c2cff', color:'#ffffff', padding: '10px'}} >SCR No.:
-                <InputNumber style={{marginLeft: 10}} disabled />
-              </Typography.Title>
-              <Form.Item label="Date" name="date" initialValue={dayjs()}>
-                <DatePicker format={dateFormat} style={{ width: '100%' }} />
-              </Form.Item>
-              <Form.Item label="Invoice Type">
-                <Select value={invoiceType} onChange={setInvoiceType} options={[{ value: 'Container', label: 'Container' }, { value: 'Pickup', label: 'Pickup / Drop Off' }]} />
-              </Form.Item>
-            </Col>
+            <BillingInfo
+              invoiceType={invoiceType}
+              setInvoiceType={setInvoiceType}
+              dateFormat={dateFormat}
+            />
           </Row>
 
           {/* Invoice Items */}
-          <Typography.Title level={5}>Invoice Items</Typography.Title>
-          <Table
-            columns={invoiceType === 'Container' ? containerColumns : pickupColumns}
-            dataSource={calculatedTotals.itemsWithTotals}
-            pagination={false}
-            bordered
+          <InvoiceItemsTable
+            invoiceType={invoiceType}
+            items={calculatedTotals.itemsWithTotals}
+            handleItemChange={handleItemChange}
+            addRow={addRow}
+            removeRow={removeRow}
           />
-          <Button type="dashed" onClick={addRow} style={{ marginTop: 10 }}>+ Add Row</Button>
 
           {/* Transport Section */}
           <div style={{ marginTop: 20 }}>
