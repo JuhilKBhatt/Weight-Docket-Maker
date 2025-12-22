@@ -1,15 +1,15 @@
 // ./frontend/src/pages/NewInvoiceForm.jsx
 
 import axios from 'axios';
-import { Form, Input, InputNumber, Select, Button, Table, Typography, Checkbox, Row, Col } from 'antd';
+import { Form, Input, Button, Typography, Checkbox, Row, Col } from 'antd';
 import '../../styles/InvoiceForm.css';
-import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
 import useInvoiceForm from '../../hooks/invoice/useInvoiceForm';
 import useInvoiceCalculations from '../../hooks/invoice/useInvoiceCalculations';
 import BillingInfo from '../../components/invoice/BillingInfo';
 import InvoiceItemsTable from '../../components/invoice/InvoiceItemsTable';
 import TransportTable from '../../components/invoice/TransportTable';
-
+import InvoiceTotalsSummary from '../../components/invoice/InvoiceTotalsSummary';
+import PayAccountSection from '../../components/invoice/PayAccountSection';
 
 export default function NewInvoiceForm() {
   const dateFormat = 'DD/MM/YYYY';
@@ -113,15 +113,12 @@ const handleSubmit = async (values) => {
 
       <div className="form-container">
         <Form layout="vertical" onFinish={handleSubmit}>
-          {/* Top Section */}
-          <Row gutter={24}>
-            {/* Bill From, Bill To, and Invoice Details columns... */}
-            <BillingInfo
-              invoiceType={invoiceType}
-              setInvoiceType={setInvoiceType}
-              dateFormat={dateFormat}
-            />
-          </Row>
+          {/* Bill From, Bill To, and Invoice Details columns... */}
+          <BillingInfo
+            invoiceType={invoiceType}
+            setInvoiceType={setInvoiceType}
+            dateFormat={dateFormat}
+          />
 
           {/* Invoice Items */}
           <InvoiceItemsTable
@@ -156,63 +153,27 @@ const handleSubmit = async (values) => {
               <Form.Item label="Notes"><Input.TextArea rows={4} /></Form.Item>
             </Col>
             <Col span={12}>
-              {/* Pre-GST deductions */}
-              <Typography.Title level={5}>Deductions (Before GST)</Typography.Title>
-              {preGstDeductions.map(d => (
-                <Row gutter={10} key={d.key} style={{ marginBottom: 5 }}>
-                  <Col span={12}><Input placeholder="Reason" value={d.label} onChange={(e) => handleDeductionChange('pre', d.key, 'label', e.target.value)} /></Col>
-                  <Col span={8}><InputNumber addonBefore="$" placeholder="Amount" style={{ width: '100%' }} value={d.amount} formatter={audFormatter} parser={audParser} onChange={(val) => handleDeductionChange('pre', d.key, 'amount', val)} /></Col>
-                  <Col span={4}><Button danger type="link" onClick={() => removeDeduction('pre', d.key)}>X</Button></Col>
-                </Row>
-              ))}
-              <Button type="dashed" size="small" onClick={() => addDeduction('pre')}>+ Add Deduction</Button>
-
-              {/* Subtotal & GST */}
-              <Form.Item label={includeGST ? "Sub-Total" : "Total"} style={{ marginTop: 20 }}>
-                <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={includeGST ? calculatedTotals.grossTotal : calculatedTotals.finalTotal} formatter={audFormatterFixed} parser={audParser} precision={2} />
-              </Form.Item>
-
-              <Row gutter={10} align="middle">
-                <Col flex="none"><Checkbox checked={includeGST} onChange={(e) => setIncludeGST(e.target.checked)}>GST (10%)</Checkbox></Col>
-                <Col flex="auto">{includeGST && <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={calculatedTotals.gstAmount} formatter={audFormatterFixed} parser={audParser} precision={2} />}</Col>
-              </Row>
-
-              {/* Post-GST deductions + Final Total */}
-              {includeGST && (
-                <>
-                  <Typography.Title level={5} style={{ marginTop: 20 }}>Deductions (After GST)</Typography.Title>
-                  {postGstDeductions.map(d => (
-                     <Row gutter={10} key={d.key} style={{ marginBottom: 5 }}>
-                      <Col span={12}><Input placeholder="Reason" value={d.label} onChange={(e) => handleDeductionChange('post', d.key, 'label', e.target.value)} /></Col>
-                      <Col span={8}><InputNumber addonBefore="$" placeholder="Amount" style={{ width: '100%' }} value={d.amount} formatter={audFormatter} parser={audParser} onChange={(val) => handleDeductionChange('post', d.key, 'amount', val)} /></Col>
-                      <Col span={4}><Button danger type="link" onClick={() => removeDeduction('post', d.key)}>X</Button></Col>
-                    </Row>
-                  ))}
-                  <Button type="dashed" size="small" onClick={() => addDeduction('post')}>+ Add Deduction</Button>
-                  <Form.Item label="Total" style={{ marginTop: 20, fontWeight: 'bold' }}>
-                    <InputNumber addonBefore="$" disabled style={{ width: '100%' }} value={calculatedTotals.finalTotal} formatter={audFormatterFixed} parser={audParser} precision={2} />
-                  </Form.Item>
-                </>
-              )}
+            <InvoiceTotalsSummary
+              includeGST={includeGST}
+              setIncludeGST={setIncludeGST}
+              calculatedTotals={calculatedTotals}
+              preGstDeductions={preGstDeductions}
+              postGstDeductions={postGstDeductions}
+              handleDeductionChange={handleDeductionChange}
+              addDeduction={addDeduction}
+              removeDeduction={removeDeduction}
+            />
             </Col>
           </Row>
 
-          {/* Pay To Section and Submit Button... */}
-          <Typography.Title level={4} style={{ marginTop: 30 }}>Pay To</Typography.Title>
-          <Row gutter={24}>
-            <Col span={8}>
-              <Form.Item label="Acc Name"><Select defaultValue="" options={[{ }]} allowClear placeholder="New Bank Account" /></Form.Item>
-              <Form.Item label="Bank Name"><Input /></Form.Item>
-              <Form.Item label="BSB #"><InputNumber style={{ width: '100%' }} /></Form.Item>
-              <Form.Item label="Account #"><InputNumber style={{ width: '100%' }} /></Form.Item>
-            </Col>
-          </Row>
+          {/* Pay To Section */}
+          <PayAccountSection />
 
+          {/* Submit & Reset Button */}
           <Row justify="end" style={{ marginTop: 30 }}>
             <Button type="dashed" htmlType='reset' style={{ marginRight: 10 }}>Reset Invoice</Button>
             <Button type="primary" size='large' htmlType="submit">Send Invoice</Button>
           </Row>
-
         </Form>
       </div>
     </div>
