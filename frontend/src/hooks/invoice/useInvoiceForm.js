@@ -1,6 +1,7 @@
 // ./frontend/src/hooks/invoice/useInvoiceForm.js
 
 import { useState, useRef } from 'react';
+import useScrLookup from './useScrLookup';
 
 // Utility to generate stable keys
 const uid = (() => {
@@ -19,13 +20,8 @@ export default function useInvoiceForm(isNewInvoice) {
     },
   ];
 
-  // SCRINV ID GENERATION
-  const scrinvCounter = useRef(1000); // Starting SCRINV ID
-  const generateScrinvID = () => {
-    scrinvCounter.current += 1;
-    return scrinvCounter.current;
-  };
-  const scrinvID = isNewInvoice ? generateScrinvID() : 0;
+  // SCRINV ID
+  const scrinvID = useRef(isNewInvoice ? `SCRINV-${Date.now()}` : null);
 
   // STATE
   const [items, setItems] = useState(defaultItems);
