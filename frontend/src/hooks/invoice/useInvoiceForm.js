@@ -8,7 +8,7 @@ const uid = (() => {
   return () => ++id;
 })();
 
-export default function useInvoiceForm() {
+export default function useInvoiceForm(isNewInvoice) {
   //DEFAULT STATE
   const defaultItems = [
     {
@@ -19,14 +19,13 @@ export default function useInvoiceForm() {
     },
   ];
 
-  const defaultTransportItems = [
-    {
-      key: uid(),
-      name: 'Primary',
-      NumOfCTR: 0,
-      PricePreCTR: 0,
-    },
-  ];
+  // SCRINV ID GENERATION
+  const scrinvCounter = useRef(1000); // Starting SCRINV ID
+  const generateScrinvID = () => {
+    scrinvCounter.current += 1;
+    return scrinvCounter.current;
+  };
+  const scrinvID = isNewInvoice ? generateScrinvID() : 0;
 
   // STATE
   const [items, setItems] = useState(defaultItems);
@@ -151,6 +150,7 @@ export default function useInvoiceForm() {
     preGstDeductions,
     postGstDeductions,
 
+    scrinvID,
     invoiceType,
     includeGST,
     showTransport,

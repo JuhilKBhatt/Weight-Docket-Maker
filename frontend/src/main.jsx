@@ -1,10 +1,12 @@
 // frontend/src/main.jsx
 
+// Main entry point for the React application
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { ConfigProvider, App as AntdApp } from 'antd';
 
+// Main App
 import App from './App.jsx';
 import './index.css';
 
@@ -37,7 +39,6 @@ createRoot(document.getElementById('root')).render(
           },
         }}
       >
-        {/* ✅ THIS IS THE MISSING PIECE */}
         <AntdApp>
           <App />
         </AntdApp>

@@ -19,12 +19,13 @@ import { useConfirmReset } from '../../scripts/utilities/confirmReset';
 export default function NewInvoiceForm() {
   const [form] = Form.useForm();
   const confirmReset = useConfirmReset();
-  const invoice = useInvoiceForm();
+  const invoice = useInvoiceForm(true);
   const {
   items,
   transportItems,
   preGstDeductions,
   postGstDeductions,
+  scrinvID,
   invoiceType,
   includeGST,
   showTransport,
@@ -53,6 +54,7 @@ export default function NewInvoiceForm() {
             invoiceType={invoiceType}
             setInvoiceType={setInvoiceType}
             dateFormat={dateFormat}
+            scrinvID={scrinvID}
           />
 
           {/* Invoice Items */}

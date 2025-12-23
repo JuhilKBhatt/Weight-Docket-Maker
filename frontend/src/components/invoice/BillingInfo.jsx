@@ -4,6 +4,7 @@ import { Row, Col, Typography, Form, Input, InputNumber, Select, DatePicker } fr
 import dayjs from 'dayjs';
 
 export default function BillingInfo({
+  scrinvID,
   invoiceType,
   setInvoiceType,
   dateFormat,
@@ -103,8 +104,8 @@ export default function BillingInfo({
           Invoice Details
         </Typography.Title>
 
-        <Form.Item label="SCR No.">
-          <InputNumber disabled style={{ width: '100%' }} />
+        <Form.Item label="SCRINV ID:">
+          <InputNumber disabled value={scrinvID} style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item label="Date" name="date" initialValue={dayjs()}>
