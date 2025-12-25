@@ -1,20 +1,11 @@
-# backend/app/models/Invoice.py
-from sqlalchemy import Column, Integer, String, Boolean, Numeric, Date, ForeignKey
-from ..database import Base
+# app/models/invoice.py
+from sqlalchemy import Column, Integer, DateTime
+from sqlalchemy.sql import func
+from app.database import Base
 
 class Invoice(Base):
-    __tablename__ = "invoice"
+    __tablename__ = "invoices"
 
-    SCRNumber = Column(Integer, primary_key=True)  # primary key
-    InvoiceType = Column(String)
-    Date = Column(Date)
-    IncludeGST = Column(Boolean, default=True)
-    GrossTotal = Column(Numeric(12,2))
-    GSTAmount = Column(Numeric(12,2))
-    FinalTotal = Column(Numeric(12,2))
-
-    FromCompanyid = Column(Integer, ForeignKey("company.id"))
-    ToCompanyid = Column(Integer, ForeignKey("company.id"))
-    BankAccountid = Column(Integer, ForeignKey("bank_account.id"))
-
-    IsPaid = Column(Boolean, default=False)
+    id = Column(Integer, primary_key=True, index=True)
+    scrinv_number = Column(Integer, unique=True, index=True)
+    created_at = Column(DateTime, server_default=func.now())
