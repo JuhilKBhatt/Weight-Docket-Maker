@@ -4,13 +4,39 @@ import { Row, Col, Typography, Form, Input, InputNumber, Select, DatePicker } fr
 import dayjs from 'dayjs';
 
 export default function BillingInfo({
+  form,
   scrinvID,
   invoiceType,
   setInvoiceType,
   dateFormat,
-  savedCompaniesFrom = [], // array of { id, label, phone, email, abn, address }
+  savedCompaniesFrom = [],
   savedCompaniesTo = [],
 }) {
+  const fillFromCompany = (id) => {
+    const c = savedCompaniesFrom.find(x => x.id === id);
+    if (!c) return;
+
+    form.setFieldsValue({
+      fromCompanyName: c.label,
+      fromCompanyPhone: c.phone,
+      fromCompanyEmail: c.email,
+      fromCompanyABN: c.abn,
+      fromCompanyAddress: c.address,
+    });
+  };
+
+  const fillToCompany = (id) => {
+    const c = savedCompaniesTo.find(x => x.id === id);
+    if (!c) return;
+
+    form.setFieldsValue({
+      toCompanyName: c.label,
+      toCompanyPhone: c.phone,
+      toCompanyEmail: c.email,
+      toCompanyABN: c.abn,
+      toCompanyAddress: c.address,
+    });
+  };
   return (
     <Row gutter={24}>
       {/* Bill From */}
@@ -30,6 +56,7 @@ export default function BillingInfo({
               label: c.label,
               value: c.id,
             }))}
+            onChange={fillFromCompany}
           />
         </Form.Item>
 
@@ -71,6 +98,7 @@ export default function BillingInfo({
               label: c.label,
               value: c.id,
             }))}
+            onChange={fillToCompany}
           />
         </Form.Item>
 

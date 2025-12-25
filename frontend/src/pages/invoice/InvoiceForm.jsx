@@ -1,6 +1,7 @@
 // ./frontend/src/pages/InvoiceForm.jsx
 
 import axios from 'axios';
+import React, { useEffect } from 'react';
 import { Form, Input, Button, Typography, Checkbox, Row, Col } from 'antd';
 
 // Styles
@@ -15,10 +16,16 @@ import TransportTable from '../../components/invoice/TransportTable';
 import InvoiceTotalsSummary from '../../components/invoice/InvoiceTotalsSummary';
 import PayAccountSection from '../../components/invoice/PayAccountSection';
 import { useConfirmReset } from '../../scripts/utilities/confirmReset';
+import { use } from 'react';
 
 export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
   const [form] = Form.useForm();
+  const [savedCompaniesFrom, setSavedCompaniesFrom] = React.useState([]);
+  const [savedCompaniesTo, setSavedCompaniesTo] = React.useState([]);
+  const [savedAccounts, setSavedAccounts] = React.useState([]);
+
   const confirmReset = useConfirmReset();
+  
   const invoice = useInvoiceForm(mode, existingInvoice);
   const {
   items,
@@ -39,9 +46,57 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
   removeRow,
   addDeduction,
   removeDeduction,
-} = invoice;
+  } = invoice;
   const calculatedTotals = useInvoiceCalculations(invoice);
   const dateFormat = 'DD/MM/YYYY';
+
+  useEffect(() => {
+    async function loadCompanies() {
+      const mock = [
+        {
+          id: 1,
+          label: 'ABC Logistics Pty Ltd',
+          phone: '0412345678',
+          email: 'example@mail.com',
+          abn: '12345678901',
+          address: '123 Example St, Sydney NSW 2000'
+        },
+        {
+          id: 2,
+          label: 'XYZ Transport Services',
+          phone: '0498765432',
+          email: 'transport@hotmail.com',
+          abn: '10987654321',
+          address: '456 Sample Rd, Melbourne VIC 3000'
+        }
+      ];
+      setSavedCompaniesFrom(mock);
+      setSavedCompaniesTo(mock);
+
+      const mockAccounts = [
+        {
+          id: 1,
+          label: 'Business Account - Bank A',
+          accName: 'ABC Logistics Pty Ltd',
+          bankName: 'Bank A',
+          bsb: '123456',
+          accountNumber: '12345678',
+        },
+        {
+          id: 2,
+          label: 'Business Account - Bank B',
+          accName: 'XYZ Transport Services',
+          bankName: 'Bank B',
+          bsb: '654321',
+          accountNumber: '87654321',
+        }
+      ];
+      setSavedAccounts(mockAccounts);
+    }
+
+    loadCompanies();
+  }, []);
+
   return (
     <div className="home-container">
       <Typography.Title level={1}>
@@ -52,6 +107,9 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
         <Form form={form} layout="vertical">
           {/* Bill From, Bill To, and Invoice Details columns... */}
           <BillingInfo
+            form={form}
+            savedCompaniesFrom={savedCompaniesFrom}
+            savedCompaniesTo={savedCompaniesTo}
             invoiceType={invoiceType}
             setInvoiceType={setInvoiceType}
             dateFormat={dateFormat}
@@ -103,7 +161,10 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
           </Row>
 
           {/* Pay To Section */}
-          <PayAccountSection />
+          <PayAccountSection
+            form={form}
+            savedAccounts={savedAccounts}
+          />
 
           {/* Submit & Reset Button */}
           <Row justify="end" style={{ marginTop: 30 }}>

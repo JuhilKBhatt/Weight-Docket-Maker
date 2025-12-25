@@ -3,8 +3,20 @@
 import { Row, Col, Typography, Form, Input, InputNumber, Select } from 'antd';
 
 export default function PayAccountSection({
+  form,
   savedAccounts = [],
 }) {
+  const fillAccountDetails = (id) => {
+    const acc = savedAccounts.find(x => x.id === id);
+    if (!acc) return;
+
+    form.setFieldsValue({
+      accName: acc.accName,
+      bankName: acc.bankName,
+      bsb: acc.bsb,
+      accountNumber: acc.accountNumber,
+    });
+  };
   return (
     <>
       <Typography.Title level={4} style={{ marginTop: 30 }}>
@@ -21,6 +33,7 @@ export default function PayAccountSection({
                 label: acc.label,
                 value: acc.id,
               }))}
+              onChange={fillAccountDetails}
             />
           </Form.Item>
 
