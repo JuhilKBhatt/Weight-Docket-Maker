@@ -21,18 +21,22 @@ export default function useInvoiceForm(isNewInvoice) {
   ];
 
   // SCRINV ID
-  const [scrinvID, setScrinvID] = useState(null);
+  const [scrinvID, setScrinvID] = useState(() => {
+    return localStorage.getItem("scrinvID") || null;
+  });
+
   const called = useRef(false);
 
   useEffect(() => {
-    if (isNewInvoice && !called.current) {
+    if (isNewInvoice && !called.current && !scrinvID) {
       called.current = true;
 
       invoiceNewSCRIDService.createNewInvoice().then(id => {
         setScrinvID(id);
+        localStorage.setItem("scrinvID", id);
       });
     }
-  }, [isNewInvoice]);
+  }, [isNewInvoice, scrinvID]);
 
   // STATE
   const [items, setItems] = useState(defaultItems);
