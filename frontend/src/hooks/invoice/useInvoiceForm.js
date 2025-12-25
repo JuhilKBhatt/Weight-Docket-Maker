@@ -1,7 +1,7 @@
 // ./frontend/src/hooks/invoice/useInvoiceForm.js
 
-import { useState, useRef } from 'react';
-import useScrLookup from './useScrLookup';
+import { useState, useRef, useEffect } from 'react';
+import invoiceNewSCRIDService from '../../services/invoiceService';
 
 // Utility to generate stable keys
 const uid = (() => {
@@ -21,7 +21,15 @@ export default function useInvoiceForm(isNewInvoice) {
   ];
 
   // SCRINV ID
-  const scrinvID = useRef(isNewInvoice ? `SCRINV-${Date.now()}` : null);
+  const [scrinvID, setScrinvID] = useState(null);
+  useEffect(() => {
+    if (isNewInvoice) {
+      invoiceNewSCRIDService.createNewInvoice().then(id => {
+        //setScrinvID(id);
+        setScrinvID(1);
+      });
+    }
+  }, [isNewInvoice]);
 
   // STATE
   const [items, setItems] = useState(defaultItems);
