@@ -16,10 +16,10 @@ import InvoiceTotalsSummary from '../../components/invoice/InvoiceTotalsSummary'
 import PayAccountSection from '../../components/invoice/PayAccountSection';
 import { useConfirmReset } from '../../scripts/utilities/confirmReset';
 
-export default function NewInvoiceForm() {
+export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
   const [form] = Form.useForm();
   const confirmReset = useConfirmReset();
-  const invoice = useInvoiceForm(true);
+  const invoice = useInvoiceForm(mode, existingInvoice);
   const {
   items,
   transportItems,
@@ -44,8 +44,9 @@ export default function NewInvoiceForm() {
   const dateFormat = 'DD/MM/YYYY';
   return (
     <div className="home-container">
-      <Typography.Title level={1}>Create New Invoice</Typography.Title>
-      <Typography.Paragraph>Use the form below to create a new invoice.</Typography.Paragraph>
+      <Typography.Title level={1}>
+        {mode === 'new' ? 'Create New Invoice' : mode === 'edit' ? 'Edit Invoice' : 'View Invoice'}
+      </Typography.Title>
 
       <div className="form-container">
         <Form form={form} layout="vertical">
