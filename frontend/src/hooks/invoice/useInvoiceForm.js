@@ -25,8 +25,7 @@ export default function useInvoiceForm(isNewInvoice) {
   useEffect(() => {
     if (isNewInvoice) {
       invoiceNewSCRIDService.createNewInvoice().then(id => {
-        //setScrinvID(id);
-        setScrinvID(1);
+        setScrinvID(id);
       });
     }
   }, [isNewInvoice]);
