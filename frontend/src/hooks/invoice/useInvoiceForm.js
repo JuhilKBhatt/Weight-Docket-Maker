@@ -22,8 +22,12 @@ export default function useInvoiceForm(isNewInvoice) {
 
   // SCRINV ID
   const [scrinvID, setScrinvID] = useState(null);
+  const called = useRef(false);
+
   useEffect(() => {
-    if (isNewInvoice) {
+    if (isNewInvoice && !called.current) {
+      called.current = true;
+
       invoiceNewSCRIDService.createNewInvoice().then(id => {
         setScrinvID(id);
       });

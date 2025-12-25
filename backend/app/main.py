@@ -28,11 +28,3 @@ def test_connection():
             print("✅ Database connection successful!")
     except Exception as e:
         print("❌ Database connection failed:", e)
-
-# Test that the /invoice/create route exists
-@app.on_event("startup")
-def test_invoice_route_exists():
-    if "/invoice/create" in [route.path for route in app.routes]:
-        print("✅ /invoice/create route is registered!")
-    else:
-        print("❌ /invoice/create route is NOT registered!")
