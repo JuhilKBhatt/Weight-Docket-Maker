@@ -160,7 +160,6 @@ export default function BillingInfo({
             options={[
               { value: 'Container', label: 'Container' },
               { value: 'Pickup', label: 'Pickup / Drop Off' },
-              { value: 'Custom', label: 'Custom' },
             ]}
           />
         </Form.Item>
