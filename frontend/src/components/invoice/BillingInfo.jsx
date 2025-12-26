@@ -12,31 +12,6 @@ export default function BillingInfo({
   savedCompaniesFrom = [],
   savedCompaniesTo = [],
 }) {
-  const fillFromCompany = (id) => {
-    const c = savedCompaniesFrom.find(x => x.id === id);
-    if (!c) return;
-
-    form.setFieldsValue({
-      fromCompanyName: c.label,
-      fromCompanyPhone: c.phone,
-      fromCompanyEmail: c.email,
-      fromCompanyABN: c.abn,
-      fromCompanyAddress: c.address,
-    });
-  };
-
-  const fillToCompany = (id) => {
-    const c = savedCompaniesTo.find(x => x.id === id);
-    if (!c) return;
-
-    form.setFieldsValue({
-      toCompanyName: c.label,
-      toCompanyPhone: c.phone,
-      toCompanyEmail: c.email,
-      toCompanyABN: c.abn,
-      toCompanyAddress: c.address,
-    });
-  };
   return (
     <Row gutter={24}>
       {/* Bill From */}
@@ -52,11 +27,21 @@ export default function BillingInfo({
           <Select
             allowClear
             placeholder="Select a company"
-            options={savedCompaniesFrom.map(c => ({
-              label: c.label,
-              value: c.id,
+            options={savedCompaniesFrom.map((c, idx) => ({
+              label: c.name,  // was c.label
+              value: idx       // was c.id
             }))}
-            onChange={fillFromCompany}
+            onChange={(idx) => {
+              const c = savedCompaniesFrom[idx];
+              if (!c) return;
+              form.setFieldsValue({
+                fromCompanyName: c.name,
+                fromCompanyPhone: c.phone,
+                fromCompanyEmail: c.email,
+                fromCompanyABN: c.abn,
+                fromCompanyAddress: c.address,
+              });
+            }}
           />
         </Form.Item>
 
@@ -94,11 +79,21 @@ export default function BillingInfo({
           <Select
             allowClear
             placeholder="Select a company"
-            options={savedCompaniesTo.map(c => ({
-              label: c.label,
-              value: c.id,
+            options={savedCompaniesTo.map((c, idx) => ({
+              label: c.name,
+              value: idx
             }))}
-            onChange={fillToCompany}
+            onChange={(idx) => {
+              const c = savedCompaniesTo[idx];
+              if (!c) return;
+              form.setFieldsValue({
+                toCompanyName: c.name,
+                toCompanyPhone: c.phone,
+                toCompanyEmail: c.email,
+                toCompanyABN: c.abn,
+                toCompanyAddress: c.address,
+              });
+            }}
           />
         </Form.Item>
 

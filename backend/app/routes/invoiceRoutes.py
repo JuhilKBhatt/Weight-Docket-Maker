@@ -83,3 +83,48 @@ def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
 
     db.commit()
     return {"message": "invoice created", "id": invoice.id}
+
+@router.get("/selectorsData")
+def get_selectors_data(db: Session = Depends(get_db)):
+    invoices = db.query(Invoice).all()
+
+    companies_from = []
+    companies_to = []
+    accounts = []
+
+    for inv in invoices:
+        from_company = {
+            "name": inv.bill_from_name,
+            "phone": inv.bill_from_phone,
+            "email": inv.bill_from_email,
+            "abn": inv.bill_from_abn,
+            "address": inv.bill_from_address
+        }
+        to_company = {
+            "name": inv.bill_to_name,
+            "phone": inv.bill_to_phone,
+            "email": inv.bill_to_email,
+            "abn": inv.bill_to_abn,
+            "address": inv.bill_to_address
+        }
+        account = {
+            "bank_name": inv.bank_name,
+            "account_name": inv.account_name,
+            "bsb": inv.bsb,
+            "account_number": inv.account_number
+        }
+
+        if from_company not in companies_from:
+            companies_from.append(from_company)
+        if to_company not in companies_to:
+            companies_to.append(to_company)
+        if account not in accounts:
+            accounts.append(account)
+    print("Companies From:", companies_from)
+    print("Companies To:", companies_to)
+    print("Accounts:", accounts)
+    return {
+        "companies_from": companies_from,
+        "companies_to": companies_to,
+        "accounts": accounts
+    }

@@ -72,3 +72,13 @@ export const saveInvoice = async ({
     alert("Failed to save invoice");
   }
 };
+
+export const selectorData = async () => {
+  try {
+    const res = await axios.get("http://localhost:8000/api/invoices/selectorsData");
+    return res.data; // { companies_from: [], companies_to: [], accounts: [] }
+  } catch (err) {
+    console.error("Failed to fetch companies", err);
+    return { companies_from: [], companies_to: [], accounts: [] };
+  }
+};

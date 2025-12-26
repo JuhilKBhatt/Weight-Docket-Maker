@@ -16,7 +16,7 @@ import TransportTable from '../../components/invoice/TransportTable';
 import InvoiceTotalsSummary from '../../components/invoice/InvoiceTotalsSummary';
 import PayAccountSection from '../../components/invoice/PayAccountSection';
 import { useConfirmReset } from '../../scripts/utilities/confirmReset';
-import { saveInvoice } from '../../scripts/utilities/invoiceUtils';
+import { saveInvoice, selectorData } from '../../scripts/utilities/invoiceUtils';
 
 export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
   const [form] = Form.useForm();
@@ -51,14 +51,15 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
   const dateFormat = 'DD/MM/YYYY';
 
   useEffect(() => {
-    async function loadCompanies() {
-
-      //setSavedCompaniesFrom(mock);
-      //setSavedCompaniesTo(mock);
-      //setSavedAccounts(mockAccounts);
+    async function loadSelectors() {
+      const data = await selectorData();
+      console.log("Selector Data:", data);
+      setSavedCompaniesFrom(data.companies_from);
+      setSavedCompaniesTo(data.companies_to);
+      setSavedAccounts(data.accounts);
     }
 
-    loadCompanies();
+    loadSelectors();
   }, []);
 
   const handleSubmit = async (values) => {
