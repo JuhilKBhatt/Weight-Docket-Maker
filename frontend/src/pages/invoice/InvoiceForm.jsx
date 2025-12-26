@@ -70,18 +70,22 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
     show_transport: showTransport,
     notes: values.notes || "",
 
-    bill_from_name: values.bill_from_name,
-    bill_from_abn: values.bill_from_abn,
-    bill_from_address: values.bill_from_address,
+    bill_from_name: values.fromCompanyName,
+    bill_from_phone: values.fromCompanyPhone,
+    bill_from_email: values.fromCompanyEmail,
+    bill_from_abn: values.fromCompanyABN,
+    bill_from_address: values.fromCompanyAddress,
 
-    bill_to_name: values.bill_to_name,
-    bill_to_abn: values.bill_to_abn,
-    bill_to_address: values.bill_to_address,
+    bill_to_name: values.toCompanyName,
+    bill_to_phone: values.toCompanyPhone || "",
+    bill_to_email: values.toCompanyEmail || "",
+    bill_to_abn: values.toCompanyABN || "",
+    bill_to_address: values.toCompanyAddress || "",
 
-    bank_name: values.bank_name,
-    account_name: values.account_name,
+    bank_name: values.bankName,
+    account_name: values.accName,
     bsb: values.bsb,
-    account_number: values.account_number,
+    account_number: values.accountNumber,
 
     items: items.map(i => ({
       description: i.description,
@@ -110,11 +114,13 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
   };
 
   try {
-    await axios.post("http://localhost:8000/invoices", payload);
+    await axios.post("http://localhost:8000/api/invoices/save", payload);
+    console.log("Invoice saved:", payload);
     alert("Invoice saved!");
-    invoice.resetInvoice();
-    form.resetFields();
+    //invoice.resetInvoice();
+    //form.resetFields();
   } catch (err) {
+    console.log("Invoice saved:", payload);
     console.error(err);
     alert("Failed to save invoice");
   }

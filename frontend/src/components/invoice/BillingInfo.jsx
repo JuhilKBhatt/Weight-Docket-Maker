@@ -65,7 +65,7 @@ export default function BillingInfo({
         </Form.Item>
 
         <Form.Item label="Phone" name="fromCompanyPhone">
-          <InputNumber style={{ width: '100%' }} />
+          <Input style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item label="Email" name="fromCompanyEmail">
@@ -73,7 +73,7 @@ export default function BillingInfo({
         </Form.Item>
 
         <Form.Item label="ABN" name="fromCompanyABN">
-          <InputNumber style={{ width: '100%' }} />
+          <Input style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item label="Address" name="fromCompanyAddress">
@@ -107,7 +107,7 @@ export default function BillingInfo({
         </Form.Item>
 
         <Form.Item label="Phone" name="toCompanyPhone">
-          <InputNumber style={{ width: '100%' }} />
+          <Input style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item label="Email" name="toCompanyEmail">
@@ -115,7 +115,7 @@ export default function BillingInfo({
         </Form.Item>
 
         <Form.Item label="ABN" name="toCompanyABN">
-          <InputNumber style={{ width: '100%' }} />
+          <Input style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item label="Address" name="toCompanyAddress">

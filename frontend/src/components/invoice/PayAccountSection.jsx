@@ -61,7 +61,7 @@ export default function PayAccountSection({
               { len: 6, message: 'BSB must be 6 digits' },
             ]}
           >
-            <InputNumber
+            <Input
               style={{ width: '100%' }}
               controls={false}
             />
@@ -72,7 +72,7 @@ export default function PayAccountSection({
             name="accountNumber"
             rules={[{ required: true, message: 'Account number is required' }]}
           >
-            <InputNumber
+            <Input
               style={{ width: '100%' }}
               controls={false}
             />
