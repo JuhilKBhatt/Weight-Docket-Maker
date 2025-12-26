@@ -52,46 +52,11 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
 
   useEffect(() => {
     async function loadCompanies() {
-      const mock = [
-        {
-          id: 1,
-          label: 'ABC Logistics Pty Ltd',
-          phone: '0412345678',
-          email: 'example@mail.com',
-          abn: '12345678901',
-          address: '123 Example St, Sydney NSW 2000'
-        },
-        {
-          id: 2,
-          label: 'XYZ Transport Services',
-          phone: '0498765432',
-          email: 'transport@hotmail.com',
-          abn: '10987654321',
-          address: '456 Sample Rd, Melbourne VIC 3000'
-        }
-      ];
-      setSavedCompaniesFrom(mock);
-      setSavedCompaniesTo(mock);
-
-      const mockAccounts = [
-        {
-          id: 1,
-          label: 'Business Account - Bank A',
-          accName: 'ABC Logistics Pty Ltd',
-          bankName: 'Bank A',
-          bsb: '123456',
-          accountNumber: '12345678',
-        },
-        {
-          id: 2,
-          label: 'Business Account - Bank B',
-          accName: 'XYZ Transport Services',
-          bankName: 'Bank B',
-          bsb: '654321',
-          accountNumber: '87654321',
-        }
-      ];
-      setSavedAccounts(mockAccounts);
+      // Mock data for saved companies and accounts
+      
+      //setSavedCompaniesFrom(mock);
+      //setSavedCompaniesTo(mock);
+      //setSavedAccounts(mockAccounts);
     }
 
     loadCompanies();
