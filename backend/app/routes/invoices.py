@@ -38,10 +38,14 @@ class InvoiceCreate(BaseModel):
     notes: Optional[str]
 
     bill_from_name: str
+    bill_from_phone: str
+    bill_from_email: str
     bill_from_abn: str
     bill_from_address: str
 
     bill_to_name: str
+    bill_to_phone: str
+    bill_to_email: str
     bill_to_abn: str
     bill_to_address: str
 
