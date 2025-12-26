@@ -92,39 +92,47 @@ def get_selectors_data(db: Session = Depends(get_db)):
     companies_to = []
     accounts = []
 
+    def clean(obj: dict):
+        # remove None, empty strings, spaces
+        return {k: v for k, v in obj.items() if v not in (None, "", " ")}
+
     for inv in invoices:
-        from_company = {
+
+        from_company = clean({
             "name": inv.bill_from_name,
             "phone": inv.bill_from_phone,
             "email": inv.bill_from_email,
             "abn": inv.bill_from_abn,
-            "address": inv.bill_from_address
-        }
-        to_company = {
+            "address": inv.bill_from_address,
+        })
+
+        to_company = clean({
             "name": inv.bill_to_name,
             "phone": inv.bill_to_phone,
             "email": inv.bill_to_email,
             "abn": inv.bill_to_abn,
-            "address": inv.bill_to_address
-        }
-        account = {
+            "address": inv.bill_to_address,
+        })
+
+        account = clean({
             "bank_name": inv.bank_name,
             "account_name": inv.account_name,
             "bsb": inv.bsb,
-            "account_number": inv.account_number
-        }
+            "account_number": inv.account_number,
+        })
 
-        if from_company not in companies_from:
+        # Only append if there's at least 1 real value
+        if from_company and from_company not in companies_from:
             companies_from.append(from_company)
-        if to_company not in companies_to:
+
+        if to_company and to_company not in companies_to:
             companies_to.append(to_company)
-        if account not in accounts:
+
+        if account and account not in accounts:
             accounts.append(account)
-    print("Companies From:", companies_from)
-    print("Companies To:", companies_to)
-    print("Accounts:", accounts)
+
     return {
         "companies_from": companies_from,
         "companies_to": companies_to,
-        "accounts": accounts
+        "accounts": accounts,
     }

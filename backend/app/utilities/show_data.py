@@ -1,6 +1,6 @@
 # ./backend/app/utilities/show_data.py
 from app.database import SessionLocal
-from app.models.invoice import Invoice
+from app.models.invoiceModels import Invoice
 
 # create a DB session
 db = SessionLocal()
