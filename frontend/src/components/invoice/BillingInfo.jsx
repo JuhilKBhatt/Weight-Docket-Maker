@@ -55,23 +55,23 @@ export default function BillingInfo({
         </Form.Item>
 
         <Form.Item label="Company Name" name="fromCompanyName" rules={[{ required: true, message: 'Company Name is required' }]}>
-          <Input />
+          <Input maxLength={255} />
         </Form.Item>
 
         <Form.Item label="Phone" name="fromCompanyPhone">
-          <Input style={{ width: '100%' }} />
+          <Input maxLength={50} style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item label="Email" name="fromCompanyEmail">
-          <Input />
+          <Input maxLength={100} />
         </Form.Item>
 
         <Form.Item label="ABN" name="fromCompanyABN" rules={[{ required: true, message: 'Company Name is required' }]}>
-          <Input style={{ width: '100%' }} />
+          <Input maxLength={50} style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item label="Address" name="fromCompanyAddress">
-          <Input />
+          <Input maxLength={255} />
         </Form.Item>
       </Col>
 
@@ -116,23 +116,23 @@ export default function BillingInfo({
         </Form.Item>
 
         <Form.Item label="Company Name" name="toCompanyName" rules={[{ required: true, message: 'Company Name is required' }]}>
-          <Input />
+          <Input maxLength={255} />
         </Form.Item>
 
         <Form.Item label="Phone" name="toCompanyPhone">
-          <Input style={{ width: '100%' }} />
+          <Input maxLength={50} style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item label="Email" name="toCompanyEmail">
-          <Input />
+          <Input maxLength={100} />
         </Form.Item>
 
         <Form.Item label="ABN" name="toCompanyABN">
-          <Input style={{ width: '100%' }} />
+          <Input maxLength={50} style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item label="Address" name="toCompanyAddress">
-          <Input />
+          <Input maxLength={255} />
         </Form.Item>
       </Col>
 
