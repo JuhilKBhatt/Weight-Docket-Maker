@@ -1,11 +1,10 @@
-# app/models/invoice.py
+# app/models/invoiceModels.py
 
 from sqlalchemy import (
     Column, Integer, String, Float, Boolean, Date, ForeignKey
 )
 from sqlalchemy.orm import relationship
 from app.database import Base
-
 
 class Invoice(Base):
     __tablename__ = "invoices"

@@ -1,7 +1,7 @@
 # app/utilities/scrinv_generator.py
 
 from sqlalchemy.orm import Session
-from app.models.invoice import Invoice
+from app.models.invoiceModels import Invoice
 
 def generate_next_scrinv(db: Session) -> str:
     last = (

@@ -1,8 +1,8 @@
-# app/routes/invoices.py
+# app/routes/invoiceRoutes.py
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.invoice import Invoice, InvoiceItem, TransportItem, Deduction
+from app.models.invoiceModels import Invoice, InvoiceItem, TransportItem, Deduction
 from app.schema.invoiceSchema import InvoiceCreate
 from app.utilities.scrinv_generator import generate_next_scrinv
 

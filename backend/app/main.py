@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from sqlalchemy import text
 from .database import engine
-from .routes import invoices
+from .routes import invoiceRoutes
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -17,7 +17,7 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(invoices.router)
+app.include_router(invoiceRoutes.router)
 
 # Test DB connection on startup
 @app.on_event("startup")
