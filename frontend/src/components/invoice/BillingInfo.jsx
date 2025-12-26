@@ -26,14 +26,23 @@ export default function BillingInfo({
         <Form.Item label="Saved Companies" name="fromSavedCompany">
           <Select
             allowClear
-            placeholder="Select a company"
+            placeholder="New company"
             options={savedCompaniesFrom.map((c, idx) => ({
               label: c.name,  // was c.label
               value: idx       // was c.id
             }))}
             onChange={(idx) => {
+              if (idx === undefined) {
+                form.setFieldsValue({
+                  fromCompanyName: '',
+                  fromCompanyPhone: '',
+                  fromCompanyEmail: '',
+                  fromCompanyABN: '',
+                  fromCompanyAddress: '',
+                });
+                return;
+              }
               const c = savedCompaniesFrom[idx];
-              if (!c) return;
               form.setFieldsValue({
                 fromCompanyName: c.name,
                 fromCompanyPhone: c.phone,
@@ -78,14 +87,23 @@ export default function BillingInfo({
         <Form.Item label="Saved Companies" name="toSavedCompany">
           <Select
             allowClear
-            placeholder="Select a company"
+            placeholder="New company"
             options={savedCompaniesTo.map((c, idx) => ({
               label: c.name,
               value: idx
             }))}
             onChange={(idx) => {
+              if (idx === undefined) {
+                form.setFieldsValue({
+                  toCompanyName: '',
+                  toCompanyPhone: '',
+                  toCompanyEmail: '',
+                  toCompanyABN: '',
+                  toCompanyAddress: '',
+                });
+                return;
+              }
               const c = savedCompaniesTo[idx];
-              if (!c) return;
               form.setFieldsValue({
                 toCompanyName: c.name,
                 toCompanyPhone: c.phone,

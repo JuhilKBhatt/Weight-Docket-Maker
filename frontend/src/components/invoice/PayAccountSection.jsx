@@ -23,8 +23,16 @@ export default function PayAccountSection({
                 value: idx
               }))}
               onChange={(idx) => {
+                if (idx === undefined) {
+                  form.setFieldsValue({
+                    accName: '',
+                    bankName: '',
+                    bsb: '',
+                    accountNumber: '',
+                  });
+                  return;
+                }
                 const a = savedAccounts[idx];
-                if (!a) return;
                 form.setFieldsValue({
                   accName: a.account_name,
                   bankName: a.bank_name,
