@@ -54,7 +54,7 @@ export default function BillingInfo({
           />
         </Form.Item>
 
-        <Form.Item label="Company Name" name="fromCompanyName">
+        <Form.Item label="Company Name" name="fromCompanyName" rules={[{ required: true, message: 'Company Name is required' }]}>
           <Input />
         </Form.Item>
 
@@ -66,7 +66,7 @@ export default function BillingInfo({
           <Input />
         </Form.Item>
 
-        <Form.Item label="ABN" name="fromCompanyABN">
+        <Form.Item label="ABN" name="fromCompanyABN" rules={[{ required: true, message: 'Company Name is required' }]}>
           <Input style={{ width: '100%' }} />
         </Form.Item>
 
@@ -115,7 +115,7 @@ export default function BillingInfo({
           />
         </Form.Item>
 
-        <Form.Item label="Company Name" name="toCompanyName">
+        <Form.Item label="Company Name" name="toCompanyName" rules={[{ required: true, message: 'Company Name is required' }]}>
           <Input />
         </Form.Item>
 
