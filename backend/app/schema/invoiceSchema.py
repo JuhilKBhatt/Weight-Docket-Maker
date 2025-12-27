@@ -5,6 +5,9 @@ class ItemSchema(BaseModel):
     description: str
     quantity: float
     price: float
+    seal: Optional[str] = None
+    container_number: Optional[str] = None
+    metal: Optional[str] = None
 
 
 class TransportSchema(BaseModel):

@@ -58,6 +58,9 @@ def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
     for i in data.items:
         db.add(InvoiceItem(
             invoice_id=invoice.id,
+            seal=i.seal,
+            container_number=i.container_number,
+            metal=i.metal,
             description=i.description,
             quantity=i.quantity,
             price=i.price

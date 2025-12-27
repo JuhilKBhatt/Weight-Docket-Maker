@@ -53,6 +53,10 @@ class InvoiceItem(Base):
     id = Column(Integer, primary_key=True)
     invoice_id = Column(Integer, ForeignKey("invoices.id"))
 
+    seal = Column(String(100), nullable=True)
+    container_number = Column(String(100), nullable=True)
+    metal = Column(String(100), nullable=True)
+
     description = Column(String(255))
     quantity = Column(Float, default=0)
     price = Column(Float, default=0)

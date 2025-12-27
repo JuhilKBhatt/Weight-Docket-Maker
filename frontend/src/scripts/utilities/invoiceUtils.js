@@ -36,11 +36,28 @@ export const saveInvoice = async ({
     bsb: values.bsb,
     account_number: values.accountNumber,
 
-    items: items.map(i => ({
-      description: i.description,
-      quantity: Number(i.quantity),
-      price: Number(i.price)
-    })),
+    items: items.map(i => {
+      const base = {
+        description: i.description,
+        quantity: Number(i.weight),
+        price: Number(i.price)
+      };
+
+      if (invoiceType === "Container") {
+        return {
+          ...base,
+          seal: i.seal || "",
+          container_number: i.container || "",
+        };
+      }
+
+      if (invoiceType === "Pickup") {
+        return {
+          ...base,
+          metal: i.container || "",
+        };
+      }
+    }),
 
     transport_items: transportItems.map(t => ({
       name: t.name,

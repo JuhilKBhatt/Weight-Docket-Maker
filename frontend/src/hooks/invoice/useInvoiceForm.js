@@ -14,7 +14,7 @@ const uid = (() => {
  */
 export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
   const defaultItems = [
-    { key: uid(), description: '', quantity: 0, price: 0 },
+    { key: uid(), seal:'', container_number:'', metal:'', description: '', quantity: 0, price: 0 },
   ];
 
   // SCRINV ID

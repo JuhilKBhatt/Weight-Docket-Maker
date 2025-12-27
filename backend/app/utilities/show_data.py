@@ -15,7 +15,13 @@ for inv in invoices:
     print(f"  Notes: {inv.notes}")
     print("  Items:")
     for item in inv.items:
-        print(f"    {item.description} — Qty: {item.quantity}, Price: {item.price}")
+        print(f"    {item.description} — Qty: {item.quantity}, Price: ${item.price}")
+        if item.seal:
+            print(f"      Seal: {item.seal}")
+        if item.container_number:
+            print(f"      Container Number: {item.container_number}")
+        if item.metal:
+            print(f"      Metal: {item.metal}")
     print("  Transport Items:")
     for t in inv.transport_items:
         print(f"    {t.name} — {t.num_of_ctr} containers, ${t.price_per_ctr} each")
