@@ -62,7 +62,7 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
     loadSelectors();
   }, []);
 
-  const handleSubmit = async (values) => {
+  const handleSaveSubmit = async (values) => {
     try {
       await saveInvoice({
         scrinvID,
@@ -92,7 +92,7 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
       </Typography.Title>
 
       <div className="form-container">
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Form form={form} layout="vertical">
           {/* Bill From, Bill To, and Invoice Details columns... */}
           <BillingInfo
             form={form}
@@ -155,10 +155,10 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
           />
 
           {/* Submit & Reset Button */}
-          <Row justify="end" style={{ marginTop: 30 }}>
+          <Row justify="end" style={{ marginTop: 30, gap: '50px' }}>
             <Button
               type="dashed"
-              style={{ marginRight: 10 }}
+              size='large'
               onClick={() =>
                 confirmReset(() => {
                   invoice.resetInvoice(); // React state
@@ -168,7 +168,8 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
             >
               Reset Invoice
             </Button>
-            <Button type="primary" size='large' htmlType="submit">Send Invoice</Button>
+            <Button type="primary" size='large' onClick={handleSaveSubmit}>Save & Download Invoice</Button>
+            <Button type='primary' size='large'>Save & Email Invoice</Button>
           </Row>
         </Form>
       </div>
