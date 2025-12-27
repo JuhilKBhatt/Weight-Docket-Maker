@@ -17,10 +17,7 @@ export default function InvoiceMaker() {
           <Button type="primary">Make New Invoice</Button>
         </Link>
         <Link to="/view-invoice">
-          <Button type="primary">View All Invoice</Button>
-        </Link>
-        <Link to="/edit-invoice">
-          <Button type="primary">Edit An Invoice</Button>
+          <Button type="primary">View Saved Invoice</Button>
         </Link>
       </div>
     </div>
