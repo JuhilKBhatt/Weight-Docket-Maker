@@ -36,10 +36,10 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
   }, [mode, scrinvID]);
 
   // STATE
-  const [items, setItems] = useState(existingInvoice?.items || defaultItems);
-  const [transportItems, setTransportItems] = useState(existingInvoice?.transportItems || []);
-  const [preGstDeductions, setPreGstDeductions] = useState(existingInvoice?.preGstDeductions || []);
-  const [postGstDeductions, setPostGstDeductions] = useState(existingInvoice?.postGstDeductions || []);
+  const [items, setItems] = useState(existingInvoice?.items?.map(i => ({ ...i, key: uid() })) || defaultItems);
+  const [transportItems, setTransportItems] = useState(existingInvoice?.transportItems?.map(t => ({ ...t, key: uid() })) || []);
+  const [preGstDeductions, setPreGstDeductions] = useState(existingInvoice?.preGstDeductions?.map(d => ({ ...d, key: uid() })) || []);
+  const [postGstDeductions, setPostGstDeductions] = useState(existingInvoice?.postGstDeductions?.map(d => ({ ...d, key: uid() })) || []);
 
   const [invoiceType, setInvoiceType] = useState(existingInvoice?.invoiceType || 'Container');
   const [includeGST, setIncludeGST] = useState(existingInvoice?.includeGST ?? true);
@@ -89,7 +89,6 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
     setScrinvID(null);
   };
 
-  // RETURN API
   return {
     items,
     transportItems,

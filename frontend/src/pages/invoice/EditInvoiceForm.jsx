@@ -53,6 +53,7 @@ export default function EditInvoice() {
         ...data
       };
 
+      console.log('Normalized Invoice:', normalized);
       setInvoice(normalized);
     }
 
