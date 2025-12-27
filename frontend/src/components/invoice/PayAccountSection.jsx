@@ -46,7 +46,6 @@ export default function PayAccountSection({
           <Form.Item
             label="Account Name"
             name="accName"
-            rules={[{ required: true, message: 'Account name is required' }]}
           >
             <Input />
           </Form.Item>
@@ -54,7 +53,6 @@ export default function PayAccountSection({
           <Form.Item
             label="Bank Name"
             name="bankName"
-            rules={[{ required: true, message: 'Bank name is required' }]}
           >
             <Input />
           </Form.Item>
@@ -62,10 +60,6 @@ export default function PayAccountSection({
           <Form.Item
             label="BSB"
             name="bsb"
-            rules={[
-              { required: true, message: 'BSB is required' },
-              { len: 6, message: 'BSB must be 6 digits' },
-            ]}
           >
             <Input
               style={{ width: '100%' }}
@@ -76,7 +70,6 @@ export default function PayAccountSection({
           <Form.Item
             label="Account Number"
             name="accountNumber"
-            rules={[{ required: true, message: 'Account number is required' }]}
           >
             <Input
               style={{ width: '100%' }}
