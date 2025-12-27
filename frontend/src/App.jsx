@@ -9,7 +9,7 @@ import Home from './pages/Home.jsx'
 import DocketMaker from './pages/DocketMaker.jsx'
 import InvoiceHome from './pages/InvoiceHome.jsx'
 import NewInvoice from './pages/invoice/InvoiceForm.jsx'
-import EditInvoice from './pages/EditInvoiceForm.jsx'
+import EditInvoice from './pages/invoice/EditInvoiceForm.jsx'
 import ViewInvoice from './pages/InvoiceList.jsx'
 
 const { Header, Content } = Layout
@@ -28,7 +28,7 @@ export default function App() {
             <Route path="/docket" element={<DocketMaker />} />
             <Route path="/InvoiceHome" element={<InvoiceHome />} />
             <Route path="/new-invoice" element={<NewInvoice mode="new"/>} />
-            <Route path="/edit-invoice" element={<EditInvoice />} />
+            <Route path="/edit-invoice/:id" element={<EditInvoice />} />
             <Route path="/view-invoice" element={<ViewInvoice />} />
           </Routes>
         </Content>

@@ -1,5 +1,5 @@
 // frontend/src/pages/InvoiceList.jsx
-// frontend/src/pages/InvoiceList.jsx
+
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Table, Button, Typography, Popconfirm, Tag, message } from 'antd';
@@ -79,7 +79,7 @@ export default function InvoiceList() {
       key: 'actions',
       render: (_, record) => (
         <div className="flex gap-2">
-          <Link to={`/invoices/edit/${record.id}`}>
+          <Link to={`/edit-invoice/${record.id}`}>
             <Button type="primary">Edit</Button>
           </Link>
 

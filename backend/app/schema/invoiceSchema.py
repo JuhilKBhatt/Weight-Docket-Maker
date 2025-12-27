@@ -25,28 +25,28 @@ class DeductionSchema(BaseModel):
 
 class InvoiceCreate(BaseModel):
     scrinv_number: str
-    is_paid: Optional[bool] = False
-    invoice_type: Optional[str] = "Container"
-    include_gst: Optional[bool] = True
-    show_transport: Optional[bool] = False
-    notes: Optional[str] = None
+    is_paid: bool
+    invoice_type: str
+    include_gst: bool
+    show_transport: bool
+    notes: str
 
-    bill_from_name: Optional[str] = None
-    bill_from_phone: Optional[str] = None
-    bill_from_email: Optional[str] = None
-    bill_from_abn: Optional[str] = None
-    bill_from_address: Optional[str] = None
+    bill_from_name: str
+    bill_from_phone: str
+    bill_from_email: str
+    bill_from_abn: str
+    bill_from_address: str
 
-    bill_to_name: Optional[str] = None
-    bill_to_phone: Optional[str] = None
-    bill_to_email: Optional[str] = None
-    bill_to_abn: Optional[str] = None
-    bill_to_address: Optional[str] = None
+    bill_to_name: str
+    bill_to_phone: str
+    bill_to_email: str
+    bill_to_abn: str
+    bill_to_address: str
 
-    bank_name: Optional[str] = None
-    account_name: Optional[str] = None
-    bsb: Optional[str] = None
-    account_number: Optional[str] = None
+    bank_name: str
+    account_name: str
+    bsb: str
+    account_number: str
 
     items: List[ItemSchema] = []
     transport_items: List[TransportSchema] = []

@@ -206,3 +206,12 @@ def mark_invoice_paid(invoice_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "marked paid"}
+
+@router.get("/{invoice_id}")
+def get_invoice(invoice_id: int, db: Session = Depends(get_db)):
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    return invoice

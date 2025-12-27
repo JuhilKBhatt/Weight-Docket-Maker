@@ -14,6 +14,7 @@ export const saveInvoice = async ({
 }) => {
   const payload = {
     scrinv_number: scrinvID,
+    is_paid: false,
     invoice_type: invoiceType,
     include_gst: includeGST,
     show_transport: showTransport,
