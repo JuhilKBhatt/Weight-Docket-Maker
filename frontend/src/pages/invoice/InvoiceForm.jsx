@@ -52,8 +52,48 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
 
   useEffect(() => {
     async function loadSelectors() {
-      const data = await selectorData();
-      console.log("Selector Data:", data);
+      //const data = await selectorData();
+      const data = {
+      companies_from: [
+        {
+          name: "ABC Metals",
+          phone: "123456789",
+          email: "abc@metals.com",
+          abn: "111222333",
+          address: "1 Main St, Sydney"
+        },
+        {
+          name: "XYZ Industries",
+          phone: "987654321",
+          email: "xyz@industries.com",
+          abn: "444555666",
+          address: "99 Industrial Rd, Melbourne"
+        }
+      ],
+      companies_to: [
+        {
+          name: "Client Co",
+          phone: "555666777",
+          email: "contact@clientco.com",
+          abn: "777888999",
+          address: "10 Client Ave, Brisbane"
+        }
+      ],
+      accounts: [
+        {
+          bank_name: "Commonwealth Bank",
+          account_name: "ABC Metals Pty Ltd",
+          bsb: "062-000",
+          account_number: "12345678"
+        },
+        {
+          bank_name: "ANZ Bank",
+          account_name: "XYZ Industries",
+          bsb: "012-345",
+          account_number: "87654321"
+        }
+      ]
+    };
       setSavedCompaniesFrom(data.companies_from);
       setSavedCompaniesTo(data.companies_to);
       setSavedAccounts(data.accounts);
@@ -62,9 +102,10 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
     loadSelectors();
   }, []);
 
-  const handleSaveSubmit = async (values) => {
+  const handleSaveSubmit = async () => {
     try {
-      await saveInvoice({
+      const values = await form.validateFields();
+      const payload = {
         scrinvID,
         invoiceType,
         includeGST,
@@ -74,7 +115,8 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
         preGstDeductions,
         postGstDeductions,
         values,
-      });
+      };
+      await saveInvoice(payload);
       alert('Invoice saved successfully!');
       localStorage.removeItem("scrinvID");
       //invoice.resetInvoice();
