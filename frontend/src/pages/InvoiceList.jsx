@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Table, Button, Typography, Popconfirm, Tag, message } from 'antd';
 import axios from 'axios';
 
-const API = 'http://localhost:8000/api/invoices/list';
+const API = 'http://localhost:8000/api/invoices';
 
 export default function InvoiceList() {
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ export default function InvoiceList() {
   const fetchInvoices = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(API);
+      const res = await axios.get(API+'/list');
       setInvoices(res.data);
     } catch (err) {
       console.error(err);

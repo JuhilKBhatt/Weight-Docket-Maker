@@ -202,7 +202,7 @@ def mark_invoice_paid(invoice_id: int, db: Session = Depends(get_db)):
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
 
-    invoice.paid = True
+    invoice.is_paid = True
     db.commit()
 
     return {"message": "marked paid"}
