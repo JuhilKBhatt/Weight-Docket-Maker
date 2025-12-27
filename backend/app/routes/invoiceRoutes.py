@@ -21,8 +21,10 @@ def create_invoice(db: Session = Depends(get_db)):
 
 @router.post("/save")
 def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
+    print("Received invoice data:", data)
     invoice = Invoice(
         scrinv_number=data.scrinv_number,
+        is_paid=False,
         invoice_type=data.invoice_type,
         include_gst=data.include_gst,
         show_transport=data.show_transport,
@@ -69,6 +71,7 @@ def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
             num_of_ctr=t.num_of_ctr,
             price_per_ctr=t.price_per_ctr
         ))
+
 
     # Deductions
     for d in data.deductions:
@@ -134,3 +137,72 @@ def get_selectors_data(db: Session = Depends(get_db)):
         "companies_to": companies_to,
         "accounts": accounts,
     }
+
+# -----------------------------
+# Get ALL invoices with totals
+# -----------------------------
+@router.get("/list")
+def get_invoices(db: Session = Depends(get_db)):
+    invoices = db.query(Invoice).all()
+
+    results = []
+
+    for inv in invoices:
+
+        # Calculate item total
+        items_total = sum([(i.quantity or 0) * (i.price or 0) for i in inv.items])
+
+        # Transport
+        transport_total = sum([(t.num_of_ctr or 0) * (t.price_per_ctr or 0) for t in inv.transport_items])
+
+        # Deductions
+        pre_deductions = sum([d.amount or 0 for d in inv.deductions if d.type == "pre"])
+        post_deductions = sum([d.amount or 0 for d in inv.deductions if d.type == "post"])
+
+        subtotal = items_total + transport_total - pre_deductions
+
+        gst = subtotal * 0.10 if inv.include_gst else 0
+
+        total = subtotal + gst - post_deductions
+
+        results.append({
+            "id": inv.id,
+            "scrinv_number": inv.scrinv_number,
+            "bill_to_name": inv.bill_to_name,
+            "total_amount": round(total, 2),
+            "paid": inv.is_paid,
+        })
+
+    return results
+
+
+# -----------------------------
+# Delete invoice
+# -----------------------------
+@router.delete("/{invoice_id}")
+def delete_invoice(invoice_id: int, db: Session = Depends(get_db)):
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    db.delete(invoice)
+    db.commit()
+
+    return {"message": "deleted"}
+
+
+# -----------------------------
+# Mark invoice as PAID
+# -----------------------------
+@router.post("/{invoice_id}/paid")
+def mark_invoice_paid(invoice_id: int, db: Session = Depends(get_db)):
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    invoice.paid = True
+    db.commit()
+
+    return {"message": "marked paid"}

@@ -12,7 +12,8 @@ class Invoice(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     # SCR Invoice ID (A0001 → B0001, etc.)
-    scrinv_number = Column(String(10), unique=True, nullable=False)
+    scrinv_number = Column(String(10), unique=True)
+    is_paid = Column(Boolean, default=False)
 
     # Invoice meta
     invoice_type = Column(String(50), default="Container")
@@ -21,13 +22,13 @@ class Invoice(Base):
     invoice_date = Column(Date, nullable=True)
 
     # BILL FROM / BILL TO
-    bill_from_name = Column(String(255), nullable=False)
+    bill_from_name = Column(String(255))
     bill_from_phone = Column(String(50))
     bill_from_email = Column(String(100))
-    bill_from_abn = Column(String(50), nullable=False)
+    bill_from_abn = Column(String(50))
     bill_from_address = Column(String(255))
 
-    bill_to_name = Column(String(255), nullable=False)
+    bill_to_name = Column(String(255))
     bill_to_phone = Column(String(50))
     bill_to_email = Column(String(100))
     bill_to_abn = Column(String(50))

@@ -15,7 +15,7 @@ export default function PageHeader() {
 
   return (
     <header>
-      <Button onClick={handleBack}>Back</Button>
+      <Button size='large' onClick={handleBack}>Back</Button>
     </header>
   );
 }

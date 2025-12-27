@@ -77,8 +77,8 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
       });
       alert('Invoice saved successfully!');
       localStorage.removeItem("scrinvID");
-      invoice.resetInvoice();
-      form.resetFields();
+      //invoice.resetInvoice();
+      //form.resetFields();
     } catch (error) {
       console.error('Error saving invoice:', error);
       alert('Failed to save invoice. Please try again.');
