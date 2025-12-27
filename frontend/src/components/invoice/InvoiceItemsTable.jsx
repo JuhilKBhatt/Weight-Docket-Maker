@@ -124,10 +124,21 @@ export default function InvoiceItemsTable({
     ...sharedColumns,
   ];
 
-  const columns =
-    invoiceType === 'Container'
-      ? containerColumns
-      : pickupColumns;
+  const otherColumns = [
+    ...sharedColumns,
+  ];
+
+  const getColumns = () => {
+    if (invoiceType === 'Container') {
+      return containerColumns;
+    }
+    if (invoiceType === 'Pickup') {
+      return pickupColumns;
+    }
+    return otherColumns;
+  };
+
+  const columns = getColumns();
 
   return (
     <>
