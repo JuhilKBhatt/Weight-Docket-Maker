@@ -15,13 +15,8 @@ router = APIRouter(
 def create_invoice(db: Session = Depends(get_db)):
     scrinv = generate_next_scrinv(db)
 
-    invoice = Invoice(scrinv_number=scrinv)
-    db.add(invoice)
-    db.commit()
-    db.refresh(invoice)
-
     return {
-        "scrinv_id": f"{invoice.scrinv_number}"
+        "scrinv_id": f"{scrinv}"
     }
 
 @router.post("/save")
