@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Table, Button, Typography, Popconfirm, Tag, message } from 'antd';
 import axios from 'axios';
+import { audFormatterFixed } from '../scripts/utilities/AUDformatters';
 
 const API = 'http://localhost:8000/api/invoices';
 
@@ -49,58 +50,67 @@ export default function InvoiceList() {
       message.error('Could not mark invoice as paid');
     }
   };
-
+  
   const columns = [
-    {
-      title: 'SCR Number',
-      dataIndex: 'scrinv_number',
-      key: 'scrinv_number',
-    },
-    {
-      title: 'Company To',
-      dataIndex: 'bill_to_name',
-      key: 'bill_to_name',
-    },
-    {
-      title: 'Total Amount',
-      dataIndex: 'total_amount',
-      key: 'total_amount',
-      render: (val) => `$${Number(val || 0).toFixed(2)}`
-    },
-    {
-      title: 'Status',
-      dataIndex: 'paid',
-      key: 'paid',
-      render: (paid) =>
-        paid ? <Tag color="green">Paid</Tag> : <Tag color="red">Unpaid</Tag>
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        <div className="flex gap-2">
-          <Link to={`/edit-invoice/${record.id}`}>
-            <Button type="primary">Edit</Button>
-          </Link>
+      {
+        title: 'SCR Number',
+        dataIndex: 'scrinv_number',
+        key: 'scrinv_number',
+      },
+      {
+        title: 'Company To',
+        dataIndex: 'bill_to_name',
+        key: 'bill_to_name',
+      },
+      {
+        title: 'Total Amount',
+        dataIndex: 'total_amount',
+        key: 'total_amount',
+        render: (val) => `$${audFormatterFixed(val)}`,
+      },
+      {
+        title: 'Status',
+        dataIndex: 'status', // CHANGED: Look for 'status' string
+        key: 'status',
+        render: (status) => {
+          // dynamic color logic
+          let color = 'default';
+          if (status === 'Paid') color = 'green';
+          else if (status === 'Unpaid' || status === 'Overdue') color = 'red';
+          else if (status === 'Sent') color = 'blue';
+          else if (status === 'Draft') color = 'orange';
 
-          <Popconfirm
-            title="Delete this invoice?"
-            okText="Yes"
-            cancelText="No"
-            onConfirm={() => deleteInvoice(record.id)}
-          >
-            <Button danger>Delete</Button>
-          </Popconfirm>
+          return <Tag color={color}>{status || 'Unknown'}</Tag>;
+        }
+      },
+      {
+        title: 'Actions',
+        key: 'actions',
+        render: (_, record) => (
+          <div className="flex gap-2">
+            <Link to={`/edit-invoice/${record.id}`}>
+              <Button type="primary">Edit</Button>
+            </Link>
 
-          {!record.paid && (
-            <Button onClick={() => markPaid(record.id)}>
-              Mark Paid
-            </Button>
-          )}
-        </div>
-      ),
-    },
-  ];
+            <Popconfirm
+              title="Delete this invoice?"
+              okText="Yes"
+              cancelText="No"
+              onConfirm={() => deleteInvoice(record.id)}
+            >
+              <Button danger>Delete</Button>
+            </Popconfirm>
+
+            {/* CHANGED: Check status string instead of boolean */}
+            {record.status !== 'Paid' && (
+              <Button onClick={() => markPaid(record.id)}>
+                Mark Paid
+              </Button>
+            )}
+          </div>
+        ),
+      },
+    ];
 
   return (
     <div className="home-container">

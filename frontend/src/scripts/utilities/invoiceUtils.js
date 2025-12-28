@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const saveInvoice = async ({
+export const saveDraftInvoice = async ({
   scrinvID,
   invoiceType,
   includeGST,
@@ -15,7 +15,7 @@ export const saveInvoice = async ({
 
   const payload = {
     scrinv_number: scrinvID,
-    is_paid: false,
+    status: "Draft",
     invoice_type: invoiceType,
     include_gst: includeGST,
     show_transport: showTransport,
@@ -81,7 +81,7 @@ export const saveInvoice = async ({
   };
 
   try {
-    const res = await axios.post("http://localhost:8000/api/invoices/save", payload);
+    const res = await axios.post("http://localhost:8000/api/invoices/saveDraft", payload);
     return res.data;
   } catch (err) {
     console.error("Error saving invoice:", err);
@@ -94,6 +94,7 @@ export const selectorData = async () => {
     const res = await axios.get("http://localhost:8000/api/invoices/selectorsData");
     return res.data;
   } catch (err) {
+    console.error("Error fetching selector data:", err);
     return { companies_from: [], companies_to: [], accounts: [] };
   }
 };

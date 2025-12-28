@@ -19,13 +19,13 @@ def create_invoice(db: Session = Depends(get_db)):
         "scrinv_id": f"{scrinv}"
     }
 
-@router.post("/save")
+@router.post("/saveDraft")
 def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
     print("Received invoice data:", data)
     
     invoice = Invoice(
         scrinv_number=data.scrinv_number,
-        is_paid=False,
+        status=data.status,
         invoice_type=data.invoice_type,
         include_gst=data.include_gst,
         show_transport=data.show_transport,
@@ -156,7 +156,7 @@ def get_invoices(db: Session = Depends(get_db)):
             "scrinv_number": inv.scrinv_number,
             "bill_to_name": inv.bill_to_name,
             "total_amount": round(total, 2),
-            "paid": inv.is_paid,
+            "status": inv.status,
         })
 
     return results
@@ -175,7 +175,7 @@ def mark_invoice_paid(invoice_id: int, db: Session = Depends(get_db)):
     invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
-    invoice.is_paid = True
+    invoice.status = "Paid"
     db.commit()
     return {"message": "marked paid"}
 
@@ -192,7 +192,7 @@ def get_invoice(invoice_id: int, db: Session = Depends(get_db)):
         "include_gst": invoice.include_gst,
         "show_transport": invoice.show_transport,
         "notes": invoice.notes,
-        "is_paid": invoice.is_paid,
+        "status": invoice.status, # Draft, Sent, Unpaid, Paid
         "invoice_date": invoice.invoice_date,
 
         # Billing

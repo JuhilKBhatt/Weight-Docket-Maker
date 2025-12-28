@@ -15,7 +15,6 @@ export default function EditInvoice() {
     async function loadInvoice() {
       const res = await axios.get(`${API}/${id}`);
       const data = res.data;
-      console.log('Fetched Invoice Data:', data);
 
       // ---- NORMALIZE FIELDS FOR THE FORM ----
       const normalized = {

@@ -12,7 +12,7 @@ import useInvoiceAutoFill from '../../hooks/invoice/useInvoiceAutoFill';
 import { useConfirmReset } from '../../scripts/utilities/confirmReset';
 
 // Utilities
-import { saveInvoice } from '../../scripts/utilities/invoiceUtils';
+import { saveDraftInvoice } from '../../scripts/utilities/invoiceUtils';
 import { getInitialValues } from '../../scripts/utilities/invoiceFormHelpers';
 
 // Components
@@ -41,7 +41,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
     savedAccounts
   });
 
-  const handleSaveSubmit = async () => {
+  const handleSaveDraftSubmit = async () => {
     try {
       const values = await form.validateFields();
       const payload = {
@@ -49,7 +49,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
         values,
       };
       
-      await saveInvoice(payload);
+      await saveDraftInvoice(payload);
       alert('Invoice saved successfully!');
       
       localStorage.removeItem("scrinvID");
@@ -148,7 +148,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
             >
               Reset Invoice
             </Button>
-            <Button size='large' onClick={handleSaveSubmit}>
+            <Button size='large' onClick={handleSaveDraftSubmit}>
               Save Draft
             </Button>
             <Button type="primary" size='large'>
