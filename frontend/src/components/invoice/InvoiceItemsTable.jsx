@@ -17,23 +17,19 @@ export default function InvoiceItemsTable({
       render: (_, record) => (
         <Input
           value={record.description}
-          onChange={(e) =>
-            handleItemChange(record.key, 'description', e.target.value)
-          }
+          onChange={(e) => handleItemChange(record.key, 'description', e.target.value)}
         />
       ),
     },
     {
-      title: 'Quantity',
-      dataIndex: 'weight',
+      title: 'Quantity', 
+      dataIndex: 'quantity', // CHANGED from weight
       render: (_, record) => (
         <InputNumber
           addonAfter="t"
           style={{ width: '100%' }}
-          value={record.weight}
-          onChange={(val) =>
-            handleItemChange(record.key, 'weight', val)
-          }
+          value={record.quantity}
+          onChange={(val) => handleItemChange(record.key, 'quantity', val)}
         />
       ),
     },
@@ -47,9 +43,7 @@ export default function InvoiceItemsTable({
           value={record.price}
           formatter={audFormatter}
           parser={audParser}
-          onChange={(val) =>
-            handleItemChange(record.key, 'price', val)
-          }
+          onChange={(val) => handleItemChange(record.key, 'price', val)}
         />
       ),
     },
@@ -70,10 +64,7 @@ export default function InvoiceItemsTable({
     {
       title: '',
       render: (_, record) => (
-        <Popconfirm
-          title="Remove row?"
-          onConfirm={() => removeRow(record.key)}
-        >
+        <Popconfirm title="Remove row?" onConfirm={() => removeRow(record.key)}>
           <Button danger type="link">X</Button>
         </Popconfirm>
       ),
@@ -87,21 +78,17 @@ export default function InvoiceItemsTable({
       render: (_, record) => (
         <Input
           value={record.seal}
-          onChange={(e) =>
-            handleItemChange(record.key, 'seal', e.target.value)
-          }
+          onChange={(e) => handleItemChange(record.key, 'seal', e.target.value)}
         />
       ),
     },
     {
       title: 'Container #',
-      dataIndex: 'container',
+      dataIndex: 'containerNumber', // CHANGED from container
       render: (_, record) => (
         <Input
-          value={record.container}
-          onChange={(e) =>
-            handleItemChange(record.key, 'container', e.target.value)
-          }
+          value={record.containerNumber}
+          onChange={(e) => handleItemChange(record.key, 'containerNumber', e.target.value)}
         />
       ),
     },
@@ -111,49 +98,28 @@ export default function InvoiceItemsTable({
   const pickupColumns = [
     {
       title: 'Metal',
-      dataIndex: 'container',
+      dataIndex: 'metal', // Often mapped to metal in pickup
       render: (_, record) => (
         <Input
-          value={record.container}
-          onChange={(e) =>
-            handleItemChange(record.key, 'container', e.target.value)
-          }
+          value={record.metal}
+          onChange={(e) => handleItemChange(record.key, 'metal', e.target.value)}
         />
       ),
     },
     ...sharedColumns,
   ];
 
-  const otherColumns = [
-    ...sharedColumns,
-  ];
-
   const getColumns = () => {
-    if (invoiceType === 'Container') {
-      return containerColumns;
-    }
-    if (invoiceType === 'Pickup') {
-      return pickupColumns;
-    }
-    return otherColumns;
+    if (invoiceType === 'Container') return containerColumns;
+    if (invoiceType === 'Pickup') return pickupColumns;
+    return sharedColumns;
   };
-
-  const columns = getColumns();
 
   return (
     <>
       <Typography.Title level={5}>Invoice Items</Typography.Title>
-
-      <Table
-        columns={columns}
-        dataSource={items}
-        pagination={false}
-        bordered
-      />
-
-      <Button type="dashed" onClick={addRow} style={{ marginTop: 10 }}>
-        + Add Row
-      </Button>
+      <Table columns={getColumns()} dataSource={items} pagination={false} bordered />
+      <Button type="dashed" onClick={addRow} style={{ marginTop: 10 }}>+ Add Row</Button>
     </>
   );
 }

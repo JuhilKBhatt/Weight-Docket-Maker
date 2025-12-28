@@ -8,7 +8,6 @@ export default function TransportTable({
   transportItems,
   handleTransportChange,
 }) {
-  // Determine unit label and row labels based on invoice type
   const isContainer = invoiceType === 'Container';
   const unitLabel = isContainer ? 'CTR' : 'Trip';
 
@@ -16,7 +15,6 @@ export default function TransportTable({
   const mappedItems = transportItems.map((item, index) => {
     // Default row name from item.name
     let name = item.name;
-
     if (isContainer) {
       // Row labels for Container invoices
       name = index === 0 ? 'Containers' : index === 1 ? 'Overweight' : item.name;
@@ -24,7 +22,6 @@ export default function TransportTable({
       // Row labels for Pickup invoices
       name = index === 0 ? 'Pickup' : index === 1 ? 'Overweight' : item.name;
     }
-
     return { ...item, name };
   });
 
@@ -35,41 +32,34 @@ export default function TransportTable({
     },
     {
       title: `Number of ${unitLabel}s`,
-      dataIndex: 'NumOfCTR',
+      dataIndex: 'numOfCtr',
       render: (_, record) => (
         <InputNumber
           addonAfter={unitLabel}
           style={{ width: '100%' }}
-          value={record.NumOfCTR}
-          onChange={(val) =>
-            handleTransportChange(record.key, 'NumOfCTR', val)
-          }
+          value={record.numOfCtr}
+          onChange={(val) => handleTransportChange(record.key, 'numOfCtr', val)}
         />
       ),
     },
     {
       title: `Price / ${unitLabel}`,
-      dataIndex: 'PricePreCTR',
+      dataIndex: 'pricePerCtr',
       render: (_, record) => (
         <InputNumber
           addonBefore="$"
           style={{ width: '100%' }}
-          value={record.PricePreCTR}
+          value={record.pricePerCtr}
           formatter={audFormatter}
           parser={audParser}
-          onChange={(val) =>
-            handleTransportChange(record.key, 'PricePreCTR', val)
-          }
+          onChange={(val) => handleTransportChange(record.key, 'pricePerCtr', val)}
         />
       ),
     },
     {
       title: 'Total',
       render: (_, record) => {
-        const total =
-          (Number(record.NumOfCTR) || 0) *
-          (Number(record.PricePreCTR) || 0);
-
+        const total = (Number(record.numOfCtr) || 0) * (Number(record.pricePerCtr) || 0);
         return (
           <InputNumber
             addonBefore="$"
@@ -88,16 +78,8 @@ export default function TransportTable({
 
   return (
     <>
-      <Typography.Title level={5} style={{ marginTop: 20 }}>
-        Transport Charges
-      </Typography.Title>
-
-      <Table
-        columns={columns}
-        dataSource={mappedItems}
-        pagination={false}
-        bordered
-      />
+      <Typography.Title level={5} style={{ marginTop: 20 }}>Transport Charges</Typography.Title>
+      <Table columns={columns} dataSource={mappedItems} pagination={false} bordered />
     </>
   );
 }

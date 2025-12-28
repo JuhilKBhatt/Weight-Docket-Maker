@@ -1,3 +1,5 @@
+// ./frontend/src/scripts/InvoiceCalculationHandler.js
+
 export default class InvoiceCalculationHandler {
   constructor({
     items = [],
@@ -13,7 +15,6 @@ export default class InvoiceCalculationHandler {
     this.includeGST = includeGST;
   }
 
-  // ---------- HELPERS ----------
   safeNumber(value) {
     const num = Number(value);
     return Number.isNaN(num) ? 0 : num;
@@ -26,9 +27,10 @@ export default class InvoiceCalculationHandler {
   // ---------- ITEMS ----------
   calculateItemTotals() {
     return this.items.map(item => {
-      const weight = this.safeNumber(item.weight);
+      // CHANGED: weight -> quantity
+      const qty = this.safeNumber(item.quantity);
       const price = this.safeNumber(item.price);
-      const total = this.round(weight * price);
+      const total = this.round(qty * price);
 
       return {
         ...item,
@@ -40,8 +42,9 @@ export default class InvoiceCalculationHandler {
   // ---------- TRANSPORT ----------
   calculateTransportTotal() {
     return this.transportItems.reduce((sum, t) => {
-      const count = this.safeNumber(t.NumOfCTR);
-      const price = this.safeNumber(t.PricePreCTR);
+      // CHANGED: NumOfCTR -> numOfCtr, PricePreCTR -> pricePerCtr
+      const count = this.safeNumber(t.numOfCtr);
+      const price = this.safeNumber(t.pricePerCtr);
       return sum + count * price;
     }, 0);
   }
@@ -55,49 +58,25 @@ export default class InvoiceCalculationHandler {
 
   // ---------- MAIN ----------
   getCalculations() {
-    // Items
     const itemsWithTotals = this.calculateItemTotals();
     const itemsTotal = itemsWithTotals.reduce(
       (sum, item) => sum + this.safeNumber(item.total),
       0
     );
 
-    // Transport
     const transportTotal = this.calculateTransportTotal();
-
-    // Pre-GST deductions
-    const preGstDeductionTotal =
-      this.calculateDeductionsTotal(this.preGstDeductions);
-
-    // Gross total (before GST)
-    const grossTotal = this.round(
-      itemsTotal + transportTotal - preGstDeductionTotal
-    );
-
-    // GST
-    const gstAmount = this.includeGST
-      ? this.round(grossTotal * 0.1)
-      : 0;
-
-    // Post-GST deductions
-    const postGstDeductionTotal = this.includeGST
-      ? this.calculateDeductionsTotal(this.postGstDeductions)
-      : 0;
-
-    // Final total
-    const finalTotal = this.round(
-      grossTotal + gstAmount - postGstDeductionTotal
-    );
+    const preGstDeductionTotal = this.calculateDeductionsTotal(this.preGstDeductions);
+    const grossTotal = this.round(itemsTotal + transportTotal - preGstDeductionTotal);
+    const gstAmount = this.includeGST ? this.round(grossTotal * 0.1) : 0;
+    const postGstDeductionTotal = this.includeGST ? this.calculateDeductionsTotal(this.postGstDeductions) : 0;
+    const finalTotal = this.round(grossTotal + gstAmount - postGstDeductionTotal);
 
     return {
       itemsWithTotals,
-
       itemsTotal: this.round(itemsTotal),
       transportTotal: this.round(transportTotal),
-
       preGstDeductionTotal: this.round(preGstDeductionTotal),
       postGstDeductionTotal: this.round(postGstDeductionTotal),
-
       grossTotal,
       gstAmount,
       finalTotal,
