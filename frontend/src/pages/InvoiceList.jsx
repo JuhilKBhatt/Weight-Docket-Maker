@@ -42,7 +42,7 @@ export default function InvoiceList() {
 
   const markPaid = async (id) => {
     try {
-      await axios.post(`${API}/${id}/paid`);
+      await axios.post(`${API}/${id}/status/paid`);
       message.success('Invoice marked as paid');
       fetchInvoices();
     } catch (err) {
@@ -50,6 +50,39 @@ export default function InvoiceList() {
       message.error('Could not mark invoice as paid');
     }
   };
+
+  const markUnpaid = async (id) => {
+    try {
+      await axios.post(`${API}/${id}/status/unpaid`);
+      message.info('Invoice marked as unpaid');
+      fetchInvoices();
+    } catch (err) {
+      console.error(err);
+      message.error('Could not mark invoice as unpaid');
+    }
+  };
+
+  const markDraft = async (id) => {
+    try {
+      await axios.post(`${API}/${id}/status/draft`);
+      message.info('Invoice marked as draft');
+      fetchInvoices();
+    } catch (err) {
+      console.error(err);
+      message.error('Could not mark invoice as draft');
+    }
+  }
+
+  const markSent = async (id) => {
+    try {
+      await axios.post(`${API}/${id}/status/sent`);
+      message.info('Invoice marked as sent');
+      fetchInvoices();
+    } catch (err) {
+      console.error(err);
+      message.error('Could not mark invoice as sent');
+    }
+  }
   
   const columns = [
       {
@@ -101,10 +134,24 @@ export default function InvoiceList() {
               <Button danger>Delete</Button>
             </Popconfirm>
 
-            {/* CHANGED: Check status string instead of boolean */}
-            {record.status !== 'Paid' && (
+            {/* CHANGED: Toggle between Paid and Unpaid buttons */}
+            {record.status !== 'Paid' ? (
               <Button onClick={() => markPaid(record.id)}>
                 Mark Paid
+              </Button>
+            ) : (
+              <Button onClick={() => markUnpaid(record.id)}>
+                Mark Unpaid
+              </Button>
+            )}
+            {record.status !== 'Sent' && record.status !== 'Paid' && (
+              <Button onClick={() => markSent(record.id)}>
+                Mark Sent
+              </Button>
+            )}
+            {record.status !== 'Draft' && record.status !== 'Paid' && (
+              <Button onClick={() => markDraft(record.id)}>
+                Mark Draft
               </Button>
             )}
           </div>
