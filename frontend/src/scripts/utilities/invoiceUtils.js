@@ -68,10 +68,11 @@ export const saveInvoice = async ({
       return base;
     }),
 
+    // FIXED: Corrected mapping for price_per_ctr to look for 'PricePreCTR'
     transport_items: transportItems.map(t => ({
       name: safeValue(t.name),
       num_of_ctr: Number(t.num_of_ctr ?? t.NumOfCTR ?? 0),
-      price_per_ctr: Number(t.price_per_ctr ?? t.PricePerCTR ?? 0),
+      price_per_ctr: Number(t.price_per_ctr ?? t.PricePreCTR ?? t.PricePerCTR ?? 0), 
     })),
 
     deductions: [
