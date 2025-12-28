@@ -13,6 +13,7 @@ class Invoice(Base):
 
     # SCR Invoice ID (A0001 → B0001, etc.)
     scrinv_number = Column(String(10), unique=True)
+    invoice_date = Column(Date, nullable=True)
     is_paid = Column(Boolean, default=False)
 
     # Invoice meta

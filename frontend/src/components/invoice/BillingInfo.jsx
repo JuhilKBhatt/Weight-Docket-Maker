@@ -28,8 +28,8 @@ export default function BillingInfo({
             allowClear
             placeholder="New company"
             options={savedCompaniesFrom.map((c, idx) => ({
-              label: c.name,  // was c.label
-              value: idx       // was c.id
+              label: c.name,
+              value: idx
             }))}
             onChange={(idx) => {
               if (idx === undefined) {
@@ -149,7 +149,7 @@ export default function BillingInfo({
           <InputNumber disabled value={scrinvID} style={{ width: '100%' }} />
         </Form.Item>
 
-        <Form.Item label="Date" name="date" initialValue={dayjs()}>
+        <Form.Item label="Date" name="date">
           <DatePicker format={dateFormat} style={{ width: '100%' }} />
         </Form.Item>
 

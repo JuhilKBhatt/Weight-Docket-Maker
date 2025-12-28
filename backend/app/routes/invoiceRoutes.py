@@ -1,5 +1,5 @@
 # app/routes/invoiceRoutes.py
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.invoiceModels import Invoice, InvoiceItem, TransportItem, Deduction
@@ -22,12 +22,14 @@ def create_invoice(db: Session = Depends(get_db)):
 @router.post("/save")
 def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
     print("Received invoice data:", data)
+    
     invoice = Invoice(
         scrinv_number=data.scrinv_number,
         is_paid=False,
         invoice_type=data.invoice_type,
         include_gst=data.include_gst,
         show_transport=data.show_transport,
+        invoice_date=data.invoice_date,
         notes=data.notes,
 
         bill_from_name=data.bill_from_name,
@@ -46,7 +48,7 @@ def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
         account_name=data.account_name,
         bsb=data.bsb,
         account_number=data.account_number,
-        )
+    )
 
     db.add(invoice)
     db.flush()   # gets invoice.id before commit
@@ -72,7 +74,6 @@ def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
             price_per_ctr=t.price_per_ctr
         ))
 
-
     # Deductions
     for d in data.deductions:
         db.add(Deduction(
@@ -94,11 +95,9 @@ def get_selectors_data(db: Session = Depends(get_db)):
     accounts = []
 
     def clean(obj: dict):
-        # remove None, empty strings, spaces
         return {k: v for k, v in obj.items() if v not in (None, "", " ")}
 
     for inv in invoices:
-
         from_company = clean({
             "name": inv.bill_from_name,
             "phone": inv.bill_from_phone,
@@ -122,7 +121,6 @@ def get_selectors_data(db: Session = Depends(get_db)):
             "account_number": inv.account_number,
         })
 
-        # Only append if there's at least 1 real value
         if from_company and from_company not in companies_from:
             companies_from.append(from_company)
 
@@ -138,31 +136,19 @@ def get_selectors_data(db: Session = Depends(get_db)):
         "accounts": accounts,
     }
 
-# -----------------------------
-# Get ALL invoices with totals
-# -----------------------------
 @router.get("/list")
 def get_invoices(db: Session = Depends(get_db)):
     invoices = db.query(Invoice).all()
-
     results = []
 
     for inv in invoices:
-
-        # Calculate item total
         items_total = sum([(i.quantity or 0) * (i.price or 0) for i in inv.items])
-
-        # Transport
         transport_total = sum([(t.num_of_ctr or 0) * (t.price_per_ctr or 0) for t in inv.transport_items])
-
-        # Deductions
         pre_deductions = sum([d.amount or 0 for d in inv.deductions if d.type == "pre"])
         post_deductions = sum([d.amount or 0 for d in inv.deductions if d.type == "post"])
 
         subtotal = items_total + transport_total - pre_deductions
-
         gst = subtotal * 0.10 if inv.include_gst else 0
-
         total = subtotal + gst - post_deductions
 
         results.append({
@@ -175,49 +161,27 @@ def get_invoices(db: Session = Depends(get_db)):
 
     return results
 
-
-# -----------------------------
-# Delete invoice
-# -----------------------------
 @router.delete("/{invoice_id}")
 def delete_invoice(invoice_id: int, db: Session = Depends(get_db)):
     invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
-
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
-
     db.delete(invoice)
     db.commit()
-
     return {"message": "deleted"}
 
-
-# -----------------------------
-# Mark invoice as PAID
-# -----------------------------
 @router.post("/{invoice_id}/paid")
 def mark_invoice_paid(invoice_id: int, db: Session = Depends(get_db)):
     invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
-
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
-
     invoice.is_paid = True
     db.commit()
-
     return {"message": "marked paid"}
 
-# -----------------------------
-# Get single invoice with all details
-# -----------------------------
 @router.get("/{invoice_id}")
 def get_invoice(invoice_id: int, db: Session = Depends(get_db)):
-    invoice = (
-        db.query(Invoice)
-        .filter(Invoice.id == invoice_id)
-        .first()
-    )
-
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
 
@@ -250,9 +214,6 @@ def get_invoice(invoice_id: int, db: Session = Depends(get_db)):
         "bsb": invoice.bsb,
         "account_number": invoice.account_number,
 
-        # ----------------
-        # RELATIONSHIPS
-        # ----------------
         "items": [
             {
                 "id": i.id,
@@ -265,7 +226,6 @@ def get_invoice(invoice_id: int, db: Session = Depends(get_db)):
             }
             for i in invoice.items
         ],
-
         "transport_items": [
             {
                 "id": t.id,
@@ -275,27 +235,12 @@ def get_invoice(invoice_id: int, db: Session = Depends(get_db)):
             }
             for t in invoice.transport_items
         ],
-
-        # Split deductions so your frontend’s edit form matches
         "pre_gst_deductions": [
-            {
-                "id": d.id,
-                "type": d.type,
-                "label": d.label,
-                "amount": d.amount,
-            }
-            for d in invoice.deductions
-            if d.type == "pre"
+            { "id": d.id, "type": d.type, "label": d.label, "amount": d.amount }
+            for d in invoice.deductions if d.type == "pre"
         ],
-
         "post_gst_deductions": [
-            {
-                "id": d.id,
-                "type": d.type,
-                "label": d.label,
-                "amount": d.amount,
-            }
-            for d in invoice.deductions
-            if d.type == "post"
+            { "id": d.id, "type": d.type, "label": d.label, "amount": d.amount }
+            for d in invoice.deductions if d.type == "post"
         ],
     }

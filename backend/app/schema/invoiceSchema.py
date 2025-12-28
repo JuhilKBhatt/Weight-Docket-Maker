@@ -25,6 +25,7 @@ class DeductionSchema(BaseModel):
 
 class InvoiceCreate(BaseModel):
     scrinv_number: str
+    invoice_date: Optional[str] = None
     is_paid: bool
     invoice_type: str
     include_gst: bool
