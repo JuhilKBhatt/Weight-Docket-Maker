@@ -24,7 +24,7 @@ export default function InvoiceItemsTable({
       ),
     },
     {
-      title: 'Net Weight (t)',
+      title: 'Quantity',
       dataIndex: 'weight',
       render: (_, record) => (
         <InputNumber
@@ -38,7 +38,7 @@ export default function InvoiceItemsTable({
       ),
     },
     {
-      title: '$ / tonne',
+      title: 'Unit Price',
       dataIndex: 'price',
       render: (_, record) => (
         <InputNumber
