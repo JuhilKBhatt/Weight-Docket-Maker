@@ -207,11 +207,95 @@ def mark_invoice_paid(invoice_id: int, db: Session = Depends(get_db)):
 
     return {"message": "marked paid"}
 
+# -----------------------------
+# Get single invoice with all details
+# -----------------------------
 @router.get("/{invoice_id}")
 def get_invoice(invoice_id: int, db: Session = Depends(get_db)):
-    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+    invoice = (
+        db.query(Invoice)
+        .filter(Invoice.id == invoice_id)
+        .first()
+    )
 
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
 
-    return invoice
+    return {
+        "id": invoice.id,
+        "scrinv_number": invoice.scrinv_number,
+        "invoice_type": invoice.invoice_type,
+        "include_gst": invoice.include_gst,
+        "show_transport": invoice.show_transport,
+        "notes": invoice.notes,
+        "is_paid": invoice.is_paid,
+        "invoice_date": invoice.invoice_date,
+
+        # Billing
+        "bill_from_name": invoice.bill_from_name,
+        "bill_from_phone": invoice.bill_from_phone,
+        "bill_from_email": invoice.bill_from_email,
+        "bill_from_abn": invoice.bill_from_abn,
+        "bill_from_address": invoice.bill_from_address,
+
+        "bill_to_name": invoice.bill_to_name,
+        "bill_to_phone": invoice.bill_to_phone,
+        "bill_to_email": invoice.bill_to_email,
+        "bill_to_abn": invoice.bill_to_abn,
+        "bill_to_address": invoice.bill_to_address,
+
+        # Bank
+        "bank_name": invoice.bank_name,
+        "account_name": invoice.account_name,
+        "bsb": invoice.bsb,
+        "account_number": invoice.account_number,
+
+        # ----------------
+        # RELATIONSHIPS
+        # ----------------
+        "items": [
+            {
+                "id": i.id,
+                "seal": i.seal,
+                "container_number": i.container_number,
+                "metal": i.metal,
+                "description": i.description,
+                "quantity": i.quantity,
+                "price": i.price,
+            }
+            for i in invoice.items
+        ],
+
+        "transport_items": [
+            {
+                "id": t.id,
+                "name": t.name,
+                "num_of_ctr": t.num_of_ctr,
+                "price_per_ctr": t.price_per_ctr,
+            }
+            for t in invoice.transport_items
+        ],
+
+        # Split deductions so your frontend’s edit form matches
+        "pre_gst_deductions": [
+            {
+                "id": d.id,
+                "type": d.type,
+                "label": d.label,
+                "amount": d.amount,
+            }
+            for d in invoice.deductions
+            if d.type == "pre"
+        ],
+
+        "post_gst_deductions": [
+            {
+                "id": d.id,
+                "type": d.type,
+                "label": d.label,
+                "amount": d.amount,
+            }
+            for d in invoice.deductions
+            if d.type == "post"
+        ],
+    }
