@@ -3,20 +3,25 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Table, Button, Typography, Popconfirm, Tag, message } from 'antd';
-import axios from 'axios';
 import { audFormatterFixed } from '../scripts/utilities/AUDformatters';
 
-const API = 'http://localhost:8000/api/invoices';
+// Import the new service functions
+import { 
+  getAllInvoices, 
+  deleteInvoiceById, 
+  updateInvoiceStatus 
+} from '../services/invoiceListService';
 
 export default function InvoiceList() {
   const [loading, setLoading] = useState(false);
   const [invoices, setInvoices] = useState([]);
 
+  // Load Invoices
   const fetchInvoices = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(API+'/list');
-      setInvoices(res.data);
+      const data = await getAllInvoices();
+      setInvoices(data);
     } catch (err) {
       console.error(err);
       message.error('Failed to load invoices');
@@ -29,9 +34,10 @@ export default function InvoiceList() {
     fetchInvoices();
   }, []);
 
-  const deleteInvoice = async (id) => {
+  // Delete Invoice
+  const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API}/${id}`);
+      await deleteInvoiceById(id);
       message.success('Invoice deleted');
       fetchInvoices();
     } catch (err) {
@@ -40,49 +46,21 @@ export default function InvoiceList() {
     }
   };
 
-  const markPaid = async (id) => {
+  // Unified Status Handler
+  const changeStatus = async (id, statusType) => {
     try {
-      await axios.post(`${API}/${id}/status/paid`);
-      message.success('Invoice marked as paid');
+      await updateInvoiceStatus(id, statusType);
+      
+      // Capitalize first letter for the success message (e.g., "paid" -> "Paid")
+      const statusLabel = statusType.charAt(0).toUpperCase() + statusType.slice(1);
+      message.success(`Invoice marked as ${statusLabel}`);
+      
       fetchInvoices();
     } catch (err) {
       console.error(err);
-      message.error('Could not mark invoice as paid');
+      message.error(`Could not mark invoice as ${statusType}`);
     }
   };
-
-  const markUnpaid = async (id) => {
-    try {
-      await axios.post(`${API}/${id}/status/unpaid`);
-      message.info('Invoice marked as unpaid');
-      fetchInvoices();
-    } catch (err) {
-      console.error(err);
-      message.error('Could not mark invoice as unpaid');
-    }
-  };
-
-  const markDraft = async (id) => {
-    try {
-      await axios.post(`${API}/${id}/status/draft`);
-      message.info('Invoice marked as draft');
-      fetchInvoices();
-    } catch (err) {
-      console.error(err);
-      message.error('Could not mark invoice as draft');
-    }
-  }
-
-  const markSent = async (id) => {
-    try {
-      await axios.post(`${API}/${id}/status/sent`);
-      message.info('Invoice marked as sent');
-      fetchInvoices();
-    } catch (err) {
-      console.error(err);
-      message.error('Could not mark invoice as sent');
-    }
-  }
   
   const columns = [
       {
@@ -103,10 +81,9 @@ export default function InvoiceList() {
       },
       {
         title: 'Status',
-        dataIndex: 'status', // CHANGED: Look for 'status' string
+        dataIndex: 'status',
         key: 'status',
         render: (status) => {
-          // dynamic color logic
           let color = 'default';
           if (status === 'Paid') color = 'green';
           else if (status === 'Unpaid' || status === 'Overdue') color = 'red';
@@ -129,28 +106,30 @@ export default function InvoiceList() {
               title="Delete this invoice?"
               okText="Yes"
               cancelText="No"
-              onConfirm={() => deleteInvoice(record.id)}
+              onConfirm={() => handleDelete(record.id)}
             >
               <Button danger>Delete</Button>
             </Popconfirm>
 
-            {/* CHANGED: Toggle between Paid and Unpaid buttons */}
+            {/* Status Buttons using the new helper */}
             {record.status !== 'Paid' ? (
-              <Button onClick={() => markPaid(record.id)}>
+              <Button onClick={() => changeStatus(record.id, 'paid')}>
                 Mark Paid
               </Button>
             ) : (
-              <Button onClick={() => markUnpaid(record.id)}>
+              <Button onClick={() => changeStatus(record.id, 'unpaid')}>
                 Mark Unpaid
               </Button>
             )}
+
             {record.status !== 'Sent' && record.status !== 'Paid' && (
-              <Button onClick={() => markSent(record.id)}>
+              <Button onClick={() => changeStatus(record.id, 'sent')}>
                 Mark Sent
               </Button>
             )}
+
             {record.status !== 'Draft' && record.status !== 'Paid' && (
-              <Button onClick={() => markDraft(record.id)}>
+              <Button onClick={() => changeStatus(record.id, 'draft')}>
                 Mark Draft
               </Button>
             )}

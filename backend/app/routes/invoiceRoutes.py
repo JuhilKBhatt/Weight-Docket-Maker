@@ -209,42 +209,17 @@ def delete_invoice(invoice_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "deleted"}
 
-@router.post("/{invoice_id}/status/paid")
-def mark_invoice_paid(invoice_id: int, db: Session = Depends(get_db)):
-    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
-    if not invoice:
-        raise HTTPException(status_code=404, detail="Invoice not found")
-    invoice.status = "Paid"
-    db.commit()
-    return {"message": "marked paid"}
-
-@router.post("/{invoice_id}/status/unpaid")
-def mark_invoice_unpaid(invoice_id: int, db: Session = Depends(get_db)):
+@router.post("/{invoice_id}/status/{status_type}")
+def update_invoice_status(invoice_id: int, status_type: str, db: Session = Depends(get_db)):
     invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
     
-    invoice.status = "Unpaid" 
+    new_status = status_type.capitalize()
+    
+    invoice.status = new_status
     db.commit()
-    return {"message": "marked unpaid"}
-
-@router.post("/{invoice_id}/status/sent")
-def send_invoice(invoice_id: int, db: Session = Depends(get_db)):
-    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
-    if not invoice:
-        raise HTTPException(status_code=404, detail="Invoice not found")
-    invoice.status = "Sent"
-    db.commit()
-    return {"message": "marked sent"}
-
-@router.post("/{invoice_id}/status/draft")
-def mark_invoice_draft(invoice_id: int, db: Session = Depends(get_db)):
-    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
-    if not invoice:
-        raise HTTPException(status_code=404, detail="Invoice not found")
-    invoice.status = "Draft"
-    db.commit()
-    return {"message": "marked draft"}
+    return {"message": f"status updated to {new_status}"}
 
 @router.get("/{invoice_id}")
 def get_invoice(invoice_id: int, db: Session = Depends(get_db)):
