@@ -3,7 +3,7 @@
 import axios from 'axios';
 import React, { useEffect } from 'react';
 import { Form, Input, Button, Typography, Checkbox, Row, Col } from 'antd';
-import dayjs from 'dayjs'; // Import dayjs
+import dayjs from 'dayjs';
 
 // Styles
 import '../../styles/InvoiceForm.css';
@@ -51,16 +51,64 @@ export default function InvoiceForm({mode = 'new', existingInvoice = null}) {
   const calculatedTotals = useInvoiceCalculations(invoice);
   const dateFormat = 'DD/MM/YYYY';
 
+  // 1. Load Selector Data (Companies/Accounts)
   useEffect(() => {
     async function loadSelectors() {
-      const data = await selectorData();
-      setSavedCompaniesFrom(data.companies_from);
-      setSavedCompaniesTo(data.companies_to);
-      setSavedAccounts(data.accounts);
+      try {
+        const data = await selectorData();
+        // Ensure we handle potential null/undefined returns safely
+        setSavedCompaniesFrom(data.companies_from || []);
+        setSavedCompaniesTo(data.companies_to || []);
+        setSavedAccounts(data.accounts || []);
+      } catch (err) {
+        console.error("Failed to load selector data", err);
+      }
     }
 
     loadSelectors();
   }, []);
+
+  // 2. Auto-Fill Selectors in Edit Mode
+  // This effect runs when existingInvoice exists and the selector lists are populated.
+  // It finds the matching index for companies/accounts and sets the dropdown value.
+  useEffect(() => {
+    if (mode === 'edit' && existingInvoice) {
+      const updates = {};
+
+      // Match 'Bill From' Company
+      if (savedCompaniesFrom.length > 0 && existingInvoice.bill_from_name) {
+        const fromIdx = savedCompaniesFrom.findIndex(c => c.name === existingInvoice.bill_from_name);
+        if (fromIdx !== -1) {
+          updates.fromSavedCompany = fromIdx;
+        }
+      }
+
+      // Match 'Bill To' Company
+      if (savedCompaniesTo.length > 0 && existingInvoice.bill_to_name) {
+        const toIdx = savedCompaniesTo.findIndex(c => c.name === existingInvoice.bill_to_name);
+        if (toIdx !== -1) {
+          updates.toSavedCompany = toIdx;
+        }
+      }
+
+      // Match 'Pay To' Account
+      // We match strictly on Bank Name AND Account Name to ensure accuracy
+      if (savedAccounts.length > 0 && existingInvoice.account_name) {
+        const accIdx = savedAccounts.findIndex(a => 
+          a.account_name === existingInvoice.account_name && 
+          a.bank_name === existingInvoice.bank_name
+        );
+        if (accIdx !== -1) {
+          updates.savedAccount = accIdx;
+        }
+      }
+
+      // Apply updates if any matches were found
+      if (Object.keys(updates).length > 0) {
+        form.setFieldsValue(updates);
+      }
+    }
+  }, [mode, existingInvoice, savedCompaniesFrom, savedCompaniesTo, savedAccounts, form]);
 
   const handleSaveSubmit = async () => {
     try {
