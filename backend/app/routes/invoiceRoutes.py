@@ -23,37 +23,78 @@ def create_invoice(db: Session = Depends(get_db)):
 def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
     print("Received invoice data:", data)
     
-    invoice = Invoice(
-        scrinv_number=data.scrinv_number,
-        status=data.status,
-        invoice_type=data.invoice_type,
-        include_gst=data.include_gst,
-        show_transport=data.show_transport,
-        invoice_date=data.invoice_date,
-        notes=data.notes,
+    # 1. Check if invoice already exists by SCR Number
+    invoice = db.query(Invoice).filter(Invoice.scrinv_number == data.scrinv_number).first()
 
-        bill_from_name=data.bill_from_name,
-        bill_from_phone=data.bill_from_phone,
-        bill_from_email=data.bill_from_email,
-        bill_from_abn=data.bill_from_abn,
-        bill_from_address=data.bill_from_address,
+    if invoice:
+        # --- UPDATE EXISTING ---
+        print(f"Updating existing invoice: {data.scrinv_number}")
+        
+        # Update simple fields
+        invoice.status = data.status
+        invoice.invoice_type = data.invoice_type
+        invoice.include_gst = data.include_gst
+        invoice.show_transport = data.show_transport
+        invoice.invoice_date = data.invoice_date
+        invoice.notes = data.notes
 
-        bill_to_name=data.bill_to_name,
-        bill_to_phone=data.bill_to_phone,
-        bill_to_email=data.bill_to_email,
-        bill_to_abn=data.bill_to_abn,
-        bill_to_address=data.bill_to_address,
+        invoice.bill_from_name = data.bill_from_name
+        invoice.bill_from_phone = data.bill_from_phone
+        invoice.bill_from_email = data.bill_from_email
+        invoice.bill_from_abn = data.bill_from_abn
+        invoice.bill_from_address = data.bill_from_address
 
-        bank_name=data.bank_name,
-        account_name=data.account_name,
-        bsb=data.bsb,
-        account_number=data.account_number,
-    )
+        invoice.bill_to_name = data.bill_to_name
+        invoice.bill_to_phone = data.bill_to_phone
+        invoice.bill_to_email = data.bill_to_email
+        invoice.bill_to_abn = data.bill_to_abn
+        invoice.bill_to_address = data.bill_to_address
 
-    db.add(invoice)
-    db.flush()   # gets invoice.id before commit
+        invoice.bank_name = data.bank_name
+        invoice.account_name = data.account_name
+        invoice.bsb = data.bsb
+        invoice.account_number = data.account_number
 
-    # Items
+        # Clear old items (so we can re-add the updated list below)
+        db.query(InvoiceItem).filter(InvoiceItem.invoice_id == invoice.id).delete()
+        db.query(TransportItem).filter(TransportItem.invoice_id == invoice.id).delete()
+        db.query(Deduction).filter(Deduction.invoice_id == invoice.id).delete()
+
+    else:
+        # --- CREATE NEW ---
+        print(f"Creating new invoice: {data.scrinv_number}")
+        invoice = Invoice(
+            scrinv_number=data.scrinv_number,
+            status=data.status,
+            invoice_type=data.invoice_type,
+            include_gst=data.include_gst,
+            show_transport=data.show_transport,
+            invoice_date=data.invoice_date,
+            notes=data.notes,
+
+            bill_from_name=data.bill_from_name,
+            bill_from_phone=data.bill_from_phone,
+            bill_from_email=data.bill_from_email,
+            bill_from_abn=data.bill_from_abn,
+            bill_from_address=data.bill_from_address,
+
+            bill_to_name=data.bill_to_name,
+            bill_to_phone=data.bill_to_phone,
+            bill_to_email=data.bill_to_email,
+            bill_to_abn=data.bill_to_abn,
+            bill_to_address=data.bill_to_address,
+
+            bank_name=data.bank_name,
+            account_name=data.account_name,
+            bsb=data.bsb,
+            account_number=data.account_number,
+        )
+        db.add(invoice)
+        db.flush() # Generates the ID for the new invoice
+
+    # --- ADD ITEMS (Common for both New and Update) ---
+    # Since we deleted old items in the Update block, we just add everything fresh here
+    
     for i in data.items:
         db.add(InvoiceItem(
             invoice_id=invoice.id,
@@ -65,7 +106,6 @@ def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
             price=i.price
         ))
 
-    # Transport
     for t in data.transport_items:
         db.add(TransportItem(
             invoice_id=invoice.id,
@@ -74,7 +114,6 @@ def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
             price_per_ctr=t.price_per_ctr
         ))
 
-    # Deductions
     for d in data.deductions:
         db.add(Deduction(
             invoice_id=invoice.id,
@@ -84,7 +123,7 @@ def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
         ))
 
     db.commit()
-    return {"message": "invoice created", "id": invoice.id}
+    return {"message": "invoice saved", "id": invoice.id}
 
 @router.get("/selectorsData")
 def get_selectors_data(db: Session = Depends(get_db)):

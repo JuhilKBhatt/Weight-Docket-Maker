@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Form, Button, Typography, Checkbox, Row, Col, Input } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import '../../styles/InvoiceForm.css';
 
 // Hooks
@@ -24,6 +25,7 @@ import PayAccountSection from '../../components/invoice/PayAccountSection';
 
 export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
   const [form] = Form.useForm();
+  const Navigate = useNavigate();
   const confirmReset = useConfirmReset();
   
   // 1. Initialize State & Selectors
@@ -53,8 +55,15 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       alert('Invoice saved successfully!');
       
       localStorage.removeItem("scrinvID");
-      invoice.resetInvoice();
-      form.resetFields();
+
+      if (mode === 'new'){
+        invoice.resetInvoice();
+        form.resetFields();
+      }else if (mode === 'edit') {
+        Navigate('/view-invoice');
+      };
+
+
     } catch (error) {
       console.error('Error saving invoice:', error);
       alert('Failed to save invoice. Please try again.');
