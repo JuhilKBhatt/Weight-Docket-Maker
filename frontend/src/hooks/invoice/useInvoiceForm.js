@@ -14,7 +14,7 @@ const uid = (() => {
  */
 export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
   const defaultItems = [
-    { key: uid(), seal:'', container_number:'', metal:'', description: '', quantity: 0, price: 0 },
+    { key: uid(), seal:'', container: '', metal:'', description: '', weight: 0, price: 0 },
   ];
 
   // SCRINV ID
@@ -35,19 +35,67 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
     }
   }, [mode, scrinvID]);
 
-  // STATE
-  const [items, setItems] = useState(existingInvoice?.items?.map(i => ({ ...i, key: uid() })) || defaultItems);
-  const [transportItems, setTransportItems] = useState(existingInvoice?.transportItems?.map(t => ({ ...t, key: uid() })) || []);
-  const [preGstDeductions, setPreGstDeductions] = useState(existingInvoice?.preGstDeductions?.map(d => ({ ...d, key: uid() })) || []);
-  const [postGstDeductions, setPostGstDeductions] = useState(existingInvoice?.postGstDeductions?.map(d => ({ ...d, key: uid() })) || []);
+  // --- STATE INITIALIZATION WITH MAPPING ---
 
-  const [invoiceType, setInvoiceType] = useState(existingInvoice?.invoiceType || 'Container');
-  const [includeGST, setIncludeGST] = useState(existingInvoice?.includeGST ?? true);
-  const [showTransport, setShowTransport] = useState(existingInvoice?.showTransport ?? false);
+  // 1. ITEMS (Map 'container_number' -> 'container', 'quantity' -> 'weight')
+  const [items, setItems] = useState(() => {
+    if (existingInvoice?.items && existingInvoice.items.length > 0) {
+      return existingInvoice.items.map(i => ({
+        key: i.key || uid(),
+        seal: i.seal || '',
+        container: i.container || i.container_number || '', // Backend: container_number
+        metal: i.metal || '',
+        description: i.description || '',
+        weight: i.weight ?? i.quantity ?? 0,                // Backend: quantity
+        price: i.price ?? 0,
+      }));
+    }
+    return defaultItems;
+  });
+
+  // 2. TRANSPORT (Map 'num_of_ctr' -> 'NumOfCTR', 'price_per_ctr' -> 'PricePreCTR')
+  const [transportItems, setTransportItems] = useState(() => {
+    if (existingInvoice?.transportItems && existingInvoice.transportItems.length > 0) {
+      return existingInvoice.transportItems.map(t => ({
+        key: t.key || uid(),
+        name: t.name || '',
+        NumOfCTR: t.NumOfCTR ?? t.num_of_ctr ?? 0,          // Backend: num_of_ctr
+        PricePreCTR: t.PricePreCTR ?? t.price_per_ctr ?? 0  // Backend: price_per_ctr
+      }));
+    }
+    return [];
+  });
+
+  // 3. DEDUCTIONS (Map standard fields if needed)
+  const [preGstDeductions, setPreGstDeductions] = useState(() => {
+    if (existingInvoice?.preGstDeductions) {
+      return existingInvoice.preGstDeductions.map(d => ({ 
+        key: d.key || uid(), 
+        label: d.label || '', 
+        amount: d.amount || 0 
+      }));
+    }
+    return [];
+  });
+
+  const [postGstDeductions, setPostGstDeductions] = useState(() => {
+    if (existingInvoice?.postGstDeductions) {
+      return existingInvoice.postGstDeductions.map(d => ({ 
+        key: d.key || uid(), 
+        label: d.label || '', 
+        amount: d.amount || 0 
+      }));
+    }
+    return [];
+  });
+
+  const [invoiceType, setInvoiceType] = useState(existingInvoice?.invoiceType || existingInvoice?.invoice_type || 'Container');
+  const [includeGST, setIncludeGST] = useState(existingInvoice?.includeGST ?? existingInvoice?.include_gst ?? true);
+  const [showTransport, setShowTransport] = useState(existingInvoice?.showTransport ?? existingInvoice?.show_transport ?? false);
 
   // ITEM HANDLERS
   const handleItemChange = (key, field, value) => setItems(prev => prev.map(item => item.key === key ? { ...item, [field]: value } : item));
-  const addRow = () => setItems(prev => [...prev, { key: uid(), description: '', quantity: 0, price: 0 }]);
+  const addRow = () => setItems(prev => [...prev, { key: uid(), description: '', weight: 0, price: 0 }]);
   const removeRow = key => setItems(prev => prev.filter(item => item.key !== key));
 
   // TRANSPORT HANDLERS
