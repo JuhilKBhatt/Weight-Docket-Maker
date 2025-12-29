@@ -6,6 +6,7 @@ Run venv: source venv/bin/activate
 
 Install Requirements: pip3 install -r requirements.txt
 
+brew install pkg-config cairo pango libffi
 
 Update Database Connection URL in .env
 

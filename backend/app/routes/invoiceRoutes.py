@@ -1,12 +1,13 @@
 # app/routes/invoiceRoutes.py
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schema.invoiceSchema import InvoiceCreate
 
 # Import the new separated services
-from app.services.invoice import invoice_crud, invoice_list, invoice_status, invoice_data
+from app.services.invoice import invoice_crud, invoice_list, invoice_status, invoice_data, invoice_pdf
 
 router = APIRouter(
     prefix="/api/invoices",
@@ -21,6 +22,17 @@ def create_invoice(db: Session = Depends(get_db)):
 @router.post("/saveDraft")
 def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
     return invoice_crud.upsert_invoice(db, data)
+
+@router.get("/{invoice_id}/download")
+def download_invoice_pdf(invoice_id: int, db: Session = Depends(get_db)):
+    pdf_buffer = invoice_pdf.generate_invoice_pdf(db, invoice_id)
+    
+    # Return as a file download
+    return StreamingResponse(
+        pdf_buffer, 
+        media_type="application/pdf", 
+        headers={"Content-Disposition": f"attachment; filename=invoice_{invoice_id}.pdf"}
+    )
 
 # --- READ / LIST ---
 @router.get("/list")

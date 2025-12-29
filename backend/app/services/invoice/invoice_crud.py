@@ -39,7 +39,7 @@ def get_invoice_by_id(db: Session, invoice_id: int):
         "account_name": invoice.account_name,
         "bsb": invoice.bsb,
         "account_number": invoice.account_number,
-        "items": [{"id": i.id, "seal": i.seal, "container_number": i.container_number, "metal": i.metal, "description": i.description, "quantity": i.quantity, "price": i.price} for i in invoice.items],
+        "line_items": [{"id": i.id, "seal": i.seal, "container_number": i.container_number, "metal": i.metal, "description": i.description, "quantity": i.quantity, "price": i.price} for i in invoice.items],
         "transport_items": [{"id": t.id, "name": t.name, "num_of_ctr": t.num_of_ctr, "price_per_ctr": t.price_per_ctr} for t in invoice.transport_items],
         "pre_gst_deductions": [{"id": d.id, "type": d.type, "label": d.label, "amount": d.amount} for d in invoice.deductions if d.type == "pre"],
         "post_gst_deductions": [{"id": d.id, "type": d.type, "label": d.label, "amount": d.amount} for d in invoice.deductions if d.type == "post"],

@@ -29,7 +29,7 @@ export default function EditInvoice() {
         showTransport: data.show_transport,
 
         // Items (give each one a "key")
-        items: (data.items || []).map(i => ({
+        items: (data.line_items || []).map(i => ({
           key: i.id,
           ...i
         })),

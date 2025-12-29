@@ -13,7 +13,7 @@ import useInvoiceAutoFill from '../../hooks/invoice/useInvoiceAutoFill';
 import { useConfirmReset } from '../../scripts/utilities/confirmReset';
 
 // Utilities
-import { saveDraftInvoice } from '../../scripts/utilities/invoiceUtils';
+import { saveDraftInvoice, DownloadPDFInvoice } from '../../scripts/utilities/invoiceUtils';
 import { getInitialValues } from '../../scripts/utilities/invoiceFormHelpers';
 
 // Components
@@ -61,8 +61,26 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
         form.resetFields();
       }else if (mode === 'edit') {
         Navigate('/view-invoice');
-      };
+      }
+    } catch (error) {
+      console.error('Error saving invoice:', error);
+      alert('Failed to save invoice. Please try again.');
+    }
+  };
 
+  const handleSaveDownloadSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      const payload = {
+        ...invoice, // Spread hooks state (scrinvID, items, transportItems, etc.)
+        values,
+      };
+      
+      const savedData = await saveDraftInvoice(payload);
+      await DownloadPDFInvoice(savedData.id, payload.scrinvID);
+      alert('Invoice saved and download initiated!');
+      
+      localStorage.removeItem("scrinvID");
 
     } catch (error) {
       console.error('Error saving invoice:', error);
@@ -160,7 +178,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
             <Button size='large' onClick={handleSaveDraftSubmit}>
               Save Draft
             </Button>
-            <Button type="primary" size='large'>
+            <Button type="primary" size='large' onClick={handleSaveDownloadSubmit}>
               Download Invoice
             </Button>
             <Button type='primary' size='large'>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Helvetica, sans-serif; color: #333; line-height: 1.5; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 40px; }
+        .title { font-size: 24px; font-weight: bold; color: #000; }
+        .meta { text-align: right; }
+        .section-title { font-weight: bold; margin-top: 20px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        .columns { width: 100%; margin-top: 10px; }
+        .columns td { vertical-align: top; width: 50%; }
+        
+        table.items { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table.items th { background: #f0f0f0; padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        table.items td { padding: 8px; border-bottom: 1px solid #eee; }
+        .totals { margin-top: 30px; text-align: right; }
+        .totals-row { margin-bottom: 5px; }
+        .grand-total { font-size: 18px; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <div class="title">INVOICE</div>
+            <div>#{{ invoice.scrinv_number }}</div>
+        </div>
+        <div class="meta">
+            Date: {{ invoice.invoice_date }}<br>
+            Status: {{ invoice.status }}
+        </div>
+    </div>
+
+    <table class="columns">
+        <tr>
+            <td>
+                <div class="section-title">From:</div>
+                <strong>{{ invoice.bill_from_name }}</strong><br>
+                {{ invoice.bill_from_address }}<br>
+                ABN: {{ invoice.bill_from_abn }}<br>
+                {{ invoice.bill_from_email }}
+            </td>
+            <td>
+                <div class="section-title">Bill To:</div>
+                <strong>{{ invoice.bill_to_name }}</strong><br>
+                {{ invoice.bill_to_address }}<br>
+                ABN: {{ invoice.bill_to_abn }}<br>
+                {{ invoice.bill_to_email }}
+            </td>
+        </tr>
+    </table>
+
+    <table class="items">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th style="text-align: right;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in invoice.line_items %}
+            <tr>
+                <td>{{ item.description }} ({{ item.container_number }})</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.price }}</td>
+                <td style="text-align: right;">${{ "%.2f"|format(item.quantity * item.price) }}</td>
+            </tr>
+            {% endfor %}
+            
+            {% for trans in invoice.transport_items %}
+            <tr>
+                <td>Transport: {{ trans.name }}</td>
+                <td>{{ trans.num_of_ctr }}</td>
+                <td>${{ trans.price_per_ctr }}</td>
+                <td style="text-align: right;">${{ "%.2f"|format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <div class="totals-row">Subtotal: ${{ "%.2f"|format(totals.subtotal) }}</div>
+        {% if invoice.include_gst %}
+        <div class="totals-row">GST (10%): ${{ "%.2f"|format(totals.gst) }}</div>
+        {% endif %}
+        <div class="grand-total">Total: ${{ "%.2f"|format(totals.total) }}</div>
+    </div>
+    
+    <div style="margin-top: 50px;">
+        <div class="section-title">Payment Details</div>
+        Bank: {{ invoice.bank_name }}<br>
+        Account Name: {{ invoice.account_name }}<br>
+        BSB: {{ invoice.bsb }} | Acc No: {{ invoice.account_number }}
+    </div>
+</body>
+</html>

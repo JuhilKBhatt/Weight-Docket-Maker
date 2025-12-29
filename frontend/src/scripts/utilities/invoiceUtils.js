@@ -100,3 +100,25 @@ export const selectorData = async () => {
     return { companies_from: [], companies_to: [], accounts: [] };
   }
 };
+
+export const DownloadPDFInvoice = async (id, scrinvNumber) => {
+  try {
+    // Use the ID for the URL to satisfy the backend requirement (int)
+    const response = await axios.get(`http://localhost:8000/api/invoices/${id}/download`, {
+      responseType: 'blob', 
+    });
+
+    const filename = scrinvNumber ? `Invoice_${scrinvNumber}.pdf` : `Invoice_${id}.pdf`;
+
+    const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename); 
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch (err) {
+    console.error("Error downloading PDF invoice:", err);
+    throw err;
+  }
+};
