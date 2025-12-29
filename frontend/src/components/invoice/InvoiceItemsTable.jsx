@@ -1,7 +1,9 @@
 // ./frontend/src/components/invoice/InvoiceItemsTable.jsx
 
-import { Table, Input, InputNumber, Button, Popconfirm, Typography } from 'antd';
+import { Table, Input, InputNumber, Button, Popconfirm, Typography, Select } from 'antd'; // Import Select
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
+
+const { Option } = Select;
 
 export default function InvoiceItemsTable({
   invoiceType,
@@ -10,6 +12,36 @@ export default function InvoiceItemsTable({
   addRow,
   removeRow,
 }) {
+
+  const renderUnitSelector = (record) => (
+    <Select
+      value={record.unit || 't'} // Default to 't' if undefined
+      style={{ width: 90, margin: '-5px 0' }}
+      onChange={(val) => handleItemChange(record.key, 'unit', val)}
+    >
+      <Option value="t">t</Option>
+      <Option value="kg">kg</Option>
+      <Option value="pcs">pcs</Option>
+      <Option value="bin">bin</Option>
+      <Option value="cnt">CNT</Option>
+    </Select>
+  );
+
+  const renderCurrencySelector = (record) => (
+    <Select
+      value={record.currency || 'AUD'} // Default to 'AUD' if undefined
+      style={{ width: 100, margin: '-5px 0' }}
+      onChange={(val) => handleItemChange(record.key, 'currency', val)}
+    >
+      <Option value="AUD">AUD$</Option>
+      <Option value="USD">USD$</Option>
+      <Option value="EUR">EUR€</Option>
+      <Option value="GBP">GBP£</Option>
+      <Option value="JPY">JPY¥</Option>
+      <Option value="CNY">CNY¥</Option>
+    </Select>
+  );
+
   const sharedColumns = [
     {
       title: 'Description',
@@ -23,10 +55,10 @@ export default function InvoiceItemsTable({
     },
     {
       title: 'Quantity', 
-      dataIndex: 'quantity', // CHANGED from weight
+      dataIndex: 'quantity',
       render: (_, record) => (
         <InputNumber
-          addonAfter="t"
+          addonAfter={renderUnitSelector(record)}
           style={{ width: '100%' }}
           value={record.quantity}
           onChange={(val) => handleItemChange(record.key, 'quantity', val)}
@@ -38,7 +70,7 @@ export default function InvoiceItemsTable({
       dataIndex: 'price',
       render: (_, record) => (
         <InputNumber
-          addonBefore="$"
+          addonBefore={renderCurrencySelector(record)}
           style={{ width: '100%' }}
           value={record.price}
           formatter={audFormatter}
@@ -84,7 +116,7 @@ export default function InvoiceItemsTable({
     },
     {
       title: 'Container #',
-      dataIndex: 'containerNumber', // CHANGED from container
+      dataIndex: 'containerNumber',
       render: (_, record) => (
         <Input
           value={record.containerNumber}
@@ -98,7 +130,7 @@ export default function InvoiceItemsTable({
   const pickupColumns = [
     {
       title: 'Metal',
-      dataIndex: 'metal', // Often mapped to metal in pickup
+      dataIndex: 'metal',
       render: (_, record) => (
         <Input
           value={record.metal}
