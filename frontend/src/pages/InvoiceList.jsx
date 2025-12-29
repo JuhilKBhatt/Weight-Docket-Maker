@@ -51,7 +51,6 @@ export default function InvoiceList() {
     try {
       await updateInvoiceStatus(id, statusType);
       
-      // Capitalize first letter for the success message (e.g., "paid" -> "Paid")
       const statusLabel = statusType.charAt(0).toUpperCase() + statusType.slice(1);
       message.success(`Invoice marked as ${statusLabel}`);
       
@@ -111,14 +110,13 @@ export default function InvoiceList() {
               <Button danger>Delete</Button>
             </Popconfirm>
 
-            {/* Status Buttons using the new helper */}
-            {record.status !== 'Paid' ? (
-              <Button onClick={() => changeStatus(record.id, 'paid')}>
-                Mark Paid
-              </Button>
-            ) : (
+            {record.status === 'Paid' ? (
               <Button onClick={() => changeStatus(record.id, 'unpaid')}>
                 Mark Unpaid
+              </Button>
+            ) : (
+              <Button onClick={() => changeStatus(record.id, 'paid')}>
+                Mark Paid
               </Button>
             )}
 
