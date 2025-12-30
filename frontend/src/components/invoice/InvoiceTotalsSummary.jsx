@@ -23,7 +23,7 @@ export default function InvoiceTotalsSummary({
   removeDeduction,
   currency = 'AUD', // New Prop
 }) {
-  const symbol = CURRENCY_SYMBOLS[currency] || '$';
+  const symbol = currency+CURRENCY_SYMBOLS[currency] || '$';
 
   return (
     <Col span={12}>
@@ -73,14 +73,12 @@ export default function InvoiceTotalsSummary({
       {/* Subtotal / Total */}
       <Row align="middle" style={{ marginTop: 20 }}>
         <Col flex="120px">
-          {/* CHANGED: Shows Currency Name (e.g., Sub-Total (USD): ) */}
           <Typography.Text strong>
-            {includeGST ? `Sub-Total (${currency}):` : `Total (${currency}):`}
+            {includeGST ? `Sub-Total:` : `Total (${currency}):`}
           </Typography.Text>
         </Col>
         <Col flex="auto">
           <InputNumber
-            // CHANGED: Dynamic Symbol
             addonBefore={symbol}
             disabled
             style={{ width: '100%' }}
@@ -101,7 +99,6 @@ export default function InvoiceTotalsSummary({
         <Col flex="auto">
           {includeGST && (
             <InputNumber
-              // CHANGED: Dynamic Symbol
               addonBefore={symbol}
               disabled
               style={{ width: '100%' }}
@@ -133,7 +130,6 @@ export default function InvoiceTotalsSummary({
               </Col>
               <Col span={8}>
                 <InputNumber
-                  // CHANGED: Dynamic Symbol
                   addonBefore={symbol}
                   style={{ width: '100%' }}
                   value={d.amount}
@@ -168,7 +164,7 @@ export default function InvoiceTotalsSummary({
           <Row align="middle" style={{ marginTop: 20 }}>
             <Col flex="120px">
               {/* CHANGED: Shows Currency Name */}
-              <Typography.Text strong>Total ({currency}):</Typography.Text>
+              <Typography.Text strong>Total:</Typography.Text>
             </Col>
             <Col flex="auto">
               <InputNumber
