@@ -26,7 +26,7 @@ export default function InvoiceItemsTable({
 }) {
 
   // Helper: Get symbol based on current global state
-  const currentSymbol = CURRENCY_SYMBOLS[currency] || '$';
+  const currentSymbol = currency+CURRENCY_SYMBOLS[currency] || '$';
 
   // 1. Unit Selector (Keeps specific to the row)
   const renderUnitSelector = (record) => (

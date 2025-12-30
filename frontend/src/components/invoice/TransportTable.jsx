@@ -20,7 +20,7 @@ export default function TransportTable({
 }) {
   const isContainer = invoiceType === 'Container';
   const unitLabel = isContainer ? 'CTR' : 'Trip';
-  const symbol = CURRENCY_SYMBOLS[currency] || '$';
+  const symbol = currency+CURRENCY_SYMBOLS[currency] || '$';
 
   // Map transport items row names based on invoice type
   const mappedItems = transportItems.map((item, index) => {
