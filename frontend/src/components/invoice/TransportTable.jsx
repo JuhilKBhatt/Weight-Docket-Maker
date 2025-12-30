@@ -3,23 +3,31 @@
 import { Table, InputNumber, Typography } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
 
+const CURRENCY_SYMBOLS = {
+  AUD: '$',
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  JPY: '¥',
+  CNY: '¥',
+};
+
 export default function TransportTable({
   invoiceType,
   transportItems,
   handleTransportChange,
+  currency = 'AUD', // Default to AUD
 }) {
   const isContainer = invoiceType === 'Container';
   const unitLabel = isContainer ? 'CTR' : 'Trip';
+  const symbol = CURRENCY_SYMBOLS[currency] || '$';
 
   // Map transport items row names based on invoice type
   const mappedItems = transportItems.map((item, index) => {
-    // Default row name from item.name
     let name = item.name;
     if (isContainer) {
-      // Row labels for Container invoices
       name = index === 0 ? 'Containers' : index === 1 ? 'Overweight' : item.name;
     } else {
-      // Row labels for Pickup invoices
       name = index === 0 ? 'Pickup' : index === 1 ? 'Overweight' : item.name;
     }
     return { ...item, name };
@@ -47,7 +55,8 @@ export default function TransportTable({
       dataIndex: 'pricePerCtr',
       render: (_, record) => (
         <InputNumber
-          addonBefore="$"
+          // CHANGED: Dynamic Symbol
+          addonBefore={symbol}
           style={{ width: '100%' }}
           value={record.pricePerCtr}
           formatter={audFormatter}
@@ -62,7 +71,8 @@ export default function TransportTable({
         const total = (Number(record.numOfCtr) || 0) * (Number(record.pricePerCtr) || 0);
         return (
           <InputNumber
-            addonBefore="$"
+            // CHANGED: Dynamic Symbol
+            addonBefore={symbol}
             style={{ width: '100%' }}
             value={total}
             formatter={audFormatterFixed}

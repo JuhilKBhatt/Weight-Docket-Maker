@@ -32,6 +32,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
   const invoice = useInvoiceForm(mode, existingInvoice);
   const calculatedTotals = useInvoiceCalculations(invoice);
   const { savedCompaniesFrom, savedCompaniesTo, savedAccounts } = useInvoiceSelectors();
+  const [currency, setCurrency] = React.useState('AUD');
 
   // 2. Handle Auto-Fill for Edit Mode
   useInvoiceAutoFill({
@@ -118,6 +119,8 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
             handleItemChange={invoice.handleItemChange}
             addRow={invoice.addRow}
             removeRow={invoice.removeRow}
+            currency={currency}
+            setCurrency={setCurrency}
           />
 
           {/* Section 3: Transport */}
@@ -135,6 +138,8 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
               invoiceType={invoice.invoiceType}
               transportItems={invoice.transportItems}
               handleTransportChange={invoice.handleTransportChange}
+              currency={currency}
+              setCurrency={setCurrency}
             />
           )}
 
@@ -154,6 +159,8 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
               handleDeductionChange={invoice.handleDeductionChange}
               addDeduction={invoice.addDeduction}
               removeDeduction={invoice.removeDeduction}
+              currency={currency}
+              setCurrency={setCurrency}
             />
           </Row>
 

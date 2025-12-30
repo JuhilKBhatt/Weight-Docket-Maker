@@ -1,5 +1,16 @@
+// ./frontend/src/components/invoice/InvoiceTotalsSummary.jsx
+
 import { Row, Col, Typography, Input, InputNumber, Button, Checkbox } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
+
+const CURRENCY_SYMBOLS = {
+  AUD: '$',
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  JPY: '¥',
+  CNY: '¥',
+};
 
 export default function InvoiceTotalsSummary({
   includeGST,
@@ -10,7 +21,10 @@ export default function InvoiceTotalsSummary({
   handleDeductionChange,
   addDeduction,
   removeDeduction,
+  currency = 'AUD', // New Prop
 }) {
+  const symbol = CURRENCY_SYMBOLS[currency] || '$';
+
   return (
     <Col span={12}>
       {/* Pre-GST deductions */}
@@ -29,7 +43,8 @@ export default function InvoiceTotalsSummary({
           </Col>
           <Col span={8}>
             <InputNumber
-              addonBefore="$"
+              // CHANGED: Dynamic Symbol
+              addonBefore={symbol}
               style={{ width: '100%' }}
               value={d.amount}
               formatter={audFormatter}
@@ -58,11 +73,15 @@ export default function InvoiceTotalsSummary({
       {/* Subtotal / Total */}
       <Row align="middle" style={{ marginTop: 20 }}>
         <Col flex="120px">
-          <Typography.Text strong>{includeGST ? 'Sub-Total:' : 'Total:'}</Typography.Text>
+          {/* CHANGED: Shows Currency Name (e.g., Sub-Total (USD): ) */}
+          <Typography.Text strong>
+            {includeGST ? `Sub-Total (${currency}):` : `Total (${currency}):`}
+          </Typography.Text>
         </Col>
         <Col flex="auto">
           <InputNumber
-            addonBefore="$"
+            // CHANGED: Dynamic Symbol
+            addonBefore={symbol}
             disabled
             style={{ width: '100%' }}
             value={includeGST ? calculatedTotals.grossTotal : calculatedTotals.finalTotal}
@@ -82,7 +101,8 @@ export default function InvoiceTotalsSummary({
         <Col flex="auto">
           {includeGST && (
             <InputNumber
-              addonBefore="$"
+              // CHANGED: Dynamic Symbol
+              addonBefore={symbol}
               disabled
               style={{ width: '100%' }}
               value={calculatedTotals.gstAmount}
@@ -113,7 +133,8 @@ export default function InvoiceTotalsSummary({
               </Col>
               <Col span={8}>
                 <InputNumber
-                  addonBefore="$"
+                  // CHANGED: Dynamic Symbol
+                  addonBefore={symbol}
                   style={{ width: '100%' }}
                   value={d.amount}
                   formatter={audFormatter}
@@ -146,11 +167,13 @@ export default function InvoiceTotalsSummary({
           {/* Final total */}
           <Row align="middle" style={{ marginTop: 20 }}>
             <Col flex="120px">
-              <Typography.Text strong>Total:</Typography.Text>
+              {/* CHANGED: Shows Currency Name */}
+              <Typography.Text strong>Total ({currency}):</Typography.Text>
             </Col>
             <Col flex="auto">
               <InputNumber
-                addonBefore="$"
+                // CHANGED: Dynamic Symbol
+                addonBefore={symbol}
                 disabled
                 style={{ width: '100%', fontWeight: 'bold' }}
                 value={calculatedTotals.finalTotal}

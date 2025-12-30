@@ -1,21 +1,37 @@
 // ./frontend/src/components/invoice/InvoiceItemsTable.jsx
 
-import { Table, Input, InputNumber, Button, Popconfirm, Typography, Select } from 'antd'; // Import Select
+import { Table, Input, InputNumber, Button, Popconfirm, Typography, Select } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
 
 const { Option } = Select;
 
+// Map currency codes to their symbols for the Total column
+const CURRENCY_SYMBOLS = {
+  AUD: '$',
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  JPY: '¥',
+  CNY: '¥',
+};
+
 export default function InvoiceItemsTable({
   invoiceType,
   items,
+  currency = 'AUD', // New Prop: Global Currency
+  setCurrency,      // New Prop: Function to update Global Currency
   handleItemChange,
   addRow,
   removeRow,
 }) {
 
+  // Helper: Get symbol based on current global state
+  const currentSymbol = CURRENCY_SYMBOLS[currency] || '$';
+
+  // 1. Unit Selector (Keeps specific to the row)
   const renderUnitSelector = (record) => (
     <Select
-      value={record.unit || 't'} // Default to 't' if undefined
+      value={record.unit || 't'}
       style={{ width: 90, margin: '-5px 0' }}
       onChange={(val) => handleItemChange(record.key, 'unit', val)}
     >
@@ -27,11 +43,13 @@ export default function InvoiceItemsTable({
     </Select>
   );
 
-  const renderCurrencySelector = (record) => (
+  // 2. Currency Selector (Universal)
+  // When changed here, it updates the 'currency' prop, affecting ALL rows and totals.
+  const renderCurrencySelector = () => (
     <Select
-      value={record.currency || 'AUD'} // Default to 'AUD' if undefined
+      value={currency} 
       style={{ width: 100, margin: '-5px 0' }}
-      onChange={(val) => handleItemChange(record.key, 'currency', val)}
+      onChange={(val) => setCurrency(val)} // Updates global state
     >
       <Option value="AUD">AUD$</Option>
       <Option value="USD">USD$</Option>
@@ -70,7 +88,8 @@ export default function InvoiceItemsTable({
       dataIndex: 'price',
       render: (_, record) => (
         <InputNumber
-          addonBefore={renderCurrencySelector(record)}
+          // Use the Universal Selector here
+          addonBefore={renderCurrencySelector()} 
           style={{ width: '100%' }}
           value={record.price}
           formatter={audFormatter}
@@ -84,7 +103,8 @@ export default function InvoiceItemsTable({
       dataIndex: 'total',
       render: (_, record) => (
         <InputNumber
-          addonBefore="$"
+          // Dynamically change the symbol based on the global currency
+          addonBefore={currentSymbol} 
           style={{ width: '100%' }}
           value={record.total}
           formatter={audFormatterFixed}
