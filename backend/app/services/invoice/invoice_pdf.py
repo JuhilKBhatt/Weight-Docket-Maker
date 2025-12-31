@@ -8,15 +8,37 @@ from jinja2 import Environment, FileSystemLoader
 
 from app.services.invoice import invoice_crud
 
+CURRENCY_SYMBOLS = {
+  'AUD': '$',
+  'USD': '$',
+  'EUR': '€',
+  'GBP': '£',
+  'JPY': '¥',
+  'CNY': '¥',
+  'NZD': '$',
+}
+
 def render_invoice_html(db: Session, invoice_id: int):
-    """
-    Fetches data and returns the raw HTML string.
-    Used for both PDF generation and Browser Preview.
-    """
     # 1. Get Data
     inv_dict = invoice_crud.get_invoice_by_id(db, invoice_id)
     
-    # 2. Calculate Totals
+    # 2. Logic: Date Formatting (YYYY-MM-DD -> DD/MM/YYYY)
+    formatted_date = ""
+    if inv_dict.get('invoice_date'):
+        # Assuming it comes as a date object or string. 
+        # If it's a date object from SQLAlchemy:
+        try:
+            formatted_date = inv_dict['invoice_date'].strftime("%d/%m/%Y")
+        except AttributeError:
+            # If it's already a string, parse then format
+            d = datetime.strptime(str(inv_dict['invoice_date']), "%Y-%m-%d")
+            formatted_date = d.strftime("%d/%m/%Y")
+
+    # 3. Logic: Currency Symbol
+    currency_code = inv_dict.get('currency', 'AUD')
+    symbol = CURRENCY_SYMBOLS.get(currency_code, '$')
+
+    # 4. Calculate Totals
     items_total = sum([i['quantity'] * i['price'] for i in inv_dict['line_items']])
     trans_total = sum([t['num_of_ctr'] * t['price_per_ctr'] for t in inv_dict['transport_items']])
     pre_deductions = sum([d['amount'] for d in inv_dict['pre_gst_deductions']])
@@ -32,16 +54,23 @@ def render_invoice_html(db: Session, invoice_id: int):
         "total": total
     }
 
-    # 3. Setup Template Environment
+    # 5. Setup Template
     template_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template("invoice_template.html")
+    
     css_path = os.path.join(template_dir, "invoice_template_styles.css")
     with open(css_path, 'r') as css_file:
         css_content = css_file.read()
 
-    # 4. Render HTML
-    return template.render(invoice=inv_dict, totals=totals, css_content=css_content)
+    # 6. Render with new variables (formatted_date, symbol)
+    return template.render(
+        invoice=inv_dict, 
+        totals=totals, 
+        css_content=css_content,
+        formatted_date=formatted_date, # Pass this
+        symbol=symbol # Pass this
+    )
 
 def generate_invoice_pdf(db: Session, invoice_id: int):
     """
