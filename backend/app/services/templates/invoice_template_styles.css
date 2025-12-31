@@ -39,19 +39,40 @@ hr.dotted {
 }
 
 .section-label {
-    font-size: 9pt;
+    background-color: #111;
+    color: #fff;
+    font-size: 16pt;
     font-weight: bold;
-    color: #666;
-    text-transform: uppercase;
-    border-bottom: 1px solid #ccc;
-    margin-bottom: 5px;
-    padding-bottom: 2px;
-    width: 100%;
+    text-align: center;
+    width: 35%;
+    padding: 5px;
 }
 
 .address-block {
     margin-bottom: 20px;
-    font-size: 10pt;
+    font-size: 12pt;
+}
+
+.address-block strong {
+    font-size: 18pt;
+    color: #b01c2e;
+}
+
+.invoice-number-row{
+    background-color: #111;
+    color: #fff;
+    font-size: 16pt;
+    font-weight: bold;
+    text-align: center;
+    width: 35%;
+    padding: 5px;
+}
+
+.invoice-date{
+    font-size: 14pt;
+    text-align: center;
+    width: 35%;
+    padding: 5px;
 }
 
 /* Items Table */

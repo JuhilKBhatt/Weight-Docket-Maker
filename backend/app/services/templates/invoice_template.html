@@ -10,10 +10,11 @@
 <div class="header-title"></div>
     <table class="layout">
         <tr>
-            <td width="33%" valign="top">
+            <td width="40%" valign="top">
+                <div class="address-block">
                     <div class="section-label">BILL FROM</div>
                     <div style="margin-top: 5px;">
-                        <strong>Name: {{ invoice.bill_from_name }}</strong><br>
+                        Name:<strong> {{ invoice.bill_from_name }}</strong><br>
                         Address: {{ invoice.bill_from_address }}<br>
                         Phone: {{ invoice.bill_from_phone }}<br>
                         Email: {{ invoice.bill_from_email }}<br>
@@ -22,11 +23,11 @@
                 </div>
             </td>
 
-            <td width="33%" valign="top">    
+            <td width="40%" valign="top">    
                 <div class="address-block">
                     <div class="section-label">BILL TO</div>
                     <div style="margin-top: 5px;">
-                        <strong>Name: {{ invoice.bill_to_name }}</strong><br>
+                        Name:<strong> {{ invoice.bill_to_name }}</strong><br>
                         Address: {{ invoice.bill_to_address }}<br>
                         Phone: {{ invoice.bill_to_phone }}<br>
                         Email: {{ invoice.bill_to_email }}<br>
@@ -35,15 +36,13 @@
                 </div>
             </td>
 
-            <td width="33%" align="right" valign="top">
-                <table style="width: 100%;">
+            <td width="20%" align="right" valign="top">
+                <table style="width: 100%; margin-top: 40px;">
                     <tr>
-                        <td class="text-right bold">Invoice #:</td>
-                        <td class="text-right" style="padding-left: 10px;">{{ invoice.scrinv_number }}</td>
+                        <td class="invoice-number-row">INVOICE ID#:{{ invoice.scrinv_number }}</td>
                     </tr>
                     <tr>
-                        <td class="text-right bold">Date:</td>
-                        <td class="text-right">{{ formatted_date }}</td>
+                        <td class="invoice-date">Date: {{ formatted_date }}</td>
                     </tr>
                 </table>
             </td>
