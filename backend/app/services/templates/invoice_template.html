@@ -40,7 +40,7 @@
                         <td class="invoice-number-row">INVOICE ID#:{{ invoice.scrinv_number }}</td>
                     </tr>
                     <tr>
-                        <td class="invoice-date">Date: {{ formatted_date }}</td>
+                        <td class="invoice-date">DATE: {{ formatted_date }}</td>
                     </tr>
                 </table>
             </td>
@@ -145,17 +145,17 @@
             <td width="5%"></td>
             <td width="35%" valign="top">
                 <table class="totals-table">
-                    <tr>
-                        <td class="text-right bold subtotal-cell">Subtotal:</td>
-                        <td class="text-right subtotal-cell" width="100">{{ symbol }}{{ "{:,.2f}".format(totals.subtotal) }}</td>
-                    </tr>
-
                     {% for d in invoice.pre_gst_deductions %}
                     <tr>
                         <td class="text-right text-danger deduction-cell">{{ d.label }}:</td>
                         <td class="text-right text-danger deduction-cell">-{{ symbol }}{{ "{:,.2f}".format(d.amount) }}</td>
                     </tr>
                     {% endfor %}
+
+                    <tr>
+                        <td class="text-right bold subtotal-cell">SUB-TOTAL:</td>
+                        <td class="text-right subtotal-cell" width="100">{{ symbol }}{{ "{:,.2f}".format(totals.subtotal) }}</td>
+                    </tr>
 
                     {% if invoice.include_gst %}
                     <tr>
@@ -179,6 +179,7 @@
             </td>
         </tr>
     </table>
+    <br>
 
     <table style="width: 100%; border-collapse: collapse; margin-top: 30px;">
         <tr>
@@ -207,18 +208,26 @@
             <td width="2%"></td>
             <hr class="dotted"></hr>
             <td width="30%" valign="top">
-                <div class="box-header">SUMMARY</div>
+                <div class="box-header">INVOICE SUMMARY</div>
                 <table class="footer-table">
                     <tr>
-                        <td class="footer-label">Invoice #:</td>
+                        <td class="footer-label">BILLED FROM:</td>
+                        <td class="footer-value">{{ invoice.bill_from_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="footer-label">BILLED TO:</td>
+                        <td class="footer-value">{{ invoice.bill_to_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="footer-label">INVOICE ID#:</td>
                         <td class="footer-value">{{ invoice.scrinv_number }}</td>
                     </tr>
                     <tr>
-                        <td class="footer-label">Date:</td>
+                        <td class="footer-label">DATE:</td>
                         <td class="footer-value">{{ formatted_date }}</td>
                     </tr>
                     <tr>
-                        <td class="footer-label">Total:</td>
+                        <td class="footer-label">TOTAL:</td>
                         <td class="footer-value"><strong>{{ symbol }}{{ "{:,.2f}".format(totals.total) }}</strong></td>
                     </tr>
                 </table>

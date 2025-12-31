@@ -155,7 +155,7 @@ table.totals-table td {
 .footer-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 9pt;
+    font-size: 12pt;
     border: 1px solid #ccc;
 }
 .footer-table td {
@@ -168,15 +168,17 @@ table.totals-table td {
     text-align: right;
     width: 35%;
 }
+
 .footer-value {
     text-align: left;
     width: 65%;
 }
+
 .box-header {
-    background-color: #111;
+    background-color: #b01c2e;
     color: #fff;
     font-weight: bold;
     padding: 6px;
     text-align: center;
-    font-size: 11pt;
+    font-size: 14pt;
 }
