@@ -6,8 +6,8 @@
     </style>
 </head>
 <body>
-<div class="logo-text">Safari Copper Recycling</div>
- <div class="header-title">TAX INVOICE</div>
+<div class="logo-text"></div>
+ <div class="header-title"></div>
     <table class="layout">
         <tr>
             <td width="33%" valign="top">
@@ -45,10 +45,6 @@
                         <td class="text-right bold">Date:</td>
                         <td class="text-right">{{ formatted_date }}</td>
                     </tr>
-                    <tr>
-                        <td class="text-right bold">Status:</td>
-                        <td class="text-right">{{ invoice.status }}</td>
-                    </tr>
                 </table>
             </td>
         </tr>
@@ -61,7 +57,7 @@
                     <th width="15%">Seal #</th>
                     <th width="15%">Container #</th>
                     <th width="30%">Description</th>
-                    <th width="15%" class="text-right">Weight</th>
+                    <th width="15%" class="text-right">Quantity</th>
                     <th width="10%" class="text-right">Price</th>
                     <th width="15%" class="text-right">Total</th>
 
@@ -69,7 +65,7 @@
                     <th width="5%">#</th>
                     <th width="25%">Metal</th>
                     <th width="30%">Description</th>
-                    <th width="15%" class="text-right">Weight</th>
+                    <th width="15%" class="text-right">Quantity</th>
                     <th width="10%" class="text-right">Price</th>
                     <th width="15%" class="text-right">Total</th>
 
@@ -143,6 +139,49 @@
             <td width="60%" valign="top">
                 <div style="margin-top: 10px;"></div>
 
+                <div style="margin-top: 15px; font-size: 9pt; border: 1px solid #ccc; padding: 10px;">
+                    <strong>Notes:</strong><br>
+                    {{ invoice.notes }}
+                </div>
+            </td>
+
+            <td width="5%"></td>
+            <td width="35%" valign="top">
+                <table class="totals-table">
+                    <tr>
+                        <td class="text-right bold">Subtotal:</td>
+                        <td class="text-right" width="100">{{ symbol }}{{ "%.2f"|format(totals.subtotal) }}</td>
+                    </tr>
+
+                    {% for d in invoice.pre_gst_deductions %}
+                    <tr>
+                        <td class="text-right text-danger">{{ d.label }}:</td>
+                        <td class="text-right text-danger">-{{ symbol }}{{ "%.2f"|format(d.amount) }}</td>
+                    </tr>
+                    {% endfor %}
+
+                    {% if invoice.include_gst %}
+                    <tr>
+                        <td class="text-right bold">GST (10%):</td>
+                        <td class="text-right">{{ symbol }}{{ "%.2f"|format(totals.gst) }}</td>
+                    </tr>
+                    {% endif %}
+
+                    {% for d in invoice.post_gst_deductions %}
+                    <tr>
+                        <td class="text-right text-danger">{{ d.label }}:</td>
+                        <td class="text-right text-danger">-{{ symbol }}{{ "%.2f"|format(d.amount) }}</td>
+                    </tr>
+                    {% endfor %}
+
+                    <tr>
+                        <td class="text-right grand-total">TOTAL:</td>
+                        <td class="text-right grand-total">{{ symbol }}{{ "%.2f"|format(totals.total) }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr>
                         <td width="48%" valign="top">
@@ -188,52 +227,5 @@
                         </td>
                     </tr>
                 </table>
-
-                {% if invoice.notes %}
-                <div style="margin-top: 15px; font-size: 9pt; border: 1px solid #ccc; padding: 10px;">
-                    <strong>Notes:</strong><br>
-                    {{ invoice.notes }}
-                </div>
-                {% endif %}
-            </td>
-
-            <td width="5%"></td>
-            <td width="35%" valign="top">
-                <table class="totals-table">
-                    <tr>
-                        <td class="text-right bold">Subtotal:</td>
-                        <td class="text-right" width="100">{{ symbol }}{{ "%.2f"|format(totals.subtotal) }}</td>
-                    </tr>
-
-                    {% for d in invoice.pre_gst_deductions %}
-                    <tr>
-                        <td class="text-right text-danger">{{ d.label }}:</td>
-                        <td class="text-right text-danger">-{{ symbol }}{{ "%.2f"|format(d.amount) }}</td>
-                    </tr>
-                    {% endfor %}
-
-                    {% if invoice.include_gst %}
-                    <tr>
-                        <td class="text-right bold">GST (10%):</td>
-                        <td class="text-right">{{ symbol }}{{ "%.2f"|format(totals.gst) }}</td>
-                    </tr>
-                    {% endif %}
-
-                    {% for d in invoice.post_gst_deductions %}
-                    <tr>
-                        <td class="text-right text-danger">{{ d.label }}:</td>
-                        <td class="text-right text-danger">-{{ symbol }}{{ "%.2f"|format(d.amount) }}</td>
-                    </tr>
-                    {% endfor %}
-
-                    <tr>
-                        <td class="text-right grand-total">TOTAL:</td>
-                        <td class="text-right grand-total">{{ symbol }}{{ "%.2f"|format(totals.total) }}</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-
 </body>
 </html>
