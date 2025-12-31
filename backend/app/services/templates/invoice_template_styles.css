@@ -16,6 +16,11 @@ table.layout td {
     padding: 0;
 }
 
+hr.dotted {
+    border: none;
+    border-top: 4px dotted black;
+}
+
 /* Header Section */
 .logo-text {
     font-size: 16pt;
