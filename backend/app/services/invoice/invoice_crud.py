@@ -20,6 +20,7 @@ def get_invoice_by_id(db: Session, invoice_id: int):
         "id": invoice.id,
         "scrinv_number": invoice.scrinv_number,
         "invoice_type": invoice.invoice_type,
+        "currency": invoice.currency,
         "include_gst": invoice.include_gst,
         "show_transport": invoice.show_transport,
         "notes": invoice.notes,
@@ -39,7 +40,7 @@ def get_invoice_by_id(db: Session, invoice_id: int):
         "account_name": invoice.account_name,
         "bsb": invoice.bsb,
         "account_number": invoice.account_number,
-        "line_items": [{"id": i.id, "seal": i.seal, "container_number": i.container_number, "metal": i.metal, "description": i.description, "quantity": i.quantity, "price": i.price} for i in invoice.items],
+        "line_items": [{"id": i.id, "seal": i.seal, "container_number": i.container_number, "metal": i.metal, "description": i.description, "quantity": i.quantity, "price": i.price, "unit": i.unit} for i in invoice.items],
         "transport_items": [{"id": t.id, "name": t.name, "num_of_ctr": t.num_of_ctr, "price_per_ctr": t.price_per_ctr} for t in invoice.transport_items],
         "pre_gst_deductions": [{"id": d.id, "type": d.type, "label": d.label, "amount": d.amount} for d in invoice.deductions if d.type == "pre"],
         "post_gst_deductions": [{"id": d.id, "type": d.type, "label": d.label, "amount": d.amount} for d in invoice.deductions if d.type == "post"],
@@ -61,6 +62,7 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
         # UPDATE fields
         invoice.status = data.status
         invoice.invoice_type = data.invoice_type
+        invoice.currency = data.currency
         invoice.include_gst = data.include_gst
         invoice.show_transport = data.show_transport
         invoice.invoice_date = data.invoice_date
@@ -92,6 +94,7 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
             scrinv_number=data.scrinv_number,
             status=data.status,
             invoice_type=data.invoice_type,
+            currency=data.currency,
             include_gst=data.include_gst,
             show_transport=data.show_transport,
             invoice_date=data.invoice_date,
@@ -118,7 +121,7 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
     for i in data.items:
         db.add(InvoiceItem(
             invoice_id=invoice.id, seal=i.seal, container_number=i.container_number,
-            metal=i.metal, description=i.description, quantity=i.quantity, price=i.price
+            metal=i.metal, description=i.description, quantity=i.quantity, price=i.price, unit=i.unit
         ))
     for t in data.transport_items:
         db.add(TransportItem(

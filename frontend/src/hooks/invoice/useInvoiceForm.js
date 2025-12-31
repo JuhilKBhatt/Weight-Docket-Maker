@@ -10,7 +10,7 @@ const uid = (() => {
 
 export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
   const defaultItems = [
-    { key: uid(), seal: '', containerNumber: '', metal: '', description: '', quantity: 0, price: 0 },
+    { key: uid(), seal: '', containerNumber: '', metal: '', description: '', quantity: 0, price: 0, unit: 't' },
   ];
 
   // SCRINV ID
@@ -33,15 +33,17 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
 
   // --- 1. ITEMS ---
   const [items, setItems] = useState(() => {
-    if (existingInvoice?.items && existingInvoice.items.length > 0) {
-      return existingInvoice.items.map(i => ({
-        key: i.key || uid(),
+    const sourceItems = existingInvoice?.line_items || existingInvoice?.items;
+    if (sourceItems && sourceItems.length > 0) {
+      return sourceItems.map(i => ({
+        key: i.key || i.id || uid(),
         seal: i.seal || '',
-        containerNumber: i.container_number || '', // Map backend snake_case to frontend camelCase
+        containerNumber: i.container_number || '', 
         metal: i.metal || '',
         description: i.description || '',
         quantity: i.quantity ?? 0,
         price: i.price ?? 0,
+        unit: i.unit || 't',
       }));
     }
     return defaultItems;
@@ -51,10 +53,10 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
   const [transportItems, setTransportItems] = useState(() => {
     if (existingInvoice?.transport_items && existingInvoice.transport_items.length > 0) {
       return existingInvoice.transport_items.map(t => ({
-        key: t.key || uid(),
+        key: t.key || t.id || uid(),
         name: t.name || '',
-        numOfCtr: t.num_of_ctr ?? 0,          // Map backend snake_case to frontend camelCase
-        pricePerCtr: t.price_per_ctr ?? 0     // Map backend snake_case to frontend camelCase
+        numOfCtr: t.num_of_ctr ?? 0,
+        pricePerCtr: t.price_per_ctr ?? 0
       }));
     }
     return [];
@@ -86,6 +88,7 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
   const [invoiceType, setInvoiceType] = useState(existingInvoice?.invoice_type || 'Container');
   const [includeGST, setIncludeGST] = useState(existingInvoice?.include_gst ?? true);
   const [showTransport, setShowTransport] = useState(existingInvoice?.show_transport ?? false);
+  const [currency, setCurrency] = useState(existingInvoice?.currency || 'AUD');
 
   // GENERIC HANDLERS
   const handleItemChange = (key, field, value) => setItems(prev => prev.map(item => item.key === key ? { ...item, [field]: value } : item));
@@ -124,6 +127,7 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
     setInvoiceType('Container');
     setIncludeGST(true);
     setShowTransport(false);
+    setCurrency('AUD');
     localStorage.removeItem("scrinvID");
     setScrinvID(null);
   };
@@ -137,6 +141,8 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
     invoiceType,
     includeGST,
     showTransport,
+    currency,
+    setCurrency,
     setInvoiceType,
     setIncludeGST,
     setShowTransport: toggleTransport,

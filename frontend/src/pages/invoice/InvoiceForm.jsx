@@ -29,10 +29,9 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
   const confirmReset = useConfirmReset();
   
   // 1. Initialize State & Selectors
-  const invoice = useInvoiceForm(mode, existingInvoice);
+  const { currency, setCurrency, ...invoice} = useInvoiceForm(mode, existingInvoice);
   const calculatedTotals = useInvoiceCalculations(invoice);
   const { savedCompaniesFrom, savedCompaniesTo, savedAccounts } = useInvoiceSelectors();
-  const [currency, setCurrency] = React.useState('AUD');
 
   // 2. Handle Auto-Fill for Edit Mode
   useInvoiceAutoFill({
@@ -49,6 +48,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       const values = await form.validateFields();
       const payload = {
         ...invoice, // Spread hooks state (scrinvID, items, transportItems, etc.)
+        currency,
         values,
       };
       
@@ -74,6 +74,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       const values = await form.validateFields();
       const payload = {
         ...invoice, // Spread hooks state (scrinvID, items, transportItems, etc.)
+        currency,
         values,
       };
       

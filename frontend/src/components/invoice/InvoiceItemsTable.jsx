@@ -23,7 +23,7 @@ export default function InvoiceItemsTable({
   const renderUnitSelector = (record) => (
     <Select
       value={record.unit || 't'}
-      style={{ width: 80, margin: '-5px 0' }}
+      style={{ width: 88, margin: '-5px 0' }}
       showSearch
       optionFilterProp="children"
       onChange={(val) => handleItemChange(record.key, 'unit', val)}
@@ -38,7 +38,7 @@ export default function InvoiceItemsTable({
   const renderCurrencySelector = () => (
     <Select
       value={currency} 
-      style={{ width: 100, margin: '-5px 0' }}
+      style={{ width: 98, margin: '-5px 0' }}
       showSearch
       optionFilterProp="children"
       onChange={(val) => setCurrency(val)}

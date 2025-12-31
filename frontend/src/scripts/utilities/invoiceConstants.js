@@ -2,13 +2,13 @@
 
 // 1. Currency Configuration
 export const CURRENCY_OPTIONS = [
-  { code: 'AUD', symbol: '$', label: 'AUD $' },
-  { code: 'USD', symbol: '$', label: 'USD $' },
-  { code: 'EUR', symbol: '€', label: 'EUR €' },
-  { code: 'GBP', symbol: '£', label: 'GBP £' },
-  { code: 'JPY', symbol: '¥', label: 'JPY ¥' },
-  { code: 'CNY', symbol: '¥', label: 'CNY ¥' },
-  { code: 'NZD', symbol: '$', label: 'NZD $' },
+  { code: 'AUD', symbol: '$', label: 'AUD$' },
+  { code: 'USD', symbol: '$', label: 'USD$' },
+  { code: 'EUR', symbol: '€', label: 'EUR€' },
+  { code: 'GBP', symbol: '£', label: 'GBP£' },
+  { code: 'JPY', symbol: '¥', label: 'JPY¥' },
+  { code: 'CNY', symbol: '¥', label: 'CNY¥' },
+  { code: 'NZD', symbol: '$', label: 'NZD$' },
 ];
 
 // 2. Unit Configuration

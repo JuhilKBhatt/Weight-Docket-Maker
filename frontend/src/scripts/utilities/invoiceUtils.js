@@ -8,6 +8,7 @@ export const saveDraftInvoice = async ({
   includeGST,
   showTransport,
   items,
+  currency,
   transportItems,
   preGstDeductions,
   postGstDeductions,
@@ -19,6 +20,7 @@ export const saveDraftInvoice = async ({
     scrinv_number: scrinvID,
     status: "Draft",
     invoice_type: invoiceType,
+    currency: currency,
     include_gst: includeGST,
     show_transport: showTransport,
     invoice_date: values.date ? values.date.format('YYYY-MM-DD') : null,
@@ -46,6 +48,7 @@ export const saveDraftInvoice = async ({
         description: safeValue(i.description),
         quantity: Number(i.quantity ?? 0),
         price: Number(i.price ?? 0),
+        unit: safeValue(i.unit, "t"),
       };
 
       if (invoiceType === "Container") {

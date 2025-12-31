@@ -14,6 +14,7 @@ class Invoice(Base):
     # SCR Invoice ID (A0001 → B0001, etc.)
     scrinv_number = Column(String(10), unique=True)
     invoice_date = Column(Date, nullable=True)
+    currency = Column(String(10), default="AUD")
     status = Column(String(20), default="Draft")  # Draft, Sent, Paid
 
     # Invoice meta
@@ -62,6 +63,7 @@ class InvoiceItem(Base):
     description = Column(String(255))
     quantity = Column(Float, default=0)
     price = Column(Float, default=0)
+    unit = Column(String(20), default="t")
 
     invoice = relationship("Invoice", back_populates="items")
 

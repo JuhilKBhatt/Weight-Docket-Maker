@@ -9,6 +9,7 @@ class ItemSchema(BaseModel):
     seal: Optional[str] = None
     container_number: Optional[str] = None
     metal: Optional[str] = None
+    unit: Optional[str] = "t"
 
 
 class TransportSchema(BaseModel):
@@ -28,6 +29,7 @@ class InvoiceCreate(BaseModel):
     invoice_date: Optional[str] = None
     status: Optional[str] = "Draft"
     invoice_type: str
+    currency: str
     include_gst: bool
     show_transport: bool
     notes: str
