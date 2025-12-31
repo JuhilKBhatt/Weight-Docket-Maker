@@ -2,15 +2,7 @@
 
 import { Row, Col, Typography, Input, InputNumber, Button, Checkbox } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
-
-const CURRENCY_SYMBOLS = {
-  AUD: '$',
-  USD: '$',
-  EUR: '€',
-  GBP: '£',
-  JPY: '¥',
-  CNY: '¥',
-};
+import { getCurrencyLabel } from '../../scripts/utilities/invoiceConstants';
 
 export default function InvoiceTotalsSummary({
   includeGST,
@@ -21,13 +13,14 @@ export default function InvoiceTotalsSummary({
   handleDeductionChange,
   addDeduction,
   removeDeduction,
-  currency = 'AUD', // New Prop
+  currency = 'AUD',
 }) {
-  const symbol = currency+CURRENCY_SYMBOLS[currency] || '$';
+  
+  // Use Helper
+  const symbolLabel = getCurrencyLabel(currency);
 
   return (
     <Col span={12}>
-      {/* Pre-GST deductions */}
       <Typography.Title level={5}>Deductions (Before GST)</Typography.Title>
 
       {preGstDeductions.map(d => (
@@ -43,8 +36,7 @@ export default function InvoiceTotalsSummary({
           </Col>
           <Col span={8}>
             <InputNumber
-              // CHANGED: Dynamic Symbol
-              addonBefore={symbol}
+              addonBefore={symbolLabel}
               style={{ width: '100%' }}
               value={d.amount}
               formatter={audFormatter}
@@ -70,7 +62,7 @@ export default function InvoiceTotalsSummary({
         + Add Deduction
       </Button>
 
-      {/* Subtotal / Total */}
+      {/* Subtotal */}
       <Row align="middle" style={{ marginTop: 20 }}>
         <Col flex="120px">
           <Typography.Text strong>
@@ -79,7 +71,7 @@ export default function InvoiceTotalsSummary({
         </Col>
         <Col flex="auto">
           <InputNumber
-            addonBefore={symbol}
+            addonBefore={symbolLabel}
             disabled
             style={{ width: '100%' }}
             value={includeGST ? calculatedTotals.grossTotal : calculatedTotals.finalTotal}
@@ -89,7 +81,7 @@ export default function InvoiceTotalsSummary({
         </Col>
       </Row>
 
-      {/* GST Checkbox & Amount */}
+      {/* GST Checkbox */}
       <Row align="middle" style={{ marginTop: 10 }}>
         <Col flex="120px">
           <Checkbox checked={includeGST} onChange={(e) => setIncludeGST(e.target.checked)}>
@@ -99,7 +91,7 @@ export default function InvoiceTotalsSummary({
         <Col flex="auto">
           {includeGST && (
             <InputNumber
-              addonBefore={symbol}
+              addonBefore={symbolLabel}
               disabled
               style={{ width: '100%' }}
               value={calculatedTotals.gstAmount}
@@ -130,7 +122,7 @@ export default function InvoiceTotalsSummary({
               </Col>
               <Col span={8}>
                 <InputNumber
-                  addonBefore={symbol}
+                  addonBefore={symbolLabel}
                   style={{ width: '100%' }}
                   value={d.amount}
                   formatter={audFormatter}
@@ -152,24 +144,18 @@ export default function InvoiceTotalsSummary({
             </Row>
           ))}
 
-          <Button
-            type="dashed"
-            size="small"
-            onClick={() => addDeduction('post')}
-          >
+          <Button type="dashed" size="small" onClick={() => addDeduction('post')}>
             + Add Deduction
           </Button>
 
-          {/* Final total */}
+          {/* Final Total */}
           <Row align="middle" style={{ marginTop: 20 }}>
             <Col flex="120px">
-              {/* CHANGED: Shows Currency Name */}
               <Typography.Text strong>Total:</Typography.Text>
             </Col>
             <Col flex="auto">
               <InputNumber
-                // CHANGED: Dynamic Symbol
-                addonBefore={symbol}
+                addonBefore={symbolLabel}
                 disabled
                 style={{ width: '100%', fontWeight: 'bold' }}
                 value={calculatedTotals.finalTotal}

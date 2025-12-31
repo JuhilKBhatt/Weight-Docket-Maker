@@ -2,61 +2,50 @@
 
 import { Table, Input, InputNumber, Button, Popconfirm, Typography, Select } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
+import { CURRENCY_OPTIONS, UNIT_OPTIONS, getCurrencyLabel } from '../../scripts/utilities/invoiceConstants';
 
 const { Option } = Select;
-
-// Map currency codes to their symbols for the Total column
-const CURRENCY_SYMBOLS = {
-  AUD: '$',
-  USD: '$',
-  EUR: '€',
-  GBP: '£',
-  JPY: '¥',
-  CNY: '¥',
-};
 
 export default function InvoiceItemsTable({
   invoiceType,
   items,
-  currency = 'AUD', // New Prop: Global Currency
-  setCurrency,      // New Prop: Function to update Global Currency
+  currency = 'AUD',
+  setCurrency,
   handleItemChange,
   addRow,
   removeRow,
 }) {
 
-  // Helper: Get symbol based on current global state
-  const currentSymbol = currency+CURRENCY_SYMBOLS[currency] || '$';
+  // Helper: Get symbol (e.g. "AUD$")
+  const currentSymbolLabel = getCurrencyLabel(currency);
 
-  // 1. Unit Selector (Keeps specific to the row)
+  // 1. Optimized Unit Selector (Searchable & Mapped)
   const renderUnitSelector = (record) => (
     <Select
       value={record.unit || 't'}
-      style={{ width: 90, margin: '-5px 0' }}
+      style={{ width: 80, margin: '-5px 0' }}
+      showSearch
+      optionFilterProp="children"
       onChange={(val) => handleItemChange(record.key, 'unit', val)}
     >
-      <Option value="t">t</Option>
-      <Option value="kg">kg</Option>
-      <Option value="pcs">pcs</Option>
-      <Option value="bin">bin</Option>
-      <Option value="cnt">CNT</Option>
+      {UNIT_OPTIONS.map(unit => (
+        <Option key={unit.value} value={unit.value}>{unit.label}</Option>
+      ))}
     </Select>
   );
 
-  // 2. Currency Selector (Universal)
-  // When changed here, it updates the 'currency' prop, affecting ALL rows and totals.
+  // 2. Optimized Currency Selector (Searchable & Mapped)
   const renderCurrencySelector = () => (
     <Select
       value={currency} 
       style={{ width: 100, margin: '-5px 0' }}
-      onChange={(val) => setCurrency(val)} // Updates global state
+      showSearch
+      optionFilterProp="children"
+      onChange={(val) => setCurrency(val)}
     >
-      <Option value="AUD">AUD$</Option>
-      <Option value="USD">USD$</Option>
-      <Option value="EUR">EUR€</Option>
-      <Option value="GBP">GBP£</Option>
-      <Option value="JPY">JPY¥</Option>
-      <Option value="CNY">CNY¥</Option>
+      {CURRENCY_OPTIONS.map(curr => (
+        <Option key={curr.code} value={curr.code}>{curr.label}</Option>
+      ))}
     </Select>
   );
 
@@ -88,7 +77,7 @@ export default function InvoiceItemsTable({
       dataIndex: 'price',
       render: (_, record) => (
         <InputNumber
-          // Use the Universal Selector here
+          // Universal Selector
           addonBefore={renderCurrencySelector()} 
           style={{ width: '100%' }}
           value={record.price}
@@ -103,8 +92,8 @@ export default function InvoiceItemsTable({
       dataIndex: 'total',
       render: (_, record) => (
         <InputNumber
-          // Dynamically change the symbol based on the global currency
-          addonBefore={currentSymbol} 
+          // Dynamic Symbol Label
+          addonBefore={currentSymbolLabel} 
           style={{ width: '100%' }}
           value={record.total}
           formatter={audFormatterFixed}
