@@ -14,7 +14,7 @@
                 <div class="address-block">
                     <div class="section-label">BILL FROM</div>
                     <div style="margin-top: 5px;">
-                        Name:<strong> {{ invoice.bill_from_name }}</strong><br>
+                        <strong> {{ invoice.bill_from_name }}</strong><br>
                         Address: {{ invoice.bill_from_address }}<br>
                         Phone: {{ invoice.bill_from_phone }}<br>
                         Email: {{ invoice.bill_from_email }}<br>
@@ -22,12 +22,11 @@
                     </div>
                 </div>
             </td>
-
             <td width="40%" valign="top">    
                 <div class="address-block">
                     <div class="section-label">BILL TO</div>
                     <div style="margin-top: 5px;">
-                        Name:<strong> {{ invoice.bill_to_name }}</strong><br>
+                        <strong> {{ invoice.bill_to_name }}</strong><br>
                         Address: {{ invoice.bill_to_address }}<br>
                         Phone: {{ invoice.bill_to_phone }}<br>
                         Email: {{ invoice.bill_to_email }}<br>
@@ -35,7 +34,6 @@
                     </div>
                 </div>
             </td>
-
             <td width="20%" align="right" valign="top">
                 <table style="width: 100%; margin-top: 40px;">
                     <tr>
@@ -48,7 +46,6 @@
             </td>
         </tr>
     </table>
-
     <table class="items-table">
         <thead>
             <tr>
@@ -76,7 +73,6 @@
                 {% endif %}
             </tr>
         </thead>
-
         <tbody>
             {% for item in invoice.line_items %}
             <tr>
@@ -108,7 +104,7 @@
             {% for trans in invoice.transport_items %}
             <tr>
                 {% if invoice.invoice_type == 'Container' %}
-                    <td colspan="2"><strong>Transport</strong></td>
+                    <td colspan="2">Transport</td>
                     <td>{{ trans.name }}</td>
                     <td class="text-right">{{ trans.num_of_ctr }}</td>
                     <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
@@ -116,14 +112,14 @@
 
                 {% elif invoice.invoice_type == 'Pickup' %}
                     <td></td>
-                    <td><strong>Transport</strong></td>
+                    <td>Transport</td>
                     <td>{{ trans.name }}</td>
                     <td class="text-right">{{ trans.num_of_ctr }}</td>
                     <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
                     <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
 
                 {% else %}
-                    <td><strong>Transport:</strong> {{ trans.name }}</td>
+                    <td>Transport:{{ trans.name }}</td>
                     <td class="text-right">{{ trans.num_of_ctr }}</td>
                     <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
                     <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
@@ -139,7 +135,7 @@
                 <div style="margin-top: 10px;"></div>
 
                 {% if invoice.notes %}
-                <div style="margin-top: 15px; font-size: 9pt; border: 1px solid #ccc; padding: 10px;">
+                <div style="margin-top: 15px; font-size: 14pt; border: 1px solid #ccc; padding: 10px;">
                     <strong>Notes:</strong><br>
                     {{ invoice.notes }}
                 </div>
@@ -150,28 +146,28 @@
             <td width="35%" valign="top">
                 <table class="totals-table">
                     <tr>
-                        <td class="text-right bold">Subtotal:</td>
-                        <td class="text-right" width="100">{{ symbol }}{{ "{:,.2f}".format(totals.subtotal) }}</td>
+                        <td class="text-right bold subtotal-cell">Subtotal:</td>
+                        <td class="text-right subtotal-cell" width="100">{{ symbol }}{{ "{:,.2f}".format(totals.subtotal) }}</td>
                     </tr>
 
                     {% for d in invoice.pre_gst_deductions %}
                     <tr>
-                        <td class="text-right text-danger">{{ d.label }}:</td>
-                        <td class="text-right text-danger">-{{ symbol }}{{ "{:,.2f}".format(d.amount) }}</td>
+                        <td class="text-right text-danger deduction-cell">{{ d.label }}:</td>
+                        <td class="text-right text-danger deduction-cell">-{{ symbol }}{{ "{:,.2f}".format(d.amount) }}</td>
                     </tr>
                     {% endfor %}
 
                     {% if invoice.include_gst %}
                     <tr>
-                        <td class="text-right bold">GST (10%):</td>
-                        <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(totals.gst) }}</td>
+                        <td class="text-right bold gst-cell">GST (10%):</td>
+                        <td class="text-right gst-cell">{{ symbol }}{{ "{:,.2f}".format(totals.gst) }}</td>
                     </tr>
                     {% endif %}
 
                     {% for d in invoice.post_gst_deductions %}
                     <tr>
-                        <td class="text-right text-danger">{{ d.label }}:</td>
-                        <td class="text-right text-danger">-{{ symbol }}{{ "{:,.2f}".format(d.amount) }}</td>
+                        <td class="text-right text-danger deduction-cell">{{ d.label }}:</td>
+                        <td class="text-right text-danger deduction-cell">-{{ symbol }}{{ "{:,.2f}".format(d.amount) }}</td>
                     </tr>
                     {% endfor %}
 

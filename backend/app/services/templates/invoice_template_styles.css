@@ -75,7 +75,7 @@ hr.dotted {
     padding: 5px;
 }
 
-/* Items Table */
+/* Items Table Container */
 table.items-table {
     width: 100%;
     border-collapse: collapse;
@@ -83,21 +83,37 @@ table.items-table {
     margin-bottom: 20px;
 }
 
+/* Base Header Styling */
 table.items-table th {
-    background-color: #f2f2f2;
-    color: #000;
+    color: #fff; /* White text for better contrast */
     font-weight: bold;
     padding: 8px;
     border: 1px solid #ccc;
     text-align: left;
-    font-size: 9pt;
+    font-size: 14pt;
 }
 
+/* ODD Headers (1st, 3rd, 5th...) -> Red */
+table.items-table th:nth-child(odd) {
+    background-color: #b01c2e;
+}
+
+/* EVEN Headers (2nd, 4th, 6th...) -> Black */
+table.items-table th:nth-child(even) {
+    background-color: #111;
+}
+
+/* Table Cells */
 table.items-table td {
     padding: 8px;
     border: 1px solid #ccc;
-    font-size: 9pt;
+    font-size: 14pt;
     vertical-align: top;
+}
+
+/* EVEN Columns (2nd, 4th...) -> Light Grey Background */
+table.items-table td:nth-child(even) {
+    background-color: #f2f2f2;
 }
 
 /* Text Alignments */
@@ -113,13 +129,26 @@ table.totals-table {
 }
 table.totals-table td {
     padding: 5px;
-    font-size: 10pt;
 }
-.grand-total {
+
+.subtotal-cell {
     font-size: 12pt;
+}
+
+.deduction-cell {
+    font-size: 12pt;
+}
+
+.gst-cell {
+    font-size: 12pt;
+}
+
+.grand-total {
+    background-color: #b01c2e;
+    color: #fff;
+    font-size: 16pt;
     font-weight: bold;
-    border-top: 2px solid #333;
-    padding-top: 5px;
+    padding: 5px;
 }
 
 /* Footer / Payment Section */
