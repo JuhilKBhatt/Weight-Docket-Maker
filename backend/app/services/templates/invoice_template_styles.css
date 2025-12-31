@@ -1,0 +1,67 @@
+/* Invoice Template Stylesheet */
+
+/* General Reset */
+@page {
+    size: A4;
+    margin: 1cm;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 12pt;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* Payment Container - Controls the overall width */
+.payment-div {
+    width: 40%; /* Or whatever size you want this block to be */
+    margin-top: 50px;
+}
+
+/* The Label Header */
+.label {
+    display: block; /* Makes it fill the width */
+    width: 100%;    /* Forces it to take full width of container */
+    box-sizing: border-box; /* Ensures padding doesn't make it wider than 100% */
+    
+    font-weight: bold;
+    color: #f1f1f1;
+    font-size: 14pt;
+    background-color: #111;
+    padding: 8px 12px;
+    margin-bottom: 0; /* Connects it to the table below */
+    text-align: center; /* Optional: Centers text */
+}
+
+/* Payment Table */
+.payment-table {
+    width: 100%; /* Match the container width */
+    border-collapse: collapse;
+    border: 1px solid #ccc;
+    font-size: 12pt;
+    /* Remove margin-top so it sticks to the label above */
+    margin-top: 0; 
+}
+
+/* Borders for all cells */
+.payment-table th, 
+.payment-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+}
+
+/* LEFT SIDE (Keys) */
+.payment-table td:first-child {
+    text-align: right;
+    font-weight: bold;
+    width: 40%;
+    background-color: #f5f5f5;
+}
+
+/* RIGHT SIDE (Values) */
+.payment-table td:last-child {
+    text-align: left;
+    width: 60%;
+}

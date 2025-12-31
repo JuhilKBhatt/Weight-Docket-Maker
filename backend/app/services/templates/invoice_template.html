@@ -2,262 +2,42 @@
 <html>
 <head>
     <style>
-        /* General Reset */
-        @page {
-            size: A4;
-            margin: 1cm;
-        }
-        body {
-            font-family: Helvetica, sans-serif;
-            font-size: 10pt;
-            color: #333;
-            line-height: 1.4;
-        }
-
-        /* Layout Tables (replacing Flexbox) */
-        table.layout {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        table.layout td {
-            vertical-align: top;
-            padding: 0;
-        }
-
-        /* Header Section */
-        .header-title {
-            font-size: 20pt;
-            font-weight: bold;
-            color: #b01c2e; /* Matches the Red in the Logo text roughly */
-            text-align: right;
-            margin-bottom: 10px;
-        }
-        .company-name {
-            font-size: 14pt;
-            font-weight: bold;
-            color: #000;
-            text-transform: uppercase;
-        }
-        .label {
-            font-weight: bold;
-            color: #555;
-            font-size: 9pt;
-        }
-
-        /* Addresses */
-        .address-box {
-            margin-bottom: 15px;
-        }
-
-        /* Items Table */
-        table.items {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 30px;
-            margin-bottom: 30px;
-        }
-        table.items th {
-            background-color: #f0f0f0;
-            border-bottom: 1px solid #ccc;
-            font-weight: bold;
-            padding: 8px 5px;
-            text-align: left;
-            font-size: 9pt;
-        }
-        table.items td {
-            border-bottom: 1px solid #eee;
-            padding: 8px 5px;
-            font-size: 9pt;
-        }
-        /* Right align numbers */
-        .num-col { text-align: right; }
-
-        /* Totals Section */
-        .totals-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .totals-label {
-            text-align: right;
-            padding-right: 10px;
-            font-weight: bold;
-        }
-        .totals-val {
-            text-align: right;
-            width: 120px;
-        }
-        .grand-total {
-            font-size: 12pt;
-            font-weight: bold;
-            border-top: 2px solid #333;
-            padding-top: 5px;
-        }
-
-        /* Payment Footer */
-        .payment-box {
-            border: 1px solid #ddd;
-            padding: 10px;
-            background-color: #f9f9f9;
-            width: 60%; /* Occupy left side */
-        }
-        .payment-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-            text-decoration: underline;
-        }
+        {{css_content}}
     </style>
 </head>
 <body>
-
-    <table class="layout">
-        <tr>
-            <td width="55%">
-                <div class="company-name" style="margin-bottom: 10px; color: #b01c2e;">
-                    SAFARI COPPER RECYCLING
-                </div>
-
-                <div class="address-box">
-                    <div class="label">BILL FROM</div>
-                    <strong>{{ invoice.bill_from_name }}</strong><br>
-                    {{ invoice.bill_from_address }}<br>
-                    Phone: {{ invoice.bill_from_phone }}<br>
-                    Email: {{ invoice.bill_from_email }}<br>
-                    ABN: {{ invoice.bill_from_abn }}
-                </div>
-            </td>
-
-            <td width="45%" align="right">
-                <div class="header-title">INVOICE</div>
-                
-                <table align="right" style="margin-bottom: 20px;">
-                    <tr>
-                        <td class="label" align="right">Invoice #:</td>
-                        <td style="padding-left: 10px;">{{ invoice.scrinv_number }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label" align="right">Date:</td>
-                        <td style="padding-left: 10px;">{{ invoice.invoice_date }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label" align="right">Status:</td>
-                        <td style="padding-left: 10px;">{{ invoice.status }}</td>
-                    </tr>
-                </table>
-
-                <div style="text-align: right; margin-top: 10px;">
-                    <div class="label">BILL TO</div>
-                    <strong>{{ invoice.bill_to_name }}</strong><br>
-                    {{ invoice.bill_to_address }}<br>
-                    {{ invoice.bill_to_email }}<br>
-                    ABN: {{ invoice.bill_to_abn }}
-                </div>
-            </td>
-        </tr>
-    </table>
-
-    <table class="items">
-        <thead>
-            <tr>
-                <th width="5%">#</th>
-                <th width="20%">Metal</th>
-                <th width="30%">Description</th>
-                <th width="15%" class="num-col">Net Weight</th>
-                <th width="15%" class="num-col">Price</th>
-                <th width="15%" class="num-col">Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in invoice.line_items %}
-            <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ item.metal }}</td>
-                <td>
-                    {{ item.description }}
-                    {% if item.container_number %}
-                    <br><span style="font-size: 8pt; color: #666;">(Cont: {{ item.container_number }})</span>
-                    {% endif %}
-                </td>
-                <td class="num-col">
-                    {{ item.quantity }} {{ item.unit }}
-                </td>
-                <td class="num-col">
-                    ${{ "%.2f"|format(item.price) }}
-                    {% if item.unit %}<span style="font-size:8pt">/{{ item.unit }}</span>{% endif %}
-                </td>
-                <td class="num-col">${{ "%.2f"|format(item.quantity * item.price) }}</td>
-            </tr>
-            {% endfor %}
-
-            {% for trans in invoice.transport_items %}
-            <tr>
-                <td>{{ loop.index + invoice.line_items|length }}</td>
-                <td>Transport</td>
-                <td>{{ trans.name }}</td>
-                <td class="num-col">{{ trans.num_of_ctr }}</td>
-                <td class="num-col">${{ "%.2f"|format(trans.price_per_ctr) }}</td>
-                <td class="num-col">${{ "%.2f"|format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <table class="layout" style="margin-top: 20px;">
-        <tr>
-            <td width="60%">
-                <div class="payment-box">
-                    <div class="payment-title">EFT Payment Details</div>
-                    <strong>{{ invoice.account_name }}</strong><br>
-                    <table style="margin-top: 5px;">
-                        <tr><td width="80">Bank:</td><td>{{ invoice.bank_name }}</td></tr>
-                        <tr><td>BSB:</td><td>{{ invoice.bsb }}</td></tr>
-                        <tr><td>Account #:</td><td>{{ invoice.account_number }}</td></tr>
-                    </table>
-                </div>
-                
-                {% if invoice.notes %}
-                <div style="margin-top: 15px; font-size: 9pt;">
-                    <strong>Notes:</strong><br>
-                    {{ invoice.notes }}
-                </div>
-                {% endif %}
-            </td>
-
-            <td width="5%"></td> <td width="35%">
-                <table class="totals-table">
-                    <tr>
-                        <td class="totals-label">Subtotal:</td>
-                        <td class="totals-val">${{ "%.2f"|format(totals.subtotal) }}</td>
-                    </tr>
-                    
-                    {% if invoice.include_gst %}
-                    <tr>
-                        <td class="totals-label">GST (10%):</td>
-                        <td class="totals-val">${{ "%.2f"|format(totals.gst) }}</td>
-                    </tr>
-                    {% endif %}
-
-                    {% for d in invoice.pre_gst_deductions %}
-                    <tr>
-                        <td class="totals-label">{{ d.label }}:</td>
-                        <td class="totals-val">-${{ "%.2f"|format(d.amount) }}</td>
-                    </tr>
-                    {% endfor %}
-                    
-                    {% for d in invoice.post_gst_deductions %}
-                    <tr>
-                        <td class="totals-label">{{ d.label }}:</td>
-                        <td class="totals-val">-${{ "%.2f"|format(d.amount) }}</td>
-                    </tr>
-                    {% endfor %}
-
-                    <tr>
-                        <td class="totals-label grand-total">TOTAL:</td>
-                        <td class="totals-val grand-total">${{ "%.2f"|format(totals.total) }}</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-
+    <div class="header">
+        <div>
+            <div class="title">TAX INVOICE</div>
+        </div>
+        <div class="meta">
+            ID#: {{ invoice.scrinv_number }}<br>
+            Date: {{ invoice.invoice_date }}<br>
+        </div>
+    </div>
+    <div class="payment-div">
+        <a class="label">Payment Advice</a>
+        
+        <table class="payment-table">
+            <tbody>
+                <tr>
+                    <td>Bank:</td>
+                    <td>{{ invoice.bank_name }}</td>
+                </tr>
+                <tr>
+                    <td>Account Name:</td>
+                    <td>{{ invoice.account_name }}</td>
+                </tr>
+                <tr>
+                    <td>BSB:</td>
+                    <td>{{ invoice.bsb }}</td>
+                </tr>
+                <tr>
+                    <td>Account Number:</td>
+                    <td>{{ invoice.account_number }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

@@ -36,9 +36,12 @@ def render_invoice_html(db: Session, invoice_id: int):
     template_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template("invoice_template.html")
+    css_path = os.path.join(template_dir, "invoice_template_styles.css")
+    with open(css_path, 'r') as css_file:
+        css_content = css_file.read()
 
     # 4. Render HTML
-    return template.render(invoice=inv_dict, totals=totals)
+    return template.render(invoice=inv_dict, totals=totals, css_content=css_content)
 
 def generate_invoice_pdf(db: Session, invoice_id: int):
     """
