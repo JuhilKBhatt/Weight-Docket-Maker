@@ -1,7 +1,7 @@
 # app/routes/invoiceRoutes.py
 
 from fastapi import APIRouter, Depends
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, HTMLResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schema.invoiceSchema import InvoiceCreate
@@ -22,6 +22,10 @@ def create_invoice(db: Session = Depends(get_db)):
 @router.post("/saveDraft")
 def save_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
     return invoice_crud.upsert_invoice(db, data)
+
+@router.get("/{invoice_id}/preview", response_class=HTMLResponse)
+def preview_invoice_pdf(invoice_id: int, db: Session = Depends(get_db)):
+    return invoice_pdf.render_invoice_html(db, invoice_id)
 
 @router.get("/{invoice_id}/download")
 def download_invoice_pdf(invoice_id: int, db: Session = Depends(get_db)):
