@@ -1,5 +1,6 @@
 # app/services/invoice/invoice_pdf.py
 import os
+import base64
 from io import BytesIO
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -17,6 +18,12 @@ CURRENCY_SYMBOLS = {
   'CNY': 'CNY¥',
   'NZD': 'NZD$',
 }
+
+def get_image_base64(image_path):
+    if not os.path.exists(image_path):
+        return ""
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode('utf-8')
 
 def render_invoice_html(db: Session, invoice_id: int):
     # 1. Get Data
@@ -62,6 +69,11 @@ def render_invoice_html(db: Session, invoice_id: int):
     css_path = os.path.join(template_dir, "invoice_template_styles.css")
     with open(css_path, 'r') as css_file:
         css_content = css_file.read()
+    header_img_path = os.path.join(template_dir, "invoice_header_logo.png")
+    footer_img_path = os.path.join(template_dir, "invoice_footer_logo.png")
+
+    header_b64 = get_image_base64(header_img_path)
+    footer_b64 = get_image_base64(footer_img_path)
 
     # 6. Render with new variables (formatted_date, symbol)
     return template.render(
@@ -69,7 +81,9 @@ def render_invoice_html(db: Session, invoice_id: int):
         totals=totals, 
         css_content=css_content,
         formatted_date=formatted_date, # Pass this
-        symbol=symbol # Pass this
+        symbol=symbol, # Pass this
+        header_img_base64=header_b64, 
+        footer_img_base64=footer_b64
     )
 
 def generate_invoice_pdf(db: Session, invoice_id: int):

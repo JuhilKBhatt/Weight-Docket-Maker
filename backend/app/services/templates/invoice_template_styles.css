@@ -182,3 +182,11 @@ table.totals-table td {
     text-align: center;
     font-size: 14pt;
 }
+
+.full-width-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0;
+    padding: 0;
+}
