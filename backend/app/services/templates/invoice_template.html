@@ -7,7 +7,7 @@
 </head>
 <body>
 <div class="logo-text"></div>
- <div class="header-title"></div>
+<div class="header-title"></div>
     <table class="layout">
         <tr>
             <td width="33%" valign="top">
@@ -22,7 +22,7 @@
                 </div>
             </td>
 
-            <td width="33%" valign="top" style="padding-left: 10px;">    
+            <td width="33%" valign="top">    
                 <div class="address-block">
                     <div class="section-label">BILL TO</div>
                     <div style="margin-top: 5px;">
@@ -86,22 +86,22 @@
                     <td>{{ item.container_number }}</td>
                     <td>{{ item.description }}</td>
                     <td class="text-right">{{ item.quantity }} {{ item.unit }}</td>
-                    <td class="text-right">{{ symbol }}{{ "%.2f"|format(item.price) }}</td>
-                    <td class="text-right">{{ symbol }}{{ "%.2f"|format(item.quantity * item.price) }}</td>
+                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(item.price) }}</td>
+                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
 
                 {% elif invoice.invoice_type == 'Pickup' %}
                     <td>{{ loop.index }}</td>
                     <td>{{ item.metal }}</td>
                     <td>{{ item.description }}</td>
                     <td class="text-right">{{ item.quantity }} {{ item.unit }}</td>
-                    <td class="text-right">{{ symbol }}{{ "%.2f"|format(item.price) }}</td>
-                    <td class="text-right">{{ symbol }}{{ "%.2f"|format(item.quantity * item.price) }}</td>
+                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(item.price) }}</td>
+                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
 
                 {% else %} 
                     <td>{{ item.description }}</td>
                     <td class="text-right">{{ item.quantity }} {{ item.unit }}</td>
-                    <td class="text-right">{{ symbol }}{{ "%.2f"|format(item.price) }}</td>
-                    <td class="text-right">{{ symbol }}{{ "%.2f"|format(item.quantity * item.price) }}</td>
+                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(item.price) }}</td>
+                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
                 {% endif %}
             </tr>
             {% endfor %}
@@ -112,22 +112,22 @@
                     <td colspan="2"><strong>Transport</strong></td>
                     <td>{{ trans.name }}</td>
                     <td class="text-right">{{ trans.num_of_ctr }}</td>
-                    <td class="text-right">{{ symbol }}{{ "%.2f"|format(trans.price_per_ctr) }}</td>
-                    <td class="text-right">{{ symbol }}{{ "%.2f"|format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
+                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
 
                 {% elif invoice.invoice_type == 'Pickup' %}
                     <td></td>
                     <td><strong>Transport</strong></td>
                     <td>{{ trans.name }}</td>
                     <td class="text-right">{{ trans.num_of_ctr }}</td>
-                    <td class="text-right">{{ symbol }}{{ "%.2f"|format(trans.price_per_ctr) }}</td>
-                    <td class="text-right">{{ symbol }}{{ "%.2f"|format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
+                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
 
                 {% else %}
                     <td><strong>Transport:</strong> {{ trans.name }}</td>
                     <td class="text-right">{{ trans.num_of_ctr }}</td>
-                    <td class="text-right">{{ symbol }}{{ "%.2f"|format(trans.price_per_ctr) }}</td>
-                    <td class="text-right">{{ symbol }}{{ "%.2f"|format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
+                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
                 {% endif %}
             </tr>
             {% endfor %}
@@ -139,10 +139,12 @@
             <td width="60%" valign="top">
                 <div style="margin-top: 10px;"></div>
 
+                {% if invoice.notes %}
                 <div style="margin-top: 15px; font-size: 9pt; border: 1px solid #ccc; padding: 10px;">
                     <strong>Notes:</strong><br>
                     {{ invoice.notes }}
                 </div>
+                {% endif %}
             </td>
 
             <td width="5%"></td>
@@ -150,82 +152,83 @@
                 <table class="totals-table">
                     <tr>
                         <td class="text-right bold">Subtotal:</td>
-                        <td class="text-right" width="100">{{ symbol }}{{ "%.2f"|format(totals.subtotal) }}</td>
+                        <td class="text-right" width="100">{{ symbol }}{{ "{:,.2f}".format(totals.subtotal) }}</td>
                     </tr>
 
                     {% for d in invoice.pre_gst_deductions %}
                     <tr>
                         <td class="text-right text-danger">{{ d.label }}:</td>
-                        <td class="text-right text-danger">-{{ symbol }}{{ "%.2f"|format(d.amount) }}</td>
+                        <td class="text-right text-danger">-{{ symbol }}{{ "{:,.2f}".format(d.amount) }}</td>
                     </tr>
                     {% endfor %}
 
                     {% if invoice.include_gst %}
                     <tr>
                         <td class="text-right bold">GST (10%):</td>
-                        <td class="text-right">{{ symbol }}{{ "%.2f"|format(totals.gst) }}</td>
+                        <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(totals.gst) }}</td>
                     </tr>
                     {% endif %}
 
                     {% for d in invoice.post_gst_deductions %}
                     <tr>
                         <td class="text-right text-danger">{{ d.label }}:</td>
-                        <td class="text-right text-danger">-{{ symbol }}{{ "%.2f"|format(d.amount) }}</td>
+                        <td class="text-right text-danger">-{{ symbol }}{{ "{:,.2f}".format(d.amount) }}</td>
                     </tr>
                     {% endfor %}
 
                     <tr>
                         <td class="text-right grand-total">TOTAL:</td>
-                        <td class="text-right grand-total">{{ symbol }}{{ "%.2f"|format(totals.total) }}</td>
+                        <td class="text-right grand-total">{{ symbol }}{{ "{:,.2f}".format(totals.total) }}</td>
                     </tr>
                 </table>
             </td>
         </tr>
     </table>
-                <table style="width: 100%; border-collapse: collapse;">
+
+    <table style="width: 100%; border-collapse: collapse; margin-top: 30px;">
+        <tr>
+            <td width="48%" valign="top">
+                <div class="box-header">PAYMENT ADVICE</div>
+                <table class="footer-table">
                     <tr>
-                        <td width="48%" valign="top">
-                            <div class="box-header">PAYMENT ADVICE</div>
-                            <table class="footer-table">
-                                <tr>
-                                    <td class="footer-label">Bank:</td>
-                                    <td class="footer-value">{{ invoice.bank_name }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="footer-label">Account:</td>
-                                    <td class="footer-value">{{ invoice.account_name }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="footer-label">BSB:</td>
-                                    <td class="footer-value">{{ invoice.bsb }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="footer-label">Acc No:</td>
-                                    <td class="footer-value">{{ invoice.account_number }}</td>
-                                </tr>
-                            </table>
-                        </td>
-
-                        <td width="4%"></td>
-
-                        <td width="48%" valign="top">
-                            <div class="box-header">SUMMARY</div>
-                            <table class="footer-table">
-                                <tr>
-                                    <td class="footer-label">Invoice #:</td>
-                                    <td class="footer-value">{{ invoice.scrinv_number }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="footer-label">Date:</td>
-                                    <td class="footer-value">{{ formatted_date }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="footer-label">Total:</td>
-                                    <td class="footer-value"><strong>{{ symbol }}{{ "%.2f"|format(totals.total) }}</strong></td>
-                                </tr>
-                            </table>
-                        </td>
+                        <td class="footer-label">Bank:</td>
+                        <td class="footer-value">{{ invoice.bank_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="footer-label">Account:</td>
+                        <td class="footer-value">{{ invoice.account_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="footer-label">BSB:</td>
+                        <td class="footer-value">{{ invoice.bsb }}</td>
+                    </tr>
+                    <tr>
+                        <td class="footer-label">Acc No:</td>
+                        <td class="footer-value">{{ invoice.account_number }}</td>
                     </tr>
                 </table>
+            </td>
+
+            <td width="4%"></td>
+
+            <td width="48%" valign="top">
+                <div class="box-header">SUMMARY</div>
+                <table class="footer-table">
+                    <tr>
+                        <td class="footer-label">Invoice #:</td>
+                        <td class="footer-value">{{ invoice.scrinv_number }}</td>
+                    </tr>
+                    <tr>
+                        <td class="footer-label">Date:</td>
+                        <td class="footer-value">{{ formatted_date }}</td>
+                    </tr>
+                    <tr>
+                        <td class="footer-label">Total:</td>
+                        <td class="footer-value"><strong>{{ symbol }}{{ "{:,.2f}".format(totals.total) }}</strong></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>

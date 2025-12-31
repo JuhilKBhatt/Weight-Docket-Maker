@@ -1,8 +1,4 @@
 /* General Page Setup */
-@page {
-    size: A4;
-    margin: 1cm;
-}
 body {
     font-family: Helvetica, Arial, sans-serif;
     font-size: 10pt;

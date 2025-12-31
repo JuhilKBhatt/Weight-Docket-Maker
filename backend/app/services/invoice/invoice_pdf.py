@@ -9,13 +9,13 @@ from jinja2 import Environment, FileSystemLoader
 from app.services.invoice import invoice_crud
 
 CURRENCY_SYMBOLS = {
-  'AUD': '$',
-  'USD': '$',
-  'EUR': '€',
-  'GBP': '£',
-  'JPY': '¥',
-  'CNY': '¥',
-  'NZD': '$',
+  'AUD': 'AUD$',
+  'USD': 'USD$',
+  'EUR': 'EUR€',
+  'GBP': 'GBP£',
+  'JPY': 'JPY¥',
+  'CNY': 'CNY¥',
+  'NZD': 'NZD$',
 }
 
 def render_invoice_html(db: Session, invoice_id: int):
