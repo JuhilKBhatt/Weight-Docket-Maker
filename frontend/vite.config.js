@@ -6,6 +6,16 @@ export default defineConfig({
   plugins: [react()],
   base: '/',
   server: {
-    allowedHosts: true // For Cloudflare Tunnel compatibility
-  }
+    host: true,
+    strictPort: true,
+    port: 5173,
+    watch: {
+      usePolling: true,
+    }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.js',
+  },
 })
