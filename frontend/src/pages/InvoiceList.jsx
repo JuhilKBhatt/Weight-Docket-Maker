@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Table, Button, Typography, Popconfirm, Tag, message } from 'antd';
 import { audFormatterFixed } from '../scripts/utilities/AUDformatters';
+import { getCurrencyLabel } from '../scripts/utilities/invoiceConstants';
 
 // Import the new service functions
 import { 
@@ -76,7 +77,9 @@ export default function InvoiceList() {
         title: 'Total Amount',
         dataIndex: 'total_amount',
         key: 'total_amount',
-        render: (val) => `$${audFormatterFixed(val)}`,
+        render: (val, record) => {
+          return `${getCurrencyLabel(record.currency)}${audFormatterFixed(val)}`;
+        },
       },
       {
         title: 'Status',

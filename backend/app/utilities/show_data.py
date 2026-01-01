@@ -10,6 +10,7 @@ invoices = db.query(Invoice).all()
 for inv in invoices:
     print(f"Invoice: {inv.scrinv_number}")
     print(f"  ID: {inv.id}")
+    print(f"  Currency: {inv.currency}")
     print(f"  Date: {inv.invoice_date}, Type: {inv.invoice_type}, Status: {inv.status}")
     print(f"  From: {inv.bill_from_name}, {inv.bill_from_address}, {inv.bill_from_abn}")
     print(f"  To: {inv.bill_to_name}, {inv.bill_to_address}, {inv.bill_to_abn}")

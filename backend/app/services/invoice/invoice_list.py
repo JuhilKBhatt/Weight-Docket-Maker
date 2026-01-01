@@ -24,6 +24,7 @@ def get_all_invoices_calculated(db: Session):
             "bill_to_name": inv.bill_to_name,
             "total_amount": round(total, 2),
             "status": inv.status,
+            "currency": inv.currency
         })
 
     return results
