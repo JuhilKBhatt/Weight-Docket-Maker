@@ -13,7 +13,7 @@
 <br>
     <table class="layout">
         <tr>
-            <td style="width: 40%; vertical-align: top;">
+            <td style="width: 40%; vertical-align: top; padding-right: 20px;">
                 <div class="address-block">
                     <div class="section-label">BILL FROM</div>
                     <div style="margin-top: 5px;">
@@ -25,7 +25,7 @@
                     </div>
                 </div>
             </td>
-            <td style="width: 40%; vertical-align: top;">    
+            <td style="width: 40%; vertical-align: top; padding-right: 20px;">    
                 <div class="address-block">
                     <div class="section-label">BILL TO</div>
                     <div style="margin-top: 5px;">
@@ -84,22 +84,22 @@
                     <td>{{ item.container_number }}</td>
                     <td>{{ item.description }}</td>
                     <td class="text-right">{{ item.quantity }} {{ item.unit }}</td>
-                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(item.price) }}</td>
-                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
+                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
+                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
 
                 {% elif invoice.invoice_type == 'Pickup' %}
                     <td>{{ loop.index }}</td>
                     <td>{{ item.metal }}</td>
                     <td>{{ item.description }}</td>
                     <td class="text-right">{{ item.quantity }} {{ item.unit }}</td>
-                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(item.price) }}</td>
-                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
+                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
+                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
 
                 {% else %} 
                     <td>{{ item.description }}</td>
                     <td class="text-right">{{ item.quantity }} {{ item.unit }}</td>
-                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(item.price) }}</td>
-                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
+                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
+                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
                 {% endif %}
             </tr>
             {% endfor %}
@@ -110,22 +110,22 @@
                     <td colspan="2">Transport</td>
                     <td>{{ trans.name }}</td>
                     <td class="text-right">{{ trans.num_of_ctr }}</td>
-                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
-                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
+                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
 
                 {% elif invoice.invoice_type == 'Pickup' %}
                     <td></td>
                     <td>Transport</td>
                     <td>{{ trans.name }}</td>
                     <td class="text-right">{{ trans.num_of_ctr }}</td>
-                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
-                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
+                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
 
                 {% else %}
                     <td>Transport:{{ trans.name }}</td>
                     <td class="text-right">{{ trans.num_of_ctr }}</td>
-                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
-                    <td class="text-right">{{ symbol }}{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
+                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
                 {% endif %}
             </tr>
             {% endfor %}
@@ -151,32 +151,32 @@
                     {% for d in invoice.pre_gst_deductions %}
                     <tr>
                         <td class="text-right text-danger deduction-cell">{{ d.label }}:</td>
-                        <td class="text-right text-danger deduction-cell">-{{ symbol }}{{ "{:,.2f}".format(d.amount) }}</td>
+                        <td class="text-right text-danger deduction-cell">-<span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(d.amount) }}</td>
                     </tr>
                     {% endfor %}
 
                     <tr>
                         <td class="text-right bold subtotal-cell">SUB-TOTAL:</td>
-                        <td class="text-right subtotal-cell" style="width: 100px;">{{ symbol }}{{ "{:,.2f}".format(totals.subtotal) }}</td>
+                        <td class="text-right subtotal-cell" style="width: 100px;"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(totals.subtotal) }}</td>
                     </tr>
 
                     {% if invoice.include_gst %}
                     <tr>
                         <td class="text-right bold gst-cell">GST (10%):</td>
-                        <td class="text-right gst-cell">{{ symbol }}{{ "{:,.2f}".format(totals.gst) }}</td>
+                        <td class="text-right gst-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(totals.gst) }}</td>
                     </tr>
                     {% endif %}
 
                     {% for d in invoice.post_gst_deductions %}
                     <tr>
                         <td class="text-right text-danger deduction-cell">{{ d.label }}:</td>
-                        <td class="text-right text-danger deduction-cell">-{{ symbol }}{{ "{:,.2f}".format(d.amount) }}</td>
+                        <td class="text-right text-danger deduction-cell">-<span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(d.amount) }}</td>
                     </tr>
                     {% endfor %}
 
                     <tr>
                         <td class="text-right grand-total">TOTAL:</td>
-                        <td class="text-right grand-total">{{ symbol }}{{ "{:,.2f}".format(totals.total) }}</td>
+                        <td class="text-right grand-total"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(totals.total) }}</td>
                     </tr>
                 </table>
             </td>
@@ -231,7 +231,7 @@
                     </tr>
                     <tr>
                         <td class="footer-label">TOTAL:</td>
-                        <td class="footer-value"><strong>{{ symbol }}{{ "{:,.2f}".format(totals.total) }}</strong></td>
+                        <td class="footer-value"><strong><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(totals.total) }}</strong></td>
                     </tr>
                 </table>
             </td>

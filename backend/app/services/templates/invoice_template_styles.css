@@ -1,7 +1,6 @@
 /* General Page Setup */
-
 @page {
-    size: A3;
+    size: A4 landscape; 
     margin: 0;
     padding: 0;
 }
@@ -11,22 +10,30 @@ body {
     font-size: 10pt;
     color: #333;
     line-height: 1.4;
+    margin: 0;
+    padding: 0;
 }
 
+/* Wrapper to prevent content from touching edges */
 .content-wrapper {
     padding: 20px 40px;
-    width: 100%;       /* Ensure it fills the landscape width */
-    box-sizing: border-box; /* Includes padding in the width calculation */
+    width: 100%;
+    box-sizing: border-box; 
 }
 
 /* Layout Helper */
 table.layout {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed; 
 }
+
 table.layout td {
     vertical-align: top;
     padding: 0;
+    overflow-wrap: break-word; 
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
 hr.dotted {
@@ -38,7 +45,7 @@ hr.dotted {
 .logo-text {
     font-size: 16pt;
     font-weight: bold;
-    color: #b01c2e; /* Red color from logo */
+    color: #b01c2e;
     text-transform: uppercase;
     margin-bottom: 5px;
 }
@@ -54,85 +61,89 @@ hr.dotted {
 .section-label {
     background-color: #111;
     color: #fff;
-    font-size: 16pt;
+    font-size: 12pt; /* Reduced slightly to fit better */
     font-weight: bold;
     text-align: center;
-    width: 50%;
-    padding: 5px;
+    width: 100%; /* Changed to 100% of the column */
+    padding: 5px 0;
+    margin-bottom: 8px;
 }
 
 .address-block {
     margin-bottom: 20px;
-    font-size: 12pt;
+    font-size: 11pt;
+    padding-right: 15px; /* Adds gap between Bill From/Bill To columns */
 }
 
 .address-block strong {
-    font-size: 18pt;
+    font-size: 14pt; /* Reduced from 18pt to prevent overflow */
     color: #b01c2e;
+    display: block;
+    margin-bottom: 4px;
 }
 
-.invoice-number-row{
+.invoice-number-row {
     background-color: #111;
     color: #fff;
-    font-size: 16pt;
+    font-size: 12pt;
     font-weight: bold;
     text-align: center;
-    width: 35%;
+    width: 100%;
     padding: 5px;
 }
 
-.invoice-date{
-    font-size: 14pt;
+.invoice-date {
+    font-size: 12pt;
     text-align: center;
-    width: 35%;
+    width: 100%;
     padding: 5px;
 }
 
-/* Items Table Container */
+/* Items Table */
 table.items-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
     margin-bottom: 20px;
+    table-layout: fixed; /* Ensures columns don't blow out */
 }
 
-/* Base Header Styling */
 table.items-table th {
-    color: #fff; /* White text for better contrast */
+    color: #fff;
     font-weight: bold;
     padding: 8px;
     border: 1px solid #ccc;
     text-align: left;
-    font-size: 14pt;
+    font-size: 12pt;
+    overflow-wrap: break-word;
 }
 
-/* ODD Headers (1st, 3rd, 5th...) -> Red */
-table.items-table th:nth-child(odd) {
-    background-color: #b01c2e;
-}
+/* ODD Headers -> Red, EVEN -> Black */
+table.items-table th:nth-child(odd) { background-color: #b01c2e; }
+table.items-table th:nth-child(even) { background-color: #111; }
 
-/* EVEN Headers (2nd, 4th, 6th...) -> Black */
-table.items-table th:nth-child(even) {
-    background-color: #111;
-}
-
-/* Table Cells */
 table.items-table td {
     padding: 8px;
     border: 1px solid #ccc;
-    font-size: 14pt;
+    font-size: 12pt;
     vertical-align: top;
+    overflow-wrap: break-word; /* Wraps long description text */
 }
 
-/* EVEN Columns (2nd, 4th...) -> Light Grey Background */
-table.items-table td:nth-child(even) {
-    background-color: #f2f2f2;
+table.items-table td:nth-child(even) { background-color: #f2f2f2; }
+
+.currency-symbol {
+    font-size: 8pt; /* Makes it smaller than the number */
+    font-weight: normal; /* Optional: prevents it from looking too thick */
+    vertical-align: baseline;
+    margin-right: 1px;
 }
 
 /* Text Alignments */
 .text-right { text-align: right; }
 .text-center { text-align: center; }
 .bold { font-weight: bold; }
+.text-danger { color: #b01c2e; }
 
 /* Totals Section */
 table.totals-table {
@@ -140,26 +151,14 @@ table.totals-table {
     border-collapse: collapse;
     margin-top: 10px;
 }
-table.totals-table td {
-    padding: 5px;
-}
+table.totals-table td { padding: 5px; }
 
-.subtotal-cell {
-    font-size: 12pt;
-}
-
-.deduction-cell {
-    font-size: 12pt;
-}
-
-.gst-cell {
-    font-size: 12pt;
-}
+.subtotal-cell, .deduction-cell, .gst-cell { font-size: 11pt; }
 
 .grand-total {
     background-color: #b01c2e;
     color: #fff;
-    font-size: 16pt;
+    font-size: 14pt;
     font-weight: bold;
     padding: 5px;
 }
@@ -168,12 +167,14 @@ table.totals-table td {
 .footer-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12pt;
+    font-size: 10pt;
     border: 1px solid #ccc;
+    table-layout: fixed;
 }
 .footer-table td {
     padding: 6px;
     border: 1px solid #ccc;
+    overflow-wrap: break-word;
 }
 .footer-label {
     background-color: #f2f2f2;
@@ -181,7 +182,6 @@ table.totals-table td {
     text-align: right;
     width: 35%;
 }
-
 .footer-value {
     text-align: left;
     width: 65%;
@@ -193,7 +193,7 @@ table.totals-table td {
     font-weight: bold;
     padding: 6px;
     text-align: center;
-    font-size: 14pt;
+    font-size: 12pt;
 }
 
 .full-width-img {
