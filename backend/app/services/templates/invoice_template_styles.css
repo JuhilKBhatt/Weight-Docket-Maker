@@ -1,9 +1,22 @@
 /* General Page Setup */
+
+@page {
+    size: A4; /* Forces landscape orientation */
+    margin: 0.1cm;
+    padding: 0;
+}
+
 body {
     font-family: Helvetica, Arial, sans-serif;
     font-size: 10pt;
     color: #333;
     line-height: 1.4;
+}
+
+.content-wrapper {
+    padding: 20px 40px;
+    width: 100%;       /* Ensure it fills the landscape width */
+    box-sizing: border-box; /* Includes padding in the width calculation */
 }
 
 /* Layout Helper */

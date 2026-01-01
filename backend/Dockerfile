@@ -21,6 +21,9 @@ RUN apt-get update && apt-get install -y \
     libopenjp2-7-dev \
     libffi-dev \
     shared-mime-info \
+    fonts-liberation \
+    fonts-dejavu \
+    fontconfig \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
