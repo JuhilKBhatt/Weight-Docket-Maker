@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # 1. Database
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: weight_docket_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. Backend (FastAPI)
+  backend:
+    build: 
+      context: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://user:password@db:5432/weight_docket_db
+      WATCHFILES_FORCE_POLLING: "true"
+
+  # 3. Frontend (Vite React) - NEW
+  frontend:
+    build:
+      context: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Prevents host node_modules from overriding container's
+    ports:
+      - "5173:5173"
+    environment:
+      # Optional: Helpful if you configure axios to use this env var
+      VITE_API_URL: "http://localhost:8000" 
+
+volumes:
+  postgres_data:
