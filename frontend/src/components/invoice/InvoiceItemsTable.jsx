@@ -56,6 +56,7 @@ export default function InvoiceItemsTable({
       render: (_, record) => (
         <Input
           value={record.description}
+          maxLength={254}
           onChange={(e) => handleItemChange(record.key, 'description', e.target.value)}
         />
       ),
@@ -119,6 +120,7 @@ export default function InvoiceItemsTable({
       render: (_, record) => (
         <Input
           value={record.seal}
+          maxLength={99}
           onChange={(e) => handleItemChange(record.key, 'seal', e.target.value)}
         />
       ),
@@ -129,6 +131,7 @@ export default function InvoiceItemsTable({
       render: (_, record) => (
         <Input
           value={record.containerNumber}
+          maxLength={99}
           onChange={(e) => handleItemChange(record.key, 'containerNumber', e.target.value)}
         />
       ),
@@ -143,6 +146,7 @@ export default function InvoiceItemsTable({
       render: (_, record) => (
         <Input
           value={record.metal}
+          maxLength={99}
           onChange={(e) => handleItemChange(record.key, 'metal', e.target.value)}
         />
       ),

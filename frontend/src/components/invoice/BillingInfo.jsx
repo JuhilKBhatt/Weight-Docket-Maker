@@ -55,23 +55,35 @@ export default function BillingInfo({
         </Form.Item>
 
         <Form.Item label="Company Name" name="fromCompanyName" rules={[{ required: true, message: 'Company Name is required' }]}>
-          <Input maxLength={255} />
+          <Input maxLength={254} />
         </Form.Item>
 
         <Form.Item label="Phone" name="fromCompanyPhone">
-          <Input maxLength={50} style={{ width: '100%' }} />
+          <Input maxLength={49} style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item label="Email" name="fromCompanyEmail">
-          <Input maxLength={100} />
+          <Input maxLength={199} />
         </Form.Item>
 
-        <Form.Item label="ABN" name="fromCompanyABN" rules={[{ required: true, message: 'Company Name is required' }]}>
-          <Input maxLength={50} style={{ width: '100%' }} />
+        <Form.Item
+          label="ABN"
+          name="fromCompanyABN"
+          rules={[
+            { required: true, message: 'ABN is required' },
+            { len: 11, message: 'ABN must be 11 digits' } 
+          ]}
+          // This function runs on every keystroke, removing non-digits
+          getValueFromEvent={(e) => e.target.value.replace(/\D/g, '')}
+        >
+          <Input 
+            maxLength={11}
+            style={{ width: '100%' }} 
+          />
         </Form.Item>
 
         <Form.Item label="Address" name="fromCompanyAddress">
-          <Input maxLength={255} />
+          <Input maxLength={254}/>
         </Form.Item>
       </Col>
 
@@ -116,23 +128,35 @@ export default function BillingInfo({
         </Form.Item>
 
         <Form.Item label="Company Name" name="toCompanyName" rules={[{ required: true, message: 'Company Name is required' }]}>
-          <Input maxLength={255} />
+          <Input maxLength={254} />
         </Form.Item>
 
         <Form.Item label="Phone" name="toCompanyPhone">
-          <Input maxLength={50} style={{ width: '100%' }} />
+          <Input maxLength={49} style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item label="Email" name="toCompanyEmail">
-          <Input maxLength={100} />
+          <Input maxLength={199} />
         </Form.Item>
 
-        <Form.Item label="ABN" name="toCompanyABN">
-          <Input maxLength={50} style={{ width: '100%' }} />
+        <Form.Item
+          label="ABN"
+          name="toCompanyABN"
+          rules={[
+            { required: true, message: 'ABN is required' },
+            { len: 11, message: 'ABN must be 11 digits' } 
+          ]}
+          // This function runs on every keystroke, removing non-digits
+          getValueFromEvent={(e) => e.target.value.replace(/\D/g, '')}
+        >
+          <Input 
+            maxLength={11} 
+            style={{ width: '100%' }} 
+          />
         </Form.Item>
 
         <Form.Item label="Address" name="toCompanyAddress">
-          <Input maxLength={255} />
+          <Input maxLength={254} />
         </Form.Item>
       </Col>
 

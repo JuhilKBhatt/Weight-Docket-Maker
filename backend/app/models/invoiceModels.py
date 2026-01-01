@@ -26,13 +26,13 @@ class Invoice(Base):
     # BILL FROM / BILL TO
     bill_from_name = Column(String(255))
     bill_from_phone = Column(String(50))
-    bill_from_email = Column(String(100))
+    bill_from_email = Column(String(200))
     bill_from_abn = Column(String(50))
     bill_from_address = Column(String(255))
 
     bill_to_name = Column(String(255))
     bill_to_phone = Column(String(50))
-    bill_to_email = Column(String(100))
+    bill_to_email = Column(String(200))
     bill_to_abn = Column(String(50))
     bill_to_address = Column(String(255))
 
