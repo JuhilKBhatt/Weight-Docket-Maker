@@ -28,6 +28,7 @@ export default function InvoiceTotalsSummary({
           <Col span={12}>
             <Input
               placeholder="Reason"
+              maxLength={25}
               value={d.label}
               onChange={(e) =>
                 handleDeductionChange('pre', d.key, 'label', e.target.value)
@@ -114,6 +115,7 @@ export default function InvoiceTotalsSummary({
               <Col span={12}>
                 <Input
                   placeholder="Reason"
+                  maxLength={25}
                   value={d.label}
                   onChange={(e) =>
                     handleDeductionChange('post', d.key, 'label', e.target.value)
