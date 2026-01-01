@@ -12,6 +12,8 @@ Update Database Connection URL in .env
 
 Run via | uvicorn app.main:app --reload
 
+Install docker
+
 ---
 
 backend/

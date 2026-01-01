@@ -4,8 +4,9 @@ import base64
 from io import BytesIO
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from xhtml2pdf import pisa
 from jinja2 import Environment, FileSystemLoader
+from weasyprint import HTML, CSS
+from datetime import datetime
 
 from app.services.invoice import invoice_crud
 
@@ -32,12 +33,9 @@ def render_invoice_html(db: Session, invoice_id: int):
     # 2. Logic: Date Formatting (YYYY-MM-DD -> DD/MM/YYYY)
     formatted_date = ""
     if inv_dict.get('invoice_date'):
-        # Assuming it comes as a date object or string. 
-        # If it's a date object from SQLAlchemy:
         try:
             formatted_date = inv_dict['invoice_date'].strftime("%d/%m/%Y")
         except AttributeError:
-            # If it's already a string, parse then format
             d = datetime.strptime(str(inv_dict['invoice_date']), "%Y-%m-%d")
             formatted_date = d.strftime("%d/%m/%Y")
 
@@ -88,17 +86,21 @@ def render_invoice_html(db: Session, invoice_id: int):
 
 def generate_invoice_pdf(db: Session, invoice_id: int):
     """
-    Uses the HTML string to generate a PDF buffer.
+    Uses WeasyPrint to generate PDF from HTML string.
     """
-    # Get the HTML using the helper above
-    html_content = render_invoice_html(db, invoice_id)
+    try:
+        # Get the HTML string
+        html_content = render_invoice_html(db, invoice_id)
 
-    # Convert HTML to PDF
-    pdf_buffer = BytesIO()
-    pisa_status = pisa.CreatePDF(html_content, dest=pdf_buffer)
+        # Create PDF buffer
+        pdf_buffer = BytesIO()
+        
+        # Generate PDF using WeasyPrint
+        HTML(string=html_content).write_pdf(pdf_buffer)
+        
+        pdf_buffer.seek(0)
+        return pdf_buffer
 
-    if pisa_status.err:
-        raise HTTPException(status_code=500, detail="Error generating PDF")
-
-    pdf_buffer.seek(0)
-    return pdf_buffer
+    except Exception as e:
+        print(f"PDF Generation Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
