@@ -14,6 +14,8 @@ Run via | uvicorn app.main:app --reload
 
 Install docker
 
+docker compose exec backend python -m pytest -v | From root
+
 ---
 
 backend/

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import date
 
 
 class ItemSchema(BaseModel):
@@ -26,7 +27,7 @@ class DeductionSchema(BaseModel):
 
 class InvoiceCreate(BaseModel):
     scrinv_number: str
-    invoice_date: Optional[str] = None
+    invoice_date: Optional[date] = None
     status: Optional[str] = "Draft"
     invoice_type: str
     currency: str
