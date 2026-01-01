@@ -148,7 +148,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
           <Row gutter={24} style={{ marginTop: 20 }}>
             <Col span={12}>
               <Form.Item label="Notes" name="notes">
-                <Input.TextArea rows={4} maxLength={300}/>
+                <Input.TextArea rows={4} maxLength={280}/>
               </Form.Item>
             </Col>
             <InvoiceTotalsSummary

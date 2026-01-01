@@ -49,30 +49,30 @@
             </td>
         </tr>
     </table>
-    <table class="items-table">
+    <table class="layout items-table">
         <thead>
             <tr>
                 {% if invoice.invoice_type == 'Container' %}
-                    <th style="width: 12.5%;">Seal #</th>
-                    <th style="width: 12.5%;">Container #</th>
-                    <th style="width: 10%;">Description</th>
-                    <th style="width: 20%;" class="text-right">Quantity</th>
+                    <th style="width: 14%;">Seal #</th>
+                    <th style="width: 14%;">Container #</th>
+                    <th style="width: 15%;">Description</th>
+                    <th style="width: 15%;" class="text-right">Quantity</th>
                     <th style="width: 20%;" class="text-right">Price</th>
-                    <th style="width: 25%;" class="text-right">Total</th>
+                    <th style="width: 22%;" class="text-right">Total</th>
 
                 {% elif invoice.invoice_type == 'Pickup' %}
                     <th style="width: 5%;">#</th>
                     <th style="width: 25%;">Metal</th>
-                    <th style="width: 30%;">Description</th>
+                    <th style="width: 15%;">Description</th>
                     <th style="width: 15%;" class="text-right">Quantity</th>
-                    <th style="width: 10%;" class="text-right">Price</th>
-                    <th style="width: 15%;" class="text-right">Total</th>
+                    <th style="width: 20%;" class="text-right">Price</th>
+                    <th style="width: 22%;" class="text-right">Total</th>
 
                 {% else %} 
-                    <th style="width: 50%;">Description</th>
+                    <th style="width: 43%;">Description</th>
                     <th style="width: 15%;" class="text-right">Quantity</th>
-                    <th style="width: 15%;" class="text-right">Unit Price</th>
-                    <th style="width: 20%;" class="text-right">Total</th>
+                    <th style="width: 20%;" class="text-right">Unit Price</th>
+                    <th style="width: 22%;" class="text-right">Total</th>
                 {% endif %}
             </tr>
         </thead>
@@ -134,19 +134,16 @@
 
     <table class="layout" style="margin-top: 10px;">
         <tr>
-            <td style="width: 40%; vertical-align: top;">
+            <td style="width: 35%; vertical-align: top;">
                 <div style="margin-top: 10px;"></div>
-
-                {% if invoice.notes %}
                 <div style="margin-top: 15px; font-size: 14pt; border: 1px solid #ccc; padding: 10px;">
                     <strong>Notes:</strong><br>
                     {{ invoice.notes }}
                 </div>
-                {% endif %}
             </td>
 
             <td style="width: 5%;"></td>
-            <td style="width: 55%; vertical-align: top;">
+            <td style="width: 60%; vertical-align: top;">
                 <table class="totals-table">
                     {% for d in invoice.pre_gst_deductions %}
                     <tr>

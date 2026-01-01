@@ -151,7 +151,9 @@ table.totals-table {
     border-collapse: collapse;
     margin-top: 10px;
 }
-table.totals-table td { padding: 5px; }
+table.totals-table td {
+    padding: 5px;
+}
 
 .subtotal-cell, .deduction-cell, .gst-cell { font-size: 11pt; }
 
