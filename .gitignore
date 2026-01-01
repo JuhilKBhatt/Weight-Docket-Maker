@@ -23,3 +23,5 @@ backend/app/schemas/__pycache__
 
 .vscode
 *.pyc
+
+postgres_data/
