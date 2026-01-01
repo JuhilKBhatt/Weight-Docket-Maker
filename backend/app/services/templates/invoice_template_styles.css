@@ -1,8 +1,12 @@
 /* General Page Setup */
 @page {
     size: A3; 
-    margin: 5px;
-    padding: 5px;
+    margin: 1cm;
+    padding: 0;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
@@ -14,11 +18,16 @@ body {
     padding: 0;
 }
 
-/* Wrapper to prevent content from touching edges */
 .content-wrapper {
-    padding: 20px 40px;
     width: 100%;
-    box-sizing: border-box; 
+    padding: 0;
+}
+
+/* Image Styling */
+.full-width-img {
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
 /* Layout Helper */
@@ -33,71 +42,29 @@ table.layout td {
     padding: 0;
     overflow-wrap: break-word; 
     word-wrap: break-word;
-    word-break: break-word;
+    word-break: break-all; 
 }
 
-hr.dotted {
-    border: none;
-    border-top: 4px dotted black;
-}
-
-/* Header Section */
-.logo-text {
-    font-size: 16pt;
-    font-weight: bold;
-    color: #b01c2e;
-    text-transform: uppercase;
-    margin-bottom: 5px;
-}
-
-.header-title {
-    font-size: 22pt;
-    font-weight: bold;
-    color: #b01c2e;
-    text-align: right;
-    margin-bottom: 15px;
-}
+/* Header & Address Styles */
+.logo-text { font-size: 16pt; font-weight: bold; color: #b01c2e; text-transform: uppercase; margin-bottom: 5px; }
+.header-title { font-size: 22pt; font-weight: bold; color: #b01c2e; text-align: right; margin-bottom: 15px; }
 
 .section-label {
     background-color: #111;
     color: #fff;
-    font-size: 12pt; /* Reduced slightly to fit better */
+    font-size: 16pt;
     font-weight: bold;
     text-align: center;
-    width: 100%; /* Changed to 100% of the column */
+    width: 100%;
     padding: 5px 0;
     margin-bottom: 8px;
 }
 
-.address-block {
-    margin-bottom: 20px;
-    font-size: 11pt;
-    padding-right: 15px; /* Adds gap between Bill From/Bill To columns */
-}
+.address-block { margin-bottom: 20px; font-size: 11pt; padding-right: 15px; }
+.address-block strong { font-size: 14pt; color: #b01c2e; display: block; margin-bottom: 4px; }
 
-.address-block strong {
-    font-size: 14pt; /* Reduced from 18pt to prevent overflow */
-    color: #b01c2e;
-    display: block;
-    margin-bottom: 4px;
-}
-
-.invoice-number-row {
-    background-color: #111;
-    color: #fff;
-    font-size: 12pt;
-    font-weight: bold;
-    text-align: center;
-    width: 100%;
-    padding: 5px;
-}
-
-.invoice-date {
-    font-size: 12pt;
-    text-align: center;
-    width: 100%;
-    padding: 5px;
-}
+.invoice-number-row { background-color: #111; color: #fff; font-size: 12pt; font-weight: bold; text-align: center; width: 100%; padding: 5px; }
+.invoice-date { font-size: 12pt; text-align: center; width: 100%; padding: 5px; }
 
 /* Items Table */
 table.items-table {
@@ -105,7 +72,8 @@ table.items-table {
     border-collapse: collapse;
     margin-top: 20px;
     margin-bottom: 20px;
-    table-layout: fixed; /* Ensures columns don't blow out */
+    table-layout: fixed; 
+    repeat-header: yes;
 }
 
 table.items-table th {
@@ -118,7 +86,6 @@ table.items-table th {
     overflow-wrap: break-word;
 }
 
-/* ODD Headers -> Red, EVEN -> Black */
 table.items-table th:nth-child(odd) { background-color: #b01c2e; }
 table.items-table th:nth-child(even) { background-color: #111; }
 
@@ -127,81 +94,34 @@ table.items-table td {
     border: 1px solid #ccc;
     font-size: 12pt;
     vertical-align: top;
-    overflow-wrap: break-word; /* Wraps long description text */
+    word-break: break-all;
 }
 
 table.items-table td:nth-child(even) { background-color: #f2f2f2; }
 
 .currency-symbol {
-    font-size: 8pt; /* Makes it smaller than the number */
-    font-weight: normal; /* Optional: prevents it from looking too thick */
+    font-size: 0.7em; 
+    font-weight: normal;
     vertical-align: baseline;
-    margin-right: 1px;
+    margin-right: 2px;
 }
 
-/* Text Alignments */
+/* Alignments */
 .text-right { text-align: right; }
 .text-center { text-align: center; }
 .bold { font-weight: bold; }
 .text-danger { color: #b01c2e; }
 
 /* Totals Section */
-table.totals-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-table.totals-table td {
-    padding: 5px;
-}
-
+table.totals-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+table.totals-table td { padding: 5px; }
 .subtotal-cell, .deduction-cell, .gst-cell { font-size: 11pt; }
+.grand-total { background-color: #b01c2e; color: #fff; font-size: 14pt; font-weight: bold; padding: 5px; }
 
-.grand-total {
-    background-color: #b01c2e;
-    color: #fff;
-    font-size: 14pt;
-    font-weight: bold;
-    padding: 5px;
-}
+/* Footer */
+.footer-table { width: 100%; border-collapse: collapse; font-size: 10pt; border: 1px solid #ccc; table-layout: fixed; }
+.footer-table td { padding: 6px; border: 1px solid #ccc; word-break: break-all; }
+.footer-label { background-color: #f2f2f2; font-weight: bold; text-align: right; width: 35%; }
+.footer-value { text-align: left; width: 65%; }
 
-/* Footer / Payment Section */
-.footer-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 10pt;
-    border: 1px solid #ccc;
-    table-layout: fixed;
-}
-.footer-table td {
-    padding: 6px;
-    border: 1px solid #ccc;
-    overflow-wrap: break-word;
-}
-.footer-label {
-    background-color: #f2f2f2;
-    font-weight: bold;
-    text-align: right;
-    width: 35%;
-}
-.footer-value {
-    text-align: left;
-    width: 65%;
-}
-
-.box-header {
-    background-color: #b01c2e;
-    color: #fff;
-    font-weight: bold;
-    padding: 6px;
-    text-align: center;
-    font-size: 12pt;
-}
-
-.full-width-img {
-    width: 100%;
-    height: auto;
-    display: block;
-    margin: 0;
-    padding: 0;
-}
+.box-header { background-color: #b01c2e; color: #fff; font-weight: bold; padding: 6px; text-align: center; font-size: 12pt; }
