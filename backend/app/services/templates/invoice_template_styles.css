@@ -1,8 +1,8 @@
 /* General Page Setup */
 @page {
-    size: A4 landscape; 
-    margin: 0;
-    padding: 0;
+    size: A3; 
+    margin: 5px;
+    padding: 5px;
 }
 
 body {

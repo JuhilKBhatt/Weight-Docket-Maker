@@ -53,12 +53,12 @@
         <thead>
             <tr>
                 {% if invoice.invoice_type == 'Container' %}
-                    <th style="width: 15%;">Seal #</th>
-                    <th style="width: 15%;">Container #</th>
-                    <th style="width: 30%;">Description</th>
-                    <th style="width: 15%;" class="text-right">Quantity</th>
-                    <th style="width: 10%;" class="text-right">Price</th>
-                    <th style="width: 15%;" class="text-right">Total</th>
+                    <th style="width: 12.5%;">Seal #</th>
+                    <th style="width: 12.5%;">Container #</th>
+                    <th style="width: 10%;">Description</th>
+                    <th style="width: 20%;" class="text-right">Quantity</th>
+                    <th style="width: 20%;" class="text-right">Price</th>
+                    <th style="width: 25%;" class="text-right">Total</th>
 
                 {% elif invoice.invoice_type == 'Pickup' %}
                     <th style="width: 5%;">#</th>
@@ -134,7 +134,7 @@
 
     <table class="layout" style="margin-top: 10px;">
         <tr>
-            <td style="width: 60%; vertical-align: top;">
+            <td style="width: 40%; vertical-align: top;">
                 <div style="margin-top: 10px;"></div>
 
                 {% if invoice.notes %}
@@ -146,7 +146,7 @@
             </td>
 
             <td style="width: 5%;"></td>
-            <td style="width: 35%; vertical-align: top;">
+            <td style="width: 55%; vertical-align: top;">
                 <table class="totals-table">
                     {% for d in invoice.pre_gst_deductions %}
                     <tr>
@@ -239,6 +239,6 @@
     </table>
     <br>
     <br>
-<img src="data:image/png;base64,{{ footer_img_base64 }}" class="full-width-img" alt="Footer" />
+<!--<img src="data:image/png;base64,{{ footer_img_base64 }}" class="full-width-img" alt="Footer" />-->
 </body>
 </html>
