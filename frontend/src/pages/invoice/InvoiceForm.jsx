@@ -60,6 +60,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       if (mode === 'new'){
         invoice.resetInvoice();
         form.resetFields();
+        Navigate('/InvoiceHome');
       }else if (mode === 'edit') {
         Navigate('/view-invoice');
       }
@@ -83,7 +84,13 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       alert('Invoice saved and download initiated!');
       
       sessionStorage.removeItem("scrinvID");
-
+      if (mode === 'new'){
+        invoice.resetInvoice();
+        form.resetFields();
+        Navigate('/InvoiceHome');
+      }else if (mode === 'edit') {
+        Navigate('/view-invoice');
+      }
     } catch (error) {
       console.error('Error saving invoice:', error);
       alert('Failed to save invoice. Please try again.');
