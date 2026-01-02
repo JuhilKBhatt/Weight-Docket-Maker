@@ -16,6 +16,8 @@ Install docker
 
 docker compose exec backend python -m pytest -v | From root
 
+update backup path
+
 ---
 
 backend/
