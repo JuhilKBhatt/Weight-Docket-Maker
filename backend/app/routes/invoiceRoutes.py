@@ -5,9 +5,13 @@ from fastapi.responses import StreamingResponse, HTMLResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schema.invoiceSchema import InvoiceCreate
+from pydantic import BaseModel
 
 # Import the new separated services
 from app.services.invoice import invoice_crud, invoice_list, invoice_status, invoice_data, invoice_pdf
+
+class NoteUpdate(BaseModel):
+    private_notes: str
 
 router = APIRouter(
     prefix="/api/invoices",
@@ -60,3 +64,7 @@ def delete_invoice(invoice_id: int, db: Session = Depends(get_db)):
 @router.post("/{invoice_id}/status/{status_type}")
 def update_invoice_status(invoice_id: int, status_type: str, db: Session = Depends(get_db)):
     return invoice_status.update_status(db, invoice_id, status_type)
+
+@router.patch("/{invoice_id}/private-notes")
+def update_private_notes_route(invoice_id: int, note_data: NoteUpdate, db: Session = Depends(get_db)):
+    return invoice_crud.update_private_notes(db, invoice_id, note_data.private_notes)

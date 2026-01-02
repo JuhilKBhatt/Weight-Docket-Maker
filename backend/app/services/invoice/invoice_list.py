@@ -28,7 +28,8 @@ def get_all_invoices_calculated(db: Session):
             "invoice_date": inv.invoice_date,
             "total_amount": round(total, 2),
             "status": inv.status,
-            "currency": inv.currency
+            "currency": inv.currency,
+            "private_notes": inv.private_notes,
         })
 
     return results

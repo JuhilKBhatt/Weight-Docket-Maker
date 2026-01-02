@@ -24,3 +24,10 @@ export const updateInvoiceStatus = async (id, statusType) => {
   const response = await axios.post(`${API_URL}/${id}/status/${statusType}`);
   return response.data;
 };
+
+export const updatePrivateNotes = async (id, notes) => {
+  const response = await axios.patch(`${API_URL}/${id}/private-notes`, { 
+    private_notes: notes 
+  });
+  return response.data;
+};

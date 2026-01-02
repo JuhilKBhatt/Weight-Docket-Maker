@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Table, Button, Typography, Popconfirm, Tag, message } from 'antd';
+import { Input, Table, Button, Typography, Popconfirm, Tag, message } from 'antd';
 import dayjs from 'dayjs';
 import { audFormatterFixed } from '../scripts/utilities/AUDformatters';
 import { getCurrencyLabel } from '../scripts/utilities/invoiceConstants';
@@ -11,7 +11,8 @@ import { getCurrencyLabel } from '../scripts/utilities/invoiceConstants';
 import { 
   getAllInvoices, 
   deleteInvoiceById, 
-  updateInvoiceStatus 
+  updateInvoiceStatus,
+  updatePrivateNotes
 } from '../services/invoiceListService';
 
 export default function InvoiceList() {
@@ -62,6 +63,16 @@ export default function InvoiceList() {
       message.error(`Could not mark invoice as ${statusType}`);
     }
   };
+
+  const handleNoteSave = async (id, newNote) => {
+    try {
+      await updatePrivateNotes(id, newNote);
+      message.success('Note saved');
+    } catch (err) {
+      console.error(err);
+      message.error('Failed to save note');
+    }
+  };
   
   const columns = [
       {
@@ -101,6 +112,21 @@ export default function InvoiceList() {
 
           return <Tag color={color}>{status || 'Unknown'}</Tag>;
         }
+      },
+      {
+        title: 'Private Notes',
+        dataIndex: 'private_notes',
+        key: 'private_notes',
+        width: 300,
+        render: (text, record) => (
+          <Input.TextArea 
+            rows={5}
+            defaultValue={text}
+            onBlur={(e) => handleNoteSave(record.id, e.target.value)}
+            placeholder="Add note..."
+            maxLength={255}
+          />
+        ),
       },
       {
         title: 'Actions',

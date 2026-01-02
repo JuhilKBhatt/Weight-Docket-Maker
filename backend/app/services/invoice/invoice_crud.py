@@ -137,3 +137,12 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
 
     db.commit()
     return {"message": "invoice saved", "id": invoice.id}
+
+def update_private_notes(db: Session, invoice_id: int, notes: str):
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    invoice.private_notes = notes
+    db.commit()
+    return {"message": "Private notes updated"}
