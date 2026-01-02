@@ -7,6 +7,7 @@ const API_URL = 'http://localhost:8000/api/invoices';
 // Get all invoices
 export const getAllInvoices = async () => {
   const response = await axios.get(`${API_URL}/list`);
+  console.log('Fetched Invoices:', response.data); // Debug log
   return response.data;
 };
 

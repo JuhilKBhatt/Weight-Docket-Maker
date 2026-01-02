@@ -8,6 +8,9 @@ def get_all_invoices_calculated(db: Session):
     results = []
 
     for inv in invoices:
+        if inv.bill_to_name is None or inv.bill_to_name.strip() == "":
+            continue
+
         # Calculate totals dynamically
         items_total = sum([(i.quantity or 0) * (i.price or 0) for i in inv.items])
         transport_total = sum([(t.num_of_ctr or 0) * (t.price_per_ctr or 0) for t in inv.transport_items])
@@ -22,6 +25,7 @@ def get_all_invoices_calculated(db: Session):
             "id": inv.id,
             "scrinv_number": inv.scrinv_number,
             "bill_to_name": inv.bill_to_name,
+            "invoice_date": inv.invoice_date,
             "total_amount": round(total, 2),
             "status": inv.status,
             "currency": inv.currency

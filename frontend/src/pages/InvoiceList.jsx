@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Table, Button, Typography, Popconfirm, Tag, message } from 'antd';
+import dayjs from 'dayjs';
 import { audFormatterFixed } from '../scripts/utilities/AUDformatters';
 import { getCurrencyLabel } from '../scripts/utilities/invoiceConstants';
 
@@ -67,6 +68,12 @@ export default function InvoiceList() {
         title: 'SCR Number',
         dataIndex: 'scrinv_number',
         key: 'scrinv_number',
+      },
+      {
+        title: 'Invoice Date',
+        dataIndex: 'invoice_date',
+        key: 'invoice_date',
+        render: (date) => dayjs(date).format('DD/MM/YYYY'),
       },
       {
         title: 'Company To',
