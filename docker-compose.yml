@@ -1,14 +1,13 @@
-version: '3.8'
+# Docker Compose file for Weight Docket Maker Application
+# ./docker-compose.yml
 
 services:
   # 1. Database
   db:
     image: postgres:15
     restart: always
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: weight_docket_db
+    env_file:
+      - .env
     ports:
       - "5433:5432"
     volumes:
@@ -19,14 +18,16 @@ services:
     build: 
       context: ./backend
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - .env
     volumes:
       - ./backend:/app
+      - ${GOOGLE_DRIVE_PATH}:/backups:/backups
     ports:
       - "8000:8000"
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgresql://user:password@db:5432/weight_docket_db
       WATCHFILES_FORCE_POLLING: "true"
 
   # 3. Frontend (Vite React) - NEW

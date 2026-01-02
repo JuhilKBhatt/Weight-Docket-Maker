@@ -4,6 +4,7 @@ from sqlalchemy import text
 from .database import engine
 from .routes import invoiceRoutes
 from fastapi.middleware.cors import CORSMiddleware
+from .utilities.backup_manager import start_backup_scheduler
 
 app = FastAPI()
 
@@ -28,3 +29,8 @@ def test_connection():
             print("✅ Database connection successful!")
     except Exception as e:
         print("❌ Database connection failed:", e)
+
+# Scheduler for backups
+@app.on_event("startup")
+def start_scheduler():
+    start_backup_scheduler()
