@@ -8,6 +8,9 @@ from app.utilities.scrinv_generator import generate_next_scrinv
 
 def generate_new_id(db: Session):
     scrinv = generate_next_scrinv(db)
+    new_invoice = Invoice(scrinv_number=scrinv, status="draft")
+    db.add(new_invoice)
+    db.commit()
     return {"scrinv_id": f"{scrinv}"}
 
 def get_invoice_by_id(db: Session, invoice_id: int):

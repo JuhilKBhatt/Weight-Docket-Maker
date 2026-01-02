@@ -55,7 +55,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       await saveDraftInvoice(payload);
       alert('Invoice saved successfully!');
       
-      localStorage.removeItem("scrinvID");
+      sessionStorage.removeItem("scrinvID");
 
       if (mode === 'new'){
         invoice.resetInvoice();
@@ -82,7 +82,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       await DownloadPDFInvoice(savedData.id, payload.scrinvID);
       alert('Invoice saved and download initiated!');
       
-      localStorage.removeItem("scrinvID");
+      sessionStorage.removeItem("scrinvID");
 
     } catch (error) {
       console.error('Error saving invoice:', error);

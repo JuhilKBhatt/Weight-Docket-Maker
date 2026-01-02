@@ -16,7 +16,7 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
   // SCRINV ID
   const [scrinvID, setScrinvID] = useState(() => {
     if (existingInvoice?.scrinv_number) return existingInvoice.scrinv_number;
-    return localStorage.getItem("scrinvID") || null;
+    return sessionStorage.getItem("scrinvID") || null;
   });
 
   const called = useRef(false);
@@ -26,7 +26,7 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
       called.current = true;
       invoiceNewSCRIDService.createNewInvoice().then(id => {
         setScrinvID(id);
-        localStorage.setItem("scrinvID", id);
+        sessionStorage.setItem("scrinvID", id);
       });
     }
   }, [mode, scrinvID]);
@@ -128,7 +128,7 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
     setIncludeGST(true);
     setShowTransport(false);
     setCurrency('AUD');
-    localStorage.removeItem("scrinvID");
+    sessionStorage.removeItem("scrinvID");
     setScrinvID(null);
   };
 
