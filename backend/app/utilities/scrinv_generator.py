@@ -22,4 +22,4 @@ def generate_next_scrinv(db: Session) -> str:
     number_part = (next_id - 1) % CYCLE_SIZE + 1
 
     # 4. Format (e.g., A0005)
-    return f"{letter}{number_part:04d}"
+    return f"SCRINV{letter}{number_part:04d}"

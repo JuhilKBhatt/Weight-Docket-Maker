@@ -12,7 +12,7 @@ class Invoice(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     # SCR Invoice ID (A0001 → B0001, etc.)
-    scrinv_number = Column(String(10), unique=True)
+    scrinv_number = Column(String(12), unique=True)
     invoice_date = Column(Date, nullable=True)
     currency = Column(String(10), default="AUD")
     status = Column(String(20), default="Draft")  # Draft, Sent, Paid
@@ -44,6 +44,7 @@ class Invoice(Base):
 
     # Notes
     notes = Column(String)
+    private_notes = Column(String)
 
     # RELATIONSHIPS
     items = relationship("InvoiceItem", cascade="all, delete-orphan", back_populates="invoice")

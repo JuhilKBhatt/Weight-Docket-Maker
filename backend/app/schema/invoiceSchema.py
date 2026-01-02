@@ -34,6 +34,7 @@ class InvoiceCreate(BaseModel):
     include_gst: bool
     show_transport: bool
     notes: str
+    private_notes: str
 
     bill_from_name: str
     bill_from_phone: str

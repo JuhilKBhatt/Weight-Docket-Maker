@@ -169,7 +169,7 @@ export default function BillingInfo({
           Invoice Details
         </Typography.Title>
 
-        <Form.Item label="SCRINV ID:">
+        <Form.Item label="TAX INVOICE ID:">
           <InputNumber disabled value={scrinvID} style={{ width: '100%' }} />
         </Form.Item>
 
