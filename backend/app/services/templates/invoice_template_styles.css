@@ -63,7 +63,7 @@ table.layout td {
 .address-block { margin-bottom: 20px; font-size: 11pt; padding-right: 15px; }
 .address-block strong { font-size: 14pt; color: #b01c2e; display: block; margin-bottom: 4px; }
 
-.invoice-number-row { background-color: #111; color: #fff; font-size: 12pt; font-weight: bold; text-align: center; width: 100%; padding: 5px; }
+.invoice-number-row { background-color: #111; color: #fff; font-size: 16pt; font-weight: bold; text-align: center; width: 100%; padding: 15px; }
 .invoice-date { font-size: 12pt; text-align: center; width: 100%; padding: 5px; }
 
 /* Items Table */
@@ -73,7 +73,6 @@ table.items-table {
     margin-top: 20px;
     margin-bottom: 20px;
     table-layout: fixed; 
-    repeat-header: yes;
 }
 
 table.items-table th {
@@ -81,7 +80,7 @@ table.items-table th {
     font-weight: bold;
     padding: 8px;
     border: 1px solid #ccc;
-    text-align: left;
+    text-align: center;
     font-size: 12pt;
     overflow-wrap: break-word;
 }

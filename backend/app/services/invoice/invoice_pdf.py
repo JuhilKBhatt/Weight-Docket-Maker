@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML, CSS
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from app.services.invoice import invoice_crud
 
@@ -32,12 +32,17 @@ def render_invoice_html(db: Session, invoice_id: int):
     
     # 2. Logic: Date Formatting (YYYY-MM-DD -> DD/MM/YYYY)
     formatted_date = ""
+    formatted_due_date = ""
     if inv_dict.get('invoice_date'):
         try:
-            formatted_date = inv_dict['invoice_date'].strftime("%d/%m/%Y")
+            date_obj = inv_dict['invoice_date']
+            formatted_date = date_obj.strftime("%d/%m/%Y")
         except AttributeError:
-            d = datetime.strptime(str(inv_dict['invoice_date']), "%Y-%m-%d")
-            formatted_date = d.strftime("%d/%m/%Y")
+            date_obj = datetime.strptime(str(inv_dict['invoice_date']), "%Y-%m-%d")
+            formatted_date = date_obj.strftime("%d/%m/%Y")
+
+    due_date_obj = date_obj + timedelta(days=2)
+    formatted_due_date = due_date_obj.strftime("%d/%m/%Y")
 
     # 3. Logic: Currency Symbol
     currency_code = inv_dict.get('currency', 'AUD')
@@ -78,8 +83,9 @@ def render_invoice_html(db: Session, invoice_id: int):
         invoice=inv_dict, 
         totals=totals, 
         css_content=css_content,
-        formatted_date=formatted_date, # Pass this
-        symbol=symbol, # Pass this
+        formatted_date=formatted_date,
+        formatted_due_date=formatted_due_date,
+        symbol=symbol,
         header_img_base64=header_b64, 
         footer_img_base64=footer_b64
     )
