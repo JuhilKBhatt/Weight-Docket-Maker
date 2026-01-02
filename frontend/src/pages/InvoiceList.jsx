@@ -132,41 +132,47 @@ export default function InvoiceList() {
         title: 'Actions',
         key: 'actions',
         render: (_, record) => (
-          <div className="flex gap-2">
-            <Link to={`/edit-invoice/${record.id}`}>
-              <Button type="primary">Edit</Button>
-            </Link>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+            {/* ROW 1: Edit and Delete */}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Link to={`/edit-invoice/${record.id}`}>
+                <Button type="primary">Edit</Button>
+              </Link>
 
-            <Popconfirm
-              title="Delete this invoice?"
-              okText="Yes"
-              cancelText="No"
-              onConfirm={() => handleDelete(record.id)}
-            >
-              <Button danger>Delete</Button>
-            </Popconfirm>
+              <Popconfirm
+                title="Delete this invoice?"
+                okText="Yes"
+                cancelText="No"
+                onConfirm={() => handleDelete(record.id)}
+              >
+                <Button danger>Delete</Button>
+              </Popconfirm>
+            </div>
 
-            {record.status === 'Paid' ? (
-              <Button onClick={() => changeStatus(record.id, 'unpaid')}>
-                Mark Unpaid
-              </Button>
-            ) : (
-              <Button onClick={() => changeStatus(record.id, 'paid')}>
-                Mark Paid
-              </Button>
-            )}
+            {/* ROW 2: Status Changes */}
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {record.status === 'Paid' ? (
+                <Button size="small" onClick={() => changeStatus(record.id, 'unpaid')}>
+                  Mark Unpaid
+                </Button>
+              ) : (
+                <Button size="small" onClick={() => changeStatus(record.id, 'paid')}>
+                  Mark Paid
+                </Button>
+              )}
 
-            {record.status !== 'Sent' && record.status !== 'Paid' && (
-              <Button onClick={() => changeStatus(record.id, 'sent')}>
-                Mark Sent
-              </Button>
-            )}
+              {record.status !== 'Sent' && record.status !== 'Paid' && (
+                <Button size="small" onClick={() => changeStatus(record.id, 'sent')}>
+                  Mark Sent
+                </Button>
+              )}
 
-            {record.status !== 'Draft' && record.status !== 'Paid' && (
-              <Button onClick={() => changeStatus(record.id, 'draft')}>
-                Mark Draft
-              </Button>
-            )}
+              {record.status !== 'Draft' && record.status !== 'Paid' && (
+                <Button size="small" onClick={() => changeStatus(record.id, 'draft')}>
+                  Mark Draft
+                </Button>
+              )}
+            </div>
           </div>
         ),
       },
