@@ -153,8 +153,9 @@
 }
 
 /* Also fix the prefix/suffix addons for disabled InputNumber */
-.ant-input-number.ant-input-number-disabled .ant-input-number-group-addon {
+.ant-input-number-group-wrapper-disabled .ant-input-number-group-addon {
   background-color: #ffffff !important;
   color: #000000 !important;
   border-color: #999999 !important;
+  opacity: 1 !important;
 }
