@@ -189,7 +189,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
             <Button type="primary" size='large' onClick={handleSaveDownloadSubmit}>
               Download Invoice
             </Button>
-            <Button type='primary' size='large'>
+            <Button type='primary' size='large' disabled >
               Email Invoice
             </Button>
           </Row>

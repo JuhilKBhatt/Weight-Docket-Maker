@@ -14,7 +14,7 @@ export default function Home() {
       </Typography.Paragraph>
       <div className="home-buttons">
         <Link to="/docket">
-          <Button type="primary">Create Docket</Button>
+          <Button type="primary" disabled >Create Docket</Button>
         </Link>
         <Link to="/InvoiceHome">
           <Button type="primary">Create Invoice</Button>
