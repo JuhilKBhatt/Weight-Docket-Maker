@@ -10,6 +10,7 @@ export default function useInvoiceCalculations({
   postGstDeductions,
   includeGST,
   showTransport,
+  gstPercentage,
 }) {
   return useMemo(() => {
     const calculator = new InvoiceCalculationHandler({
@@ -18,6 +19,7 @@ export default function useInvoiceCalculations({
       preGstDeductions,
       postGstDeductions,
       includeGST,
+      gstPercentage,
     });
     return calculator.getCalculations();
   }, [
@@ -27,5 +29,6 @@ export default function useInvoiceCalculations({
     postGstDeductions,
     includeGST,
     showTransport,
+    gstPercentage,
   ]);
 }

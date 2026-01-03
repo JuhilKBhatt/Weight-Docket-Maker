@@ -161,6 +161,8 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
             <InvoiceTotalsSummary
               includeGST={invoice.includeGST}
               setIncludeGST={invoice.setIncludeGST}
+              gstPercentage={invoice.gstPercentage}
+              setGstPercentage={invoice.setGstPercentage}
               calculatedTotals={calculatedTotals}
               preGstDeductions={invoice.preGstDeductions}
               postGstDeductions={invoice.postGstDeductions}
@@ -186,6 +188,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
               onClick={() => confirmReset(() => {
                   invoice.resetInvoice();
                   form.resetFields();
+                  window.location.reload();
               })}
             >
               Reset Invoice

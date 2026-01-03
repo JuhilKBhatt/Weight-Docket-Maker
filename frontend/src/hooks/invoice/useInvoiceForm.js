@@ -87,6 +87,7 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
 
   const [invoiceType, setInvoiceType] = useState(existingInvoice?.invoice_type || 'Container');
   const [includeGST, setIncludeGST] = useState(existingInvoice?.include_gst ?? true);
+  const [gstPercentage, setGstPercentage] = useState(existingInvoice?.gst_percentage ?? 10);
   const [showTransport, setShowTransport] = useState(existingInvoice?.show_transport ?? false);
   const [currency, setCurrency] = useState(existingInvoice?.currency || 'AUD');
 
@@ -126,6 +127,7 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
     setPostGstDeductions([]);
     setInvoiceType('Container');
     setIncludeGST(true);
+    setGstPercentage(10);
     setShowTransport(false);
     setCurrency('AUD');
     sessionStorage.removeItem("scrinvID");
@@ -140,6 +142,8 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
     scrinvID,
     invoiceType,
     includeGST,
+    gstPercentage,
+    setGstPercentage,
     showTransport,
     currency,
     setCurrency,

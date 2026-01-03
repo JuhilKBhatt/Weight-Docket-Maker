@@ -7,6 +7,8 @@ import { getCurrencyLabel } from '../../scripts/utilities/invoiceConstants';
 export default function InvoiceTotalsSummary({
   includeGST,
   setIncludeGST,
+  gstPercentage,
+  setGstPercentage,
   calculatedTotals,
   preGstDeductions,
   postGstDeductions,
@@ -82,25 +84,38 @@ export default function InvoiceTotalsSummary({
         </Col>
       </Row>
 
-      {/* GST Checkbox */}
+      {/* GST Section */}
       <Row align="middle" style={{ marginTop: 10 }}>
         <Col flex="120px">
           <Checkbox checked={includeGST} onChange={(e) => setIncludeGST(e.target.checked)}>
-            GST (10%):
+            GST:
           </Checkbox>
         </Col>
-        <Col flex="auto">
-          {includeGST && (
+        
+        {/* If GST is enabled, show Percentage Input and Amount */}
+        {includeGST && (
+          <Col flex="auto" style={{ display: 'flex', gap: '10px' }}>
+             {/* Percentage Input */}
+            <InputNumber
+              addonAfter="%"
+              min={0}
+              max={100}
+              style={{ width: '100px' }}
+              value={gstPercentage}
+              onChange={(val) => setGstPercentage(val)}
+            />
+
+             {/* Calculated Amount */}
             <InputNumber
               addonBefore={symbolLabel}
               disabled
-              style={{ width: '100%' }}
+              style={{ flex: 1 }}
               value={calculatedTotals.gstAmount}
               formatter={audFormatterFixed}
               precision={2}
             />
-          )}
-        </Col>
+          </Col>
+        )}
       </Row>
 
       {/* Post-GST deductions */}

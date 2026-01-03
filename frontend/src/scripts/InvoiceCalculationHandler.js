@@ -7,12 +7,14 @@ export default class InvoiceCalculationHandler {
     preGstDeductions = [],
     postGstDeductions = [],
     includeGST = true,
+    gstPercentage = 10,
   }) {
     this.items = items;
     this.transportItems = transportItems;
     this.preGstDeductions = preGstDeductions;
     this.postGstDeductions = postGstDeductions;
     this.includeGST = includeGST;
+    this.gstPercentage = Number(gstPercentage) || 0;
   }
 
   safeNumber(value) {
@@ -66,8 +68,12 @@ export default class InvoiceCalculationHandler {
 
     const transportTotal = this.calculateTransportTotal();
     const preGstDeductionTotal = this.calculateDeductionsTotal(this.preGstDeductions);
+
     const grossTotal = this.round(itemsTotal + transportTotal - preGstDeductionTotal);
-    const gstAmount = this.includeGST ? this.round(grossTotal * 0.1) : 0;
+    
+    const gstRate = this.gstPercentage / 100;
+    const gstAmount = this.includeGST ? this.round(grossTotal * gstRate) : 0;
+    
     const postGstDeductionTotal = this.includeGST ? this.calculateDeductionsTotal(this.postGstDeductions) : 0;
     const finalTotal = this.round(grossTotal + gstAmount - postGstDeductionTotal);
 

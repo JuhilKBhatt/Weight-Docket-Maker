@@ -32,6 +32,7 @@ class InvoiceCreate(BaseModel):
     invoice_type: str
     currency: str
     include_gst: bool
+    gst_amount: float
     show_transport: bool
     notes: str
     private_notes: str
