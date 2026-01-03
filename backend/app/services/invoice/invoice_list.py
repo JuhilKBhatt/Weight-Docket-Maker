@@ -18,7 +18,8 @@ def get_all_invoices_calculated(db: Session):
         post_deductions = sum([d.amount or 0 for d in inv.deductions if d.type == "post"])
 
         subtotal = items_total + transport_total - pre_deductions
-        gst = subtotal * 0.10 if inv.include_gst else 0
+        gst_percent = (inv.gst_percentage or 10) / 100
+        gst = subtotal * gst_percent if inv.include_gst else 0
         total = subtotal + gst - post_deductions
 
         results.append({
