@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Input, Table, Button, Typography, Popconfirm, Tag, message } from 'antd';
+import { Input, Table, Button, Typography, Popconfirm, Tag, message, DatePicker, Row, Col, Space } from 'antd'; // <--- Added imports
 import dayjs from 'dayjs';
 import { audFormatterFixed } from '../scripts/utilities/AUDformatters';
 import { getCurrencyLabel } from '../scripts/utilities/invoiceConstants';
@@ -15,9 +15,13 @@ import {
   updatePrivateNotes
 } from '../services/invoiceListService';
 
+const { RangePicker } = DatePicker;
+
 export default function InvoiceList() {
   const [loading, setLoading] = useState(false);
   const [invoices, setInvoices] = useState([]);
+  const [searchText, setSearchText] = useState('');
+  const [dateRange, setDateRange] = useState(null);
 
   // Load Invoices
   const fetchInvoices = async () => {
@@ -37,6 +41,37 @@ export default function InvoiceList() {
     fetchInvoices();
   }, []);
 
+  // --- FILTERING LOGIC ---
+  const getFilteredInvoices = () => {
+    return invoices.filter((invoice) => {
+      // 1. Text Search (SCR Number OR Company Name)
+      const text = searchText.toLowerCase();
+      const matchText = 
+        (invoice.scrinv_number || '').toLowerCase().includes(text) || 
+        (invoice.bill_to_name || '').toLowerCase().includes(text);
+
+      // 2. Date Range Search
+      let matchDate = true;
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        if (!invoice.invoice_date) {
+          matchDate = false; // Filter out if no date exists when searching by date
+        } else {
+          const invDate = dayjs(invoice.invoice_date);
+          const start = dateRange[0].startOf('day');
+          const end = dateRange[1].endOf('day');
+          
+          // Check if date is within range (inclusive)
+          matchDate = (invDate.isSame(start) || invDate.isAfter(start)) && 
+                      (invDate.isSame(end) || invDate.isBefore(end));
+        }
+      }
+
+      return matchText && matchDate;
+    });
+  };
+
+  const filteredInvoices = getFilteredInvoices();
+
   // Delete Invoice
   const handleDelete = async (id) => {
     try {
@@ -53,10 +88,8 @@ export default function InvoiceList() {
   const changeStatus = async (id, statusType) => {
     try {
       await updateInvoiceStatus(id, statusType);
-      
       const statusLabel = statusType.charAt(0).toUpperCase() + statusType.slice(1);
       message.success(`Invoice marked as ${statusLabel}`);
-      
       fetchInvoices();
     } catch (err) {
       console.error(err);
@@ -79,17 +112,21 @@ export default function InvoiceList() {
         title: 'SCR Number',
         dataIndex: 'scrinv_number',
         key: 'scrinv_number',
+        sorter: (a, b) => a.scrinv_number.localeCompare(b.scrinv_number),
       },
       {
         title: 'Invoice Date',
         dataIndex: 'invoice_date',
         key: 'invoice_date',
         render: (date) => dayjs(date).format('DD/MM/YYYY'),
+        sorter: (a, b) => dayjs(a.invoice_date).unix() - dayjs(b.invoice_date).unix(),
+        defaultSortOrder: 'descend',
       },
       {
         title: 'Company To',
         dataIndex: 'bill_to_name',
         key: 'bill_to_name',
+        sorter: (a, b) => a.bill_to_name.localeCompare(b.bill_to_name),
       },
       {
         title: 'Total Amount',
@@ -98,6 +135,7 @@ export default function InvoiceList() {
         render: (val, record) => {
           return `${getCurrencyLabel(record.currency)}${audFormatterFixed(val)}`;
         },
+        sorter: (a, b) => a.total_amount - b.total_amount,
       },
       {
         title: 'Status',
@@ -111,7 +149,7 @@ export default function InvoiceList() {
           else if (status === 'Draft') color = 'orange';
 
           return <Tag color={color}>{status || 'Unknown'}</Tag>;
-        }
+        },
       },
       {
         title: 'Private Notes',
@@ -188,10 +226,37 @@ export default function InvoiceList() {
         Here you can view all your invoices.
       </Typography.Paragraph>
 
+      {/* --- SEARCH BAR --- */}
+      <Row gutter={16} style={{ marginBottom: 20, width: '100%' }}>
+        <Col span={8}>
+          <Input 
+            placeholder="Search SCR Number or Company..." 
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+          />
+        </Col>
+        <Col span={8}>
+          <RangePicker 
+            style={{ width: '100%' }}
+            value={dateRange}
+            onChange={(dates) => setDateRange(dates)}
+            format="DD/MM/YYYY"
+          />
+        </Col>
+        <Col span={8}>
+            <Button 
+                onClick={() => { setSearchText(''); setDateRange(null); }}
+            >
+                Clear Filters
+            </Button>
+        </Col>
+      </Row>
+
       <Table
         rowKey="id"
         loading={loading}
-        dataSource={invoices}
+        dataSource={filteredInvoices}
         columns={columns}
       />
     </div>
