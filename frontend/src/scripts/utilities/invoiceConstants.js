@@ -16,10 +16,11 @@ export const UNIT_OPTIONS = [
   { value: 't', label: 't' },
   { value: 'kg', label: 'kg' },
   { value: 'bin', label: 'bin' },
-  { value: 'cnt', label: 'CNT' },
-  { value: 'num', label: 'num' },
+  { value: 'cnt', label: 'cnt' },
   { value: 'pcs', label: 'pcs' },
-  { value: 'pal', label: 'pal' },
+  { value: 'ltr', label: 'ltr' },
+  { value: 'hrs', label: 'hrs' },
+  { value: 'num', label: 'num' },
 ];
 
 // 3. Helper to get the display string (e.g., "AUD$")
