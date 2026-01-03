@@ -150,6 +150,14 @@ export default function InvoiceList() {
 
           return <Tag color={color}>{status || 'Unknown'}</Tag>;
         },
+        filters: [
+          { text: 'Draft', value: 'Draft' },
+          { text: 'Sent', value: 'Sent' },
+          { text: 'Unpaid', value: 'Unpaid' },
+          { text: 'Paid', value: 'Paid' },
+        ],
+        onFilter: (value, record) => record.status === value,
+        sorter: (a, b) => (a.status || '').localeCompare(b.status || ''),
       },
       {
         title: 'Private Notes',
