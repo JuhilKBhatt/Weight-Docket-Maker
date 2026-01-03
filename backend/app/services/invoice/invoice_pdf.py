@@ -55,7 +55,8 @@ def render_invoice_html(db: Session, invoice_id: int):
     post_deductions = sum([d['amount'] for d in inv_dict['post_gst_deductions']])
 
     subtotal = items_total + trans_total - pre_deductions
-    gst = subtotal * 0.10 if inv_dict['include_gst'] else 0
+    gst_percent = inv_dict.get('gst_percentage', 10)
+    gst = subtotal * (gst_percent/100) if inv_dict['include_gst'] else 0
     total = subtotal + gst - post_deductions
 
     totals = {

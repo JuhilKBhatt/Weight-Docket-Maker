@@ -159,7 +159,7 @@
 
                     {% if invoice.include_gst %}
                     <tr>
-                        <td class="text-right bold gst-cell">GST (10%):</td>
+                        <td class="text-right bold gst-cell">GST ({{invoice.gst_percentage}}%):</td>
                         <td class="text-right gst-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(totals.gst) }}</td>
                     </tr>
                     {% endif %}
