@@ -6,6 +6,7 @@ export const routeBackMap = {
   '/view-invoice': '/InvoiceHome',
   '/InvoiceHome': '/',
   '/settings': '/InvoiceHome', 
+  '/sales-invoices': '/InvoiceHome',
 };
 
 export const getBackRoute = (currentRoute) => {

@@ -19,6 +19,9 @@ export default function InvoiceMaker() {
         <Link to="/view-invoice">
           <Button type="primary">View Saved Invoice</Button>
         </Link>
+        <Link to='/sales-invoices'>
+          <Button type="primary">View Sales Record</Button>
+        </Link>
       </div>
     </div>
   )
