@@ -109,7 +109,7 @@ export default function InvoiceList() {
   
   const columns = [
       {
-        title: 'SCR Number',
+        title: 'TAX INVOICE ID#',
         dataIndex: 'scrinv_number',
         key: 'scrinv_number',
         sorter: (a, b) => a.scrinv_number.localeCompare(b.scrinv_number),
