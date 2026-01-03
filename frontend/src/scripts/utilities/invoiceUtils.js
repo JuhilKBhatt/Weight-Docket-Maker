@@ -6,6 +6,7 @@ export const saveDraftInvoice = async ({
   scrinvID,
   invoiceType,
   includeGST,
+  gstPercentage,
   showTransport,
   items,
   currency,
@@ -22,9 +23,11 @@ export const saveDraftInvoice = async ({
     invoice_type: invoiceType,
     currency: currency,
     include_gst: includeGST,
+    gst_percentage: Number(gstPercentage ?? 10),
     show_transport: showTransport,
     invoice_date: values.date ? values.date.format('YYYY-MM-DD') : null,
     notes: safeValue(values.notes, ""),
+    private_notes: safeValue(values.private_notes, ""),
 
     bill_from_name: safeValue(values.bill_from_name, values.fromCompanyName),
     bill_from_phone: safeValue(values.bill_from_phone, values.fromCompanyPhone),
@@ -86,6 +89,7 @@ export const saveDraftInvoice = async ({
   };
 
   try {
+    console.log("Saving invoice with payload:", payload);
     const res = await axios.post("http://localhost:8000/api/invoices/saveDraft", payload);
     return res.data;
   } catch (err) {

@@ -20,7 +20,7 @@ class Invoice(Base):
     # Invoice meta
     invoice_type = Column(String(50), default="Container")
     include_gst = Column(Boolean, default=True)
-    gst_amount = Column(Float, default=0)
+    gst_percentage = Column(Float, default=10.0)
     show_transport = Column(Boolean, default=False)
     invoice_date = Column(Date, nullable=True)
 

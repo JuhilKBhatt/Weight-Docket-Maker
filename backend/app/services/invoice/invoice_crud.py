@@ -25,6 +25,7 @@ def get_invoice_by_id(db: Session, invoice_id: int):
         "invoice_type": invoice.invoice_type,
         "currency": invoice.currency,
         "include_gst": invoice.include_gst,
+        "gst_percentage": invoice.gst_percentage,
         "show_transport": invoice.show_transport,
         "notes": invoice.notes,
         "status": invoice.status,
@@ -67,6 +68,7 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
         invoice.invoice_type = data.invoice_type
         invoice.currency = data.currency
         invoice.include_gst = data.include_gst
+        invoice.gst_percentage = data.gst_percentage
         invoice.show_transport = data.show_transport
         invoice.invoice_date = data.invoice_date
         invoice.notes = data.notes
@@ -99,6 +101,7 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
             invoice_type=data.invoice_type,
             currency=data.currency,
             include_gst=data.include_gst,
+            gst_percentage=data.gst_percentage,
             show_transport=data.show_transport,
             invoice_date=data.invoice_date,
             notes=data.notes,
