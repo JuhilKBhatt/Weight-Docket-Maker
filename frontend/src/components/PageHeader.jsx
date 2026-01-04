@@ -12,11 +12,20 @@ export default function PageHeader() {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    const target = getBackRoute(location.pathname);
-    navigate(target);
+    // If on Settings page, go back to the previous page in history
+    if (location.pathname === '/settings') {
+      navigate(-1);
+    } else {
+      // Default behavior: Use the static route map
+      const target = getBackRoute(location.pathname);
+      navigate(target);
+    }
   };
 
   const isHome = location.pathname === '/';
+  
+  // Hide settings button if already on settings page
+  const isSettings = location.pathname === '/settings';
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
@@ -36,14 +45,16 @@ export default function PageHeader() {
 
       {/* Right Side: Settings Button */}
       <Space>
-        <Button 
-          type="text"
-          icon={<SettingOutlined />}
-          onClick={() => navigate('/settings')}
-          style={{ fontSize: '16px' }}
-        >
-          Settings
-        </Button>
+        {!isSettings && (
+          <Button 
+            type="text"
+            icon={<SettingOutlined />}
+            onClick={() => navigate('/settings')}
+            style={{ fontSize: '16px' }}
+          >
+            Settings
+          </Button>
+        )}
       </Space>
     </div>
   );
