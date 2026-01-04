@@ -22,8 +22,7 @@ class Invoice(Base):
     include_gst = Column(Boolean, default=True)
     gst_percentage = Column(Float, default=10.0)
     show_transport = Column(Boolean, default=False)
-    invoice_date = Column(Date, nullable=True)
-
+    
     # BILL FROM / BILL TO
     bill_from_name = Column(String(255))
     bill_from_phone = Column(String(50))
@@ -92,3 +91,29 @@ class Deduction(Base):
     amount = Column(Float, default=0)
 
     invoice = relationship("Invoice", back_populates="deductions")
+
+class SavedBillFrom(Base):
+    __tablename__ = "saved_bill_from"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255))
+    phone = Column(String(50))
+    email = Column(String(200))
+    abn = Column(String(50))
+    address = Column(String(255))
+
+class SavedBillTo(Base):
+    __tablename__ = "saved_bill_to"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255))
+    phone = Column(String(50))
+    email = Column(String(200))
+    abn = Column(String(50))
+    address = Column(String(255))
+
+class SavedAccount(Base):
+    __tablename__ = "saved_accounts"
+    id = Column(Integer, primary_key=True, index=True)
+    bank_name = Column(String(255))
+    account_name = Column(String(255))
+    bsb = Column(String(50))
+    account_number = Column(String(50))
