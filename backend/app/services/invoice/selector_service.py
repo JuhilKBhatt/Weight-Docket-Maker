@@ -85,3 +85,64 @@ def delete_selector(db: Session, type: str, id: int):
     db.delete(item)
     db.commit()
     return {"message": "Deleted successfully"}
+
+def update_selectors_from_invoice(db: Session, data):
+    """
+    Checks the incoming invoice data. If the company/account details 
+    don't exist in the Saved tables, add them.
+    """
+    
+    # 1. Bill From
+    if data.bill_from_name:
+        exists = db.query(SavedBillFrom).filter_by(
+            name=data.bill_from_name,
+            abn=data.bill_from_abn,
+            address=data.bill_from_address,
+            phone=data.bill_from_phone,
+            email=data.bill_from_email
+        ).first()
+        
+        if not exists:
+            db.add(SavedBillFrom(
+                name=data.bill_from_name,
+                phone=data.bill_from_phone,
+                email=data.bill_from_email,
+                abn=data.bill_from_abn,
+                address=data.bill_from_address
+            ))
+
+    # 2. Bill To
+    if data.bill_to_name:
+        exists = db.query(SavedBillTo).filter_by(
+            name=data.bill_to_name,
+            abn=data.bill_to_abn,
+            address=data.bill_to_address,
+            phone=data.bill_to_phone,
+            email=data.bill_to_email
+        ).first()
+
+        if not exists:
+            db.add(SavedBillTo(
+                name=data.bill_to_name,
+                phone=data.bill_to_phone,
+                email=data.bill_to_email,
+                abn=data.bill_to_abn,
+                address=data.bill_to_address
+            ))
+
+    # 3. Account
+    if data.account_name and data.bank_name:
+        exists = db.query(SavedAccount).filter_by(
+            bank_name=data.bank_name,
+            account_name=data.account_name,
+            bsb=data.bsb,
+            account_number=data.account_number
+        ).first()
+
+        if not exists:
+            db.add(SavedAccount(
+                bank_name=data.bank_name,
+                account_name=data.account_name,
+                bsb=data.bsb,
+                account_number=data.account_number
+            ))

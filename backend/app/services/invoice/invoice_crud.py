@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from app.models.invoiceModels import Invoice, InvoiceItem, TransportItem, Deduction
 from app.schema.invoiceSchema import InvoiceCreate
 from app.utilities.scrinv_generator import generate_next_scrinv
+from app.services.invoice import selector_service
 
 def generate_new_id(db: Session):
     scrinv = generate_next_scrinv(db)
@@ -89,6 +90,8 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
         invoice.bsb = data.bsb
         invoice.account_number = data.account_number
 
+        selector_service.update_selectors_from_invoice(db, data)
+
         # Clear old items
         db.query(InvoiceItem).filter(InvoiceItem.invoice_id == invoice.id).delete()
         db.query(TransportItem).filter(TransportItem.invoice_id == invoice.id).delete()
@@ -120,6 +123,7 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
             bsb=data.bsb,
             account_number=data.account_number,
         )
+        selector_service.update_selectors_from_invoice(db, data)
         db.add(invoice)
         db.flush()
 
@@ -137,6 +141,7 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
         db.add(Deduction(
             invoice_id=invoice.id, type=d.type, label=d.label, amount=d.amount
         ))
+    
 
     db.commit()
     return {"message": "invoice saved", "id": invoice.id}

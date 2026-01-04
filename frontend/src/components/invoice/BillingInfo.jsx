@@ -70,7 +70,6 @@ export default function BillingInfo({
           label="ABN"
           name="fromCompanyABN"
           rules={[
-            { required: true, message: 'ABN is required' },
             { len: 11, message: 'ABN must be 11 digits' } 
           ]}
           // This function runs on every keystroke, removing non-digits
@@ -143,7 +142,6 @@ export default function BillingInfo({
           label="ABN"
           name="toCompanyABN"
           rules={[
-            { required: true, message: 'ABN is required' },
             { len: 11, message: 'ABN must be 11 digits' } 
           ]}
           // This function runs on every keystroke, removing non-digits
