@@ -8,7 +8,6 @@ import dayjs from 'dayjs';
 import { audFormatterFixed } from '../scripts/utilities/AUDformatters';
 import { getCurrencyLabel } from '../scripts/utilities/invoiceConstants';
 
-// Import the new service functions
 import { 
   getAllInvoices, 
   deleteInvoiceById, 
@@ -26,12 +25,11 @@ export default function InvoiceList() {
   const [dateRange, setDateRange] = useState(null);
 
   // Load Invoices
-  const fetchInvoices = async () => {
+  const fetchInvoices = async (isBackground = false) => {
     try {
-      setLoading(true);
+      if (!isBackground) setLoading(true);
       const data = await getAllInvoices();
       
-      // Sort logic from previous request
       const sortedData = data.sort((a, b) => {
         const isPaidA = a.status === 'Paid';
         const isPaidB = b.status === 'Paid';
@@ -48,14 +46,18 @@ export default function InvoiceList() {
       setInvoices(sortedData);
     } catch (err) {
       console.error(err);
-      message.error('Failed to load invoices');
+      if (!isBackground) message.error('Failed to load invoices');
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchInvoices();
+    const intervalId = setInterval(() => {
+      fetchInvoices(true); // true = background update
+    }, 2000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const getFilteredInvoices = () => {
@@ -191,7 +193,6 @@ export default function InvoiceList() {
         render: (_, record) => (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
             
-            {/* ROW 1: Edit / Delete */}
             <Space>
               <Tooltip title="Edit Invoice">
                 <Link to={`/edit-invoice/${record.id}`}>
@@ -250,8 +251,7 @@ export default function InvoiceList() {
         Manage and track your invoices here.
       </Typography.Paragraph>
 
-      {/* --- SEARCH BAR --- */}
-      <Row justify="center" gutter={[22, 22]} style={{ marginBottom: 20 }}>
+      <Row justify="center" gutter={[16, 16]} style={{ marginBottom: 20 }}>
         <Col>
           <Input 
             placeholder="Search SCRINV# or Company" 
