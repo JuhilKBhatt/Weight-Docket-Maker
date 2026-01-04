@@ -254,7 +254,7 @@ export default function InvoiceList() {
       <Row justify="center" gutter={[22, 22]} style={{ marginBottom: 20 }}>
         <Col>
           <Input 
-            placeholder="Search SCR # or Company" 
+            placeholder="Search SCRINV# or Company" 
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             allowClear
