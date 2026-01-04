@@ -77,6 +77,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
         ...invoice, // Spread hooks state (scrinvID, items, transportItems, etc.)
         currency,
         values,
+        status: 'Downloaded',
       };
       
       const savedData = await saveDraftInvoice(payload);

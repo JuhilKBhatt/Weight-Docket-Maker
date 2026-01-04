@@ -4,6 +4,7 @@ import axios from "axios";
 
 export const saveDraftInvoice = async ({
   scrinvID,
+  status,
   invoiceType,
   includeGST,
   gstPercentage,
@@ -19,7 +20,7 @@ export const saveDraftInvoice = async ({
 
   const payload = {
     scrinv_number: scrinvID,
-    status: "Draft",
+    status: status || "Draft",
     invoice_type: invoiceType,
     currency: currency,
     include_gst: includeGST,

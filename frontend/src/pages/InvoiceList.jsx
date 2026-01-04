@@ -152,6 +152,7 @@ export default function InvoiceList() {
         },
         filters: [
           { text: 'Draft', value: 'Draft' },
+          { text: 'Downloaded', value: 'Downloaded' },
           { text: 'Sent', value: 'Sent' },
           { text: 'Unpaid', value: 'Unpaid' },
           { text: 'Paid', value: 'Paid' },
