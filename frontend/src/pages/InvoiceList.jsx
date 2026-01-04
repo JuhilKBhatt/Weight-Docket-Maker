@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Input, Table, Button, Typography, Popconfirm, Tag, message, DatePicker, Row, Col, Space } from 'antd'; // <--- Added imports
+import { Input, Table, Button, Typography, Popconfirm, Tag, message, DatePicker, Row, Col, Space, Tooltip } from 'antd';
+import { EditOutlined, DeleteOutlined, CheckCircleOutlined, CloseCircleOutlined, SendOutlined, FileTextOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { audFormatterFixed } from '../scripts/utilities/AUDformatters';
 import { getCurrencyLabel } from '../scripts/utilities/invoiceConstants';
@@ -20,6 +21,7 @@ const { RangePicker } = DatePicker;
 export default function InvoiceList() {
   const [loading, setLoading] = useState(false);
   const [invoices, setInvoices] = useState([]);
+  
   const [searchText, setSearchText] = useState('');
   const [dateRange, setDateRange] = useState(null);
 
@@ -28,7 +30,22 @@ export default function InvoiceList() {
     try {
       setLoading(true);
       const data = await getAllInvoices();
-      setInvoices(data);
+      
+      // Sort logic from previous request
+      const sortedData = data.sort((a, b) => {
+        const isPaidA = a.status === 'Paid';
+        const isPaidB = b.status === 'Paid';
+        if (isPaidA && !isPaidB) return 1;
+        if (!isPaidA && isPaidB) return -1;
+
+        const dateA = a.invoice_date ? dayjs(a.invoice_date).valueOf() : 0;
+        const dateB = b.invoice_date ? dayjs(b.invoice_date).valueOf() : 0;
+        if (dateA !== dateB) return dateB - dateA;
+
+        return b.id - a.id;
+      });
+
+      setInvoices(sortedData);
     } catch (err) {
       console.error(err);
       message.error('Failed to load invoices');
@@ -41,38 +58,31 @@ export default function InvoiceList() {
     fetchInvoices();
   }, []);
 
-  // --- FILTERING LOGIC ---
   const getFilteredInvoices = () => {
     return invoices.filter((invoice) => {
-      // 1. Text Search (SCR Number OR Company Name)
       const text = searchText.toLowerCase();
       const matchText = 
         (invoice.scrinv_number || '').toLowerCase().includes(text) || 
         (invoice.bill_to_name || '').toLowerCase().includes(text);
 
-      // 2. Date Range Search
       let matchDate = true;
       if (dateRange && dateRange[0] && dateRange[1]) {
         if (!invoice.invoice_date) {
-          matchDate = false; // Filter out if no date exists when searching by date
+          matchDate = false;
         } else {
           const invDate = dayjs(invoice.invoice_date);
           const start = dateRange[0].startOf('day');
           const end = dateRange[1].endOf('day');
-          
-          // Check if date is within range (inclusive)
           matchDate = (invDate.isSame(start) || invDate.isAfter(start)) && 
                       (invDate.isSame(end) || invDate.isBefore(end));
         }
       }
-
       return matchText && matchDate;
     });
   };
 
   const filteredInvoices = getFilteredInvoices();
 
-  // Delete Invoice
   const handleDelete = async (id) => {
     try {
       await deleteInvoiceById(id);
@@ -84,7 +94,6 @@ export default function InvoiceList() {
     }
   };
 
-  // Unified Status Handler
   const changeStatus = async (id, statusType) => {
     try {
       await updateInvoiceStatus(id, statusType);
@@ -118,15 +127,14 @@ export default function InvoiceList() {
         title: 'Invoice Date',
         dataIndex: 'invoice_date',
         key: 'invoice_date',
-        render: (date) => dayjs(date).format('DD/MM/YYYY'),
+        render: (date) => date ? dayjs(date).format('DD/MM/YYYY') : '',
         sorter: (a, b) => dayjs(a.invoice_date).unix() - dayjs(b.invoice_date).unix(),
-        defaultSortOrder: 'descend',
       },
       {
         title: 'Company To',
         dataIndex: 'bill_to_name',
         key: 'bill_to_name',
-        sorter: (a, b) => a.bill_to_name.localeCompare(b.bill_to_name),
+        sorter: (a, b) => (a.bill_to_name || '').localeCompare(b.bill_to_name || ''),
       },
       {
         title: 'Total Amount',
@@ -147,6 +155,7 @@ export default function InvoiceList() {
           else if (status === 'Unpaid' || status === 'Overdue') color = 'red';
           else if (status === 'Sent') color = 'blue';
           else if (status === 'Draft') color = 'orange';
+          else if (status === 'Downloaded') color = 'geekblue';
 
           return <Tag color={color}>{status || 'Unknown'}</Tag>;
         },
@@ -164,10 +173,10 @@ export default function InvoiceList() {
         title: 'Private Notes',
         dataIndex: 'private_notes',
         key: 'private_notes',
-        width: 300,
+        width: 275,
         render: (text, record) => (
           <Input.TextArea 
-            rows={5}
+            rows={3}
             defaultValue={text}
             onBlur={(e) => handleNoteSave(record.id, e.target.value)}
             placeholder="Add note..."
@@ -178,48 +187,54 @@ export default function InvoiceList() {
       {
         title: 'Actions',
         key: 'actions',
+        align: 'center',
         render: (_, record) => (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
-            {/* ROW 1: Edit and Delete */}
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Link to={`/edit-invoice/${record.id}`}>
-                <Button type="primary">Edit</Button>
-              </Link>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+            
+            {/* ROW 1: Edit / Delete */}
+            <Space>
+              <Tooltip title="Edit Invoice">
+                <Link to={`/edit-invoice/${record.id}`}>
+                  <Button type="primary" shape="circle" icon={<EditOutlined />} />
+                </Link>
+              </Tooltip>
 
-              <Popconfirm
-                title="Delete this invoice?"
-                okText="Yes"
-                cancelText="No"
-                onConfirm={() => handleDelete(record.id)}
-              >
-                <Button danger>Delete</Button>
-              </Popconfirm>
-            </div>
+              <Tooltip title="Delete Invoice">
+                <Popconfirm
+                  title="Are you sure?"
+                  okText="Yes"
+                  cancelText="No"
+                  onConfirm={() => handleDelete(record.id)}
+                >
+                  <Button danger shape="circle" icon={<DeleteOutlined />} />
+                </Popconfirm>
+              </Tooltip>
+            </Space>
 
-            {/* ROW 2: Status Changes */}
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {/* ROW 2: Status Actions */}
+            <Space>
               {record.status === 'Paid' ? (
-                <Button size="small" onClick={() => changeStatus(record.id, 'unpaid')}>
-                  Mark Unpaid
-                </Button>
+                <Tooltip title="Mark Unpaid">
+                  <Button size="small" shape="circle" icon={<CloseCircleOutlined />} onClick={() => changeStatus(record.id, 'unpaid')} />
+                </Tooltip>
               ) : (
-                <Button size="small" onClick={() => changeStatus(record.id, 'paid')}>
-                  Mark Paid
-                </Button>
+                <Tooltip title="Mark Paid">
+                  <Button size="small" shape="circle" type="dashed" style={{ borderColor: 'green', color: 'green' }} icon={<CheckCircleOutlined />} onClick={() => changeStatus(record.id, 'paid')} />
+                </Tooltip>
               )}
 
               {record.status !== 'Sent' && record.status !== 'Paid' && (
-                <Button size="small" onClick={() => changeStatus(record.id, 'sent')}>
-                  Mark Sent
-                </Button>
+                <Tooltip title="Mark Sent">
+                  <Button size="small" shape="circle" style={{ borderColor: '#1890ff', color: '#1890ff' }} icon={<SendOutlined />} onClick={() => changeStatus(record.id, 'sent')} />
+                </Tooltip>
               )}
 
               {record.status !== 'Draft' && record.status !== 'Paid' && (
-                <Button size="small" onClick={() => changeStatus(record.id, 'draft')}>
-                  Mark Draft
-                </Button>
+                <Tooltip title="Mark Draft">
+                  <Button size="small" shape="circle" style={{ borderColor: 'orange', color: 'orange' }} icon={<FileTextOutlined />} onClick={() => changeStatus(record.id, 'draft')} />
+                </Tooltip>
               )}
-            </div>
+            </Space>
           </div>
         ),
       },
@@ -227,37 +242,36 @@ export default function InvoiceList() {
 
   return (
     <div className="home-container">
-      <Typography.Title level={1}>
+      <Typography.Title level={1} style={{ textAlign: 'center' }}>
         View All Invoices
       </Typography.Title>
 
-      <Typography.Paragraph>
-        Here you can view all your invoices.
+      <Typography.Paragraph style={{ textAlign: 'center', marginBottom: 30 }}>
+        Manage and track your invoices here.
       </Typography.Paragraph>
 
       {/* --- SEARCH BAR --- */}
-      <Row gutter={16} style={{ marginBottom: 20, width: '100%' }}>
-        <Col span={8}>
+      <Row justify="center" gutter={[22, 22]} style={{ marginBottom: 20 }}>
+        <Col>
           <Input 
-            placeholder="Search SCR Number or Company..." 
+            placeholder="Search SCR # or Company" 
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             allowClear
+            style={{ width: 350 }}
           />
         </Col>
-        <Col span={8}>
+        <Col>
           <RangePicker 
-            style={{ width: '100%' }}
             value={dateRange}
             onChange={(dates) => setDateRange(dates)}
             format="DD/MM/YYYY"
+            style={{ width: 300 }}
           />
         </Col>
-        <Col span={8}>
-            <Button 
-                onClick={() => { setSearchText(''); setDateRange(null); }}
-            >
-                Clear Filters
+        <Col>
+            <Button onClick={() => { setSearchText(''); setDateRange(null); }}>
+                Clear
             </Button>
         </Col>
       </Row>
@@ -267,6 +281,7 @@ export default function InvoiceList() {
         loading={loading}
         dataSource={filteredInvoices}
         columns={columns}
+        bordered
       />
     </div>
   );
