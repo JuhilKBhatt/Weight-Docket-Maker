@@ -12,6 +12,7 @@ import NewInvoice from './pages/invoice/InvoiceForm.jsx'
 import EditInvoice from './pages/invoice/EditInvoiceForm.jsx'
 import ViewInvoice from './pages/InvoiceList.jsx'
 import SalesRecord from './pages/invoice/SalesRecord.jsx'
+import Settings from './pages/Settings.jsx'
 
 const { Header, Content } = Layout
 
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/edit-invoice/:id" element={<EditInvoice />} />
           <Route path="/view-invoice" element={<ViewInvoice />} />
           <Route path="/sales-invoices" element={<SalesRecord />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </Content>
     </Layout>

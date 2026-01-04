@@ -8,7 +8,7 @@ from app.schema.invoiceSchema import InvoiceCreate
 from pydantic import BaseModel
 
 # Import the new separated services
-from app.services.invoice import invoice_crud, invoice_list, invoice_status, invoice_data, invoice_pdf
+from app.services.invoice import invoice_crud, invoice_list, invoice_status, invoice_data, invoice_pdf, selector_service
 
 class NoteUpdate(BaseModel):
     private_notes: str
@@ -49,7 +49,11 @@ def get_invoices(db: Session = Depends(get_db)):
 
 @router.get("/selectorsData")
 def get_selectors_data(db: Session = Depends(get_db)):
-    return invoice_data.get_unique_selectors(db)
+    return selector_service.get_and_sync_selectors(db)
+
+@router.delete("/selectors/{type}/{id}")
+def delete_selector_item(type: str, id: int, db: Session = Depends(get_db)):
+    return selector_service.delete_selector(db, type, id)
 
 @router.get("/{invoice_id}")
 def get_invoice(invoice_id: int, db: Session = Depends(get_db)):

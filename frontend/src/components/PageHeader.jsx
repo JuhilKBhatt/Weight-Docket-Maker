@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Button, Typography, Space } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Button, Space } from 'antd';
+import { ArrowLeftOutlined, SettingOutlined } from '@ant-design/icons';
 
 import { getBackRoute } from '../scripts/utilities/routeBackMap'; 
 
@@ -20,6 +20,7 @@ export default function PageHeader() {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
+      {/* Left Side: Back Button */}
       <Space>
         {!isHome && (
           <Button 
@@ -31,6 +32,18 @@ export default function PageHeader() {
             Back
           </Button>
         )}
+      </Space>
+
+      {/* Right Side: Settings Button */}
+      <Space>
+        <Button 
+          type="text"
+          icon={<SettingOutlined />}
+          onClick={() => navigate('/settings')}
+          style={{ fontSize: '16px' }}
+        >
+          Settings
+        </Button>
       </Space>
     </div>
   );
