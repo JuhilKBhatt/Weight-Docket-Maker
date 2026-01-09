@@ -15,6 +15,7 @@ import ViewInvoice from './pages/invoice/InvoiceList.jsx'
 import SalesRecord from './pages/invoice/SalesRecord.jsx'
 
 import DocketHome from './pages/DocketHome.jsx'
+import NewDocket from './pages/docket/DocketForm.jsx'
 
 const { Header, Content } = Layout
 
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/sales-invoices" element={<SalesRecord />} />
 
           <Route path="/DocketHome" element={<DocketHome />} />
+          <Route path="/new-docket" element={<NewDocket mode="new"/>} />
         </Routes>
       </Content>
     </Layout>

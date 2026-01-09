@@ -14,7 +14,7 @@ export default function DocketHome() {
       </Typography.Paragraph>
       <div className="home-buttons">
         <Link to="/new-docket">
-          <Button type="primary" disabled>New Docket</Button>
+          <Button type="primary">New Docket</Button>
         </Link>
         <Link to="/view-docket">
           <Button type="primary" disabled>Past Docket</Button>
