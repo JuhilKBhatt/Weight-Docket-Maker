@@ -13,8 +13,8 @@ export default function Home() {
         Use this application to create weight dockets and invoices.
       </Typography.Paragraph>
       <div className="home-buttons">
-        <Link to="/docket">
-          <Button type="primary" disabled >Create Docket</Button>
+        <Link to="/DocketHome">
+          <Button type="primary" >Create Docket</Button>
         </Link>
         <Link to="/InvoiceHome">
           <Button type="primary">Create Invoice</Button>
