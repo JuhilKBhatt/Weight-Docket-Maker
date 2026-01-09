@@ -10,7 +10,7 @@ import DocketMaker from './pages/DocketMaker.jsx'
 import InvoiceHome from './pages/InvoiceHome.jsx'
 import NewInvoice from './pages/invoice/InvoiceForm.jsx'
 import EditInvoice from './pages/invoice/EditInvoiceForm.jsx'
-import ViewInvoice from './pages/InvoiceList.jsx'
+import ViewInvoice from './pages/invoice/InvoiceList.jsx'
 import SalesRecord from './pages/invoice/SalesRecord.jsx'
 import Settings from './pages/Settings.jsx'
 
