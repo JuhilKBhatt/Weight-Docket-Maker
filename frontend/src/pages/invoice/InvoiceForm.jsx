@@ -3,7 +3,7 @@
 import React from 'react';
 import { Form, Button, Typography, Checkbox, Row, Col, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import '../../styles/InvoiceForm.css';
+import '../../styles/Form.css';
 
 // Hooks
 import useInvoiceForm from '../../hooks/invoice/useInvoiceForm';
