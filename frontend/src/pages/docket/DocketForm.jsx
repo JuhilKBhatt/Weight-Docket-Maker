@@ -153,12 +153,12 @@ export default function DocketForm() {
                             </Space>
                         </Col> 
                     </Row>
-
-                    {/* --- CUSTOMER DETAILS --- */}
-                    <CustomerDetails
-                        dateFormat={dateFormat}
-                    />
                 </Card>
+
+                {/* --- CUSTOMER DETAILS --- */}
+                <CustomerDetails
+                    dateFormat={dateFormat}
+                />
 
                 {/* --- ITEMS TABLE --- */}
                 <DocketItemsTable 
