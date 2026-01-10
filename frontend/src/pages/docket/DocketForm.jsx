@@ -1,8 +1,9 @@
 // ./frontend/src/pages/docket/DocketForm.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Typography, Row, Col, Input, Select, Table, InputNumber, Card, Space, Divider, Checkbox } from 'antd';
+import { Form, Button, Typography, Row, Col, Input, Select, Table, InputNumber, Card, Space, Divider, Checkbox, DatePicker } from 'antd';
 import InvoiceTotalsSummary from '../../components/TotalsSummary';
+import dayjs from 'dayjs';
 import '../../styles/Form.css'; 
 
 const { Title, Text } = Typography;
@@ -24,6 +25,7 @@ const generateInitialRows = (count) => {
 
 export default function DocketForm() {
     const [form] = Form.useForm();
+    const dateFormat = 'DD/MM/YYYY';
     
     // --- Data States ---
     const [dataSource, setDataSource] = useState(generateInitialRows(24));
@@ -181,7 +183,7 @@ export default function DocketForm() {
             <Form form={form} layout="vertical" onFinish={onFinish}>
                 
                 {/* --- HEADER --- */}
-                <Card bordered={false} style={{ marginBottom: 20 }}>
+                <Card variant="borderless" style={{ marginBottom: 20 }}>
                     <Row justify="space-between" align="middle">
                         <Col>
                             <Form.Item name="docketType" initialValue="Customer" noStyle>
@@ -202,10 +204,18 @@ export default function DocketForm() {
                 {/* --- CUSTOMER DETAILS --- */}
                 <Card title="Customer Details" size="small" style={{ marginBottom: 20 }}>
                     <Row gutter={16}>
-                        <Col span={8}><Form.Item label="Name" name="name"><Input placeholder="Full Name" /></Form.Item></Col>
+                        <Col span={8}>
+                            <Form.Item label="Name" name="name">
+                                <Input placeholder="Full Name" />
+                            </Form.Item>
+                        </Col>
                         <Col span={8}><Form.Item label="License No." name="licenseNo"><Input placeholder="License No." /></Form.Item></Col>
                         <Col span={8}><Form.Item label="Rego No." name="regoNo"><Input placeholder="Rego No." /></Form.Item></Col>
-                        <Col span={8}><Form.Item label="Date of Birth" name="dob"><Input placeholder="DD/MM/YYYY" /></Form.Item></Col>
+                        <Col span={8}>
+                            <Form.Item label="Date of Birth" name="dob">
+                                <DatePicker format={dateFormat}/>
+                            </Form.Item>
+                        </Col>
                         <Col span={8}><Form.Item label="PayID" name="payId"><Input placeholder="PayID" /></Form.Item></Col>
                         <Col span={8}><Form.Item label="Phone No." name="phone"><Input placeholder="Phone Number" /></Form.Item></Col>
                         <Col span={6}><Form.Item label="BSB" name="bsb"><Input placeholder="BSB" /></Form.Item></Col>
