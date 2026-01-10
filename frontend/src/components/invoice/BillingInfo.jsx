@@ -1,7 +1,6 @@
 // ./frontend/src/components/invoice/BillingInfo.jsx
 
 import { Row, Col, Typography, Form, Input, InputNumber, Select, DatePicker } from 'antd';
-import dayjs from 'dayjs';
 
 export default function BillingInfo({
   form,

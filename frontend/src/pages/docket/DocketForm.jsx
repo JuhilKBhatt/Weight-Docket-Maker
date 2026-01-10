@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Typography, Row, Col, Input, Select, Table, InputNumber, Card, Space, Divider, Checkbox, DatePicker } from 'antd';
 import InvoiceTotalsSummary from '../../components/TotalsSummary';
-import dayjs from 'dayjs';
 import '../../styles/Form.css'; 
 
 const { Title, Text } = Typography;
@@ -270,7 +269,7 @@ export default function DocketForm() {
                         </Form.Item>
                     </Space>
                     <Space>
-                        <Button size="large" htmlType="submit" style={{ minWidth: 120 }}>
+                        <Button size="large" style={{ minWidth: 120 }}>
                             Save
                         </Button>
                     </Space>
@@ -282,7 +281,7 @@ export default function DocketForm() {
                             </Form.Item>
                             <Text>Dockets</Text>
                         </Space>
-                        <Button type="primary" size="large" htmlType="submit" style={{ minWidth: 120 }}>
+                        <Button type="primary" size="large" style={{ minWidth: 120 }}>
                             Print
                         </Button>
                     </Space>
