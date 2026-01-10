@@ -142,7 +142,13 @@ export default function DocketForm() {
                         <Col>
                             <Title level={1} style={{ margin: 0 }}>Docket</Title>
                         </Col>
-                        <Col></Col> 
+                        <Col>
+                            <Form.Item label= "Company Details" name="companyDetails">
+                                <Select
+                                    placeholder="Select Company"
+                                />
+                            </Form.Item>
+                        </Col> 
                     </Row>
                 </Card>
 
