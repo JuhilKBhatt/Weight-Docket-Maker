@@ -145,6 +145,7 @@ export default function DocketForm() {
                 {/* --- HEADER --- */}
                 <Card style={{ marginBottom: 20 }}>
                     <Row justify="space-between" align="middle">
+                        {/* LEFT SIDE: Vertically centered automatically by Row align="middle" */}
                         <Col>
                             <Space size="middle">
                                 <Form.Item name="docketType" initialValue="Customer" noStyle>
@@ -156,15 +157,28 @@ export default function DocketForm() {
                                 <Title level={1} style={{ margin: 0 }}>Docket</Title>
                             </Space>
                         </Col>
+
+                        {/* RIGHT SIDE: Stacked vertically */}
                         <Col>
-                            <Space align="center">
-                                <Title level={4} style={{ margin: 0, color: '#666' }}>Company:</Title>
-                                <Form.Item name="companyDetails" noStyle>
-                                    <Select size="large" style={{ width: 300 }} placeholder="Select Company">
-                                        <Option value="company1">Example Company A</Option>
-                                        <Option value="company2">Example Company B</Option>
-                                    </Select>
-                                </Form.Item>
+                            <Space direction="vertical" align="end" size={0}>
+                                {/* Top: Company Selector */}
+                                <Space align="center" style={{ marginBottom: 8 }}>
+                                    <Title level={4} style={{ margin: 0 }}>Company:</Title>
+                                    <Form.Item name="companyDetails" noStyle>
+                                        <Select size="large" style={{ width: 300 }} placeholder="Select Company">
+                                            <Option value="company1">Example Company A</Option>
+                                            <Option value="company2">Example Company B</Option>
+                                        </Select>
+                                    </Form.Item>
+                                </Space>
+
+                                {/* Bottom: Docket Number */}
+                                <Space align="center">
+                                    <Title level={4} style={{ margin: 0 }}>Docket #:</Title>
+                                    <Form.Item name="docketNumber" noStyle>
+                                        <InputNumber size="large" readOnly style={{ width: 150 }} placeholder="#" />
+                                    </Form.Item>
+                                </Space>
                             </Space>
                         </Col> 
                     </Row>
