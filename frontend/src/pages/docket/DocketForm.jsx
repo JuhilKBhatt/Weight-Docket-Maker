@@ -14,9 +14,10 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 // Helper for initial rows
+// We use Date.now() + index to ensure unique keys on initial load
 const generateInitialRows = (count) => {
     return Array.from({ length: count }, (_, index) => ({
-        key: index,
+        key: Date.now() + index, 
         metal: '',
         notes: '',
         gross: null,
@@ -32,7 +33,7 @@ export default function DocketForm() {
     const dateFormat = 'DD/MM/YYYY';
     
     // --- Data States ---
-    const [dataSource, setDataSource] = useState(generateInitialRows(24));
+    const [dataSource, setDataSource] = useState(generateInitialRows(20));
     
     // --- Totals & Deductions States ---
     const [gstEnabled, setGstEnabled] = useState(false);
@@ -46,12 +47,35 @@ export default function DocketForm() {
         finalTotal: 0
     });
 
+// --- Table Actions (Add/Remove) ---
+    const addRow = (count = 1) => {
+        const timestamp = Date.now(); // Get time once
+        
+        const newRows = Array.from({ length: count }, (_, index) => ({
+            key: timestamp + index, 
+            metal: '',
+            notes: '',
+            gross: null,
+            tare: null,
+            net: 0,
+            price: null,
+            total: 0
+        }));
+        
+        setDataSource([...dataSource, ...newRows]);
+    };
+
+    const removeRow = (key) => {
+        setDataSource(dataSource.filter(item => item.key !== key));
+    };
+
     // --- Table Calculation Logic ---
     const handleItemsChange = (key, field, value) => {
         const newData = [...dataSource];
         const index = newData.findIndex((item) => item.key === key);
-        const item = newData[index];
+        if (index === -1) return; // Guard clause in case row is deleted fast
 
+        const item = newData[index];
         item[field] = value;
 
         const gross = parseFloat(item.gross) || 0;
@@ -121,31 +145,22 @@ export default function DocketForm() {
                 {/* --- HEADER --- */}
                 <Card style={{ marginBottom: 20 }}>
                     <Row justify="space-between" align="middle">
-                        {/* LEFT SIDE */}
                         <Col>
                             <Space size="middle">
-                                <Form.Item name="docketType" initialValue="Customer">
-                                    <Select
-                                    size="large" 
-                                    style={{ width: 180, height:85 }}
-                                    >
+                                <Form.Item name="docketType" initialValue="Customer" noStyle>
+                                    <Select size="large" style={{ width: 180, fontSize: '18px' }}>
                                         <Option value="Customer">Customer</Option>
                                         <Option value="Weight">Weight</Option>
                                     </Select>
                                 </Form.Item>
-                                <Title level={1}>: Docket</Title>
+                                <Title level={1} style={{ margin: 0 }}>Docket</Title>
                             </Space>
                         </Col>
-
-                        {/* RIGHT SIDE */}
                         <Col>
                             <Space align="center">
-                                <Title level={1}>Company :</Title>
-                                <Form.Item name="companyDetails">
-                                    <Select
-                                        size="large" 
-                                        style={{ width: 300, height:85 }}
-                                    >
+                                <Title level={4} style={{ margin: 0, color: '#666' }}>Company:</Title>
+                                <Form.Item name="companyDetails" noStyle>
+                                    <Select size="large" style={{ width: 300 }} placeholder="Select Company">
                                         <Option value="company1">Example Company A</Option>
                                         <Option value="company2">Example Company B</Option>
                                     </Select>
@@ -156,14 +171,14 @@ export default function DocketForm() {
                 </Card>
 
                 {/* --- CUSTOMER DETAILS --- */}
-                <CustomerDetails
-                    dateFormat={dateFormat}
-                />
+                <CustomerDetails dateFormat={dateFormat} />
 
                 {/* --- ITEMS TABLE --- */}
                 <DocketItemsTable 
                     items={dataSource} 
                     onItemChange={handleItemsChange} 
+                    addRow={addRow}       // PASSING PROP
+                    removeRow={removeRow} // PASSING PROP
                 />
 
                 {/* --- TOTALS SUMMARY --- */}
@@ -197,9 +212,7 @@ export default function DocketForm() {
                         </Form.Item>
                     </Space>
                     <Space>
-                        <Button size="large" style={{ minWidth: 120 }}>
-                            Save
-                        </Button>
+                        <Button size="large" style={{ minWidth: 120 }}>Save</Button>
                     </Space>
                     <Space size="large">
                         <Space>
@@ -209,9 +222,7 @@ export default function DocketForm() {
                             </Form.Item>
                             <Text>Dockets</Text>
                         </Space>
-                        <Button type="primary" size="large" htmlType="submit" style={{ minWidth: 120 }}>
-                            Print
-                        </Button>
+                        <Button type="primary" size="large" htmlType="submit" style={{ minWidth: 120 }}>Print</Button>
                     </Space>
                 </div>
             </Form>

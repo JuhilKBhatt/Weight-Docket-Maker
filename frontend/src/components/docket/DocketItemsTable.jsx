@@ -1,20 +1,23 @@
 // ./frontend/src/components/docket/DocketItemsTable.jsx
 
-import React from 'react';
-import { Table, Input, InputNumber, Typography } from 'antd';
+import React, { useState } from 'react';
+import { Table, Input, InputNumber, Typography, Button, Row, Col } from 'antd';
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
-export default function DocketItemsTable({ items, onItemChange }) {
+export default function DocketItemsTable({ items, onItemChange, addRow, removeRow }) {
+    
+    // Local state to track how many rows to add
+    const [rowsToAdd, setRowsToAdd] = useState(1);
 
-    // Columns configuration moved here to keep the parent clean
     const columns = [
         {
             title: 'Serial #',
-            dataIndex: 'key',
+            key: 'serial',
             width: 80,
             align: 'center',
-            render: (text) => <Text strong style={{ fontSize: '18px' }}>{text + 1}</Text>,
+            render: (_, __, index) => <Text strong style={{ fontSize: '18px' }}>{index + 1}</Text>,
         },
         {
             title: 'Metal',
@@ -102,17 +105,54 @@ export default function DocketItemsTable({ items, onItemChange }) {
                 />
             )
         },
+        {
+            title: '',
+            key: 'action',
+            width: 50,
+            render: (_, record) => (
+                <Button 
+                    type="text" 
+                    danger 
+                    icon={<DeleteOutlined />} 
+                    onClick={() => removeRow(record.key)}
+                />
+            )
+        }
     ];
 
     return (
-        <Table
-            rowClassName={() => 'docket-table-row'}
-            dataSource={items}
-            columns={columns}
-            pagination={false}
-            bordered
-            size="middle"
-            style={{ marginBottom: 30 }}
-        />
+        <div style={{ marginBottom: 30 }}>
+            <Table
+                rowClassName={() => 'docket-table-row'}
+                dataSource={items}
+                columns={columns}
+                pagination={false}
+                bordered
+                size="middle"
+            />
+            
+            {/* Control Bar for adding rows */}
+            <Row gutter={8} style={{ marginTop: 8 }}>
+                <Col flex="auto">
+                    <Button 
+                        type="dashed" 
+                        onClick={() => addRow(rowsToAdd)} 
+                        style={{ width: '100%' }}
+                        icon={<PlusOutlined />}
+                    >
+                        Add Rows
+                    </Button>
+                </Col>
+                <Col>
+                     <InputNumber 
+                        min={1} 
+                        max={50} 
+                        value={rowsToAdd} 
+                        onChange={setRowsToAdd} 
+                        style={{ width: 70 }}
+                    />
+                </Col>
+            </Row>
+        </div>
     );
 }
