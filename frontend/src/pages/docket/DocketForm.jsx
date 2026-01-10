@@ -121,24 +121,30 @@ export default function DocketForm() {
                 {/* --- HEADER --- */}
                 <Card variant="borderless" style={{ marginBottom: 20 }}>
                     <Row justify="space-between" align="middle">
+                        {/* LEFT SIDE */}
                         <Col>
-                            <Form.Item name="docketType" initialValue="Customer" noStyle>
-                                <Select style={{ width: 150, fontSize: '18px' }}>
-                                    <Option value="Customer">Customer</Option>
-                                    <Option value="Weight">Weight</Option>
-                                </Select>
-                            </Form.Item>
+                            <Space size="middle">
+                                <Form.Item name="docketType" initialValue="Customer">
+                                    <Select>
+                                        <Option value="Customer">Customer</Option>
+                                        <Option value="Weight">Weight</Option>
+                                    </Select>
+                                </Form.Item>
+                                <Title level={1}>: Docket</Title>
+                            </Space>
                         </Col>
+
+                        {/* RIGHT SIDE */}
                         <Col>
-                            <Title level={1} style={{ margin: 0 }}>Docket</Title>
-                        </Col>
-                        <Col>
-                            <Form.Item label= "Company Details" name="companyDetails">
-                                <Select
-                                    placeholder="Select Company"
-                                    style={{ width: 200 }} 
-                                />
-                            </Form.Item>
+                            <Space align="center">
+                                <Title level={1}>Company :</Title>
+                                <Form.Item name="companyDetails">
+                                    <Select>
+                                        <Option value="company1">Example Company A</Option>
+                                        <Option value="company2">Example Company B</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Space>
                         </Col> 
                     </Row>
                 </Card>
