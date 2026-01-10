@@ -203,27 +203,47 @@ export default function DocketForm() {
                     />
                 </Row>
 
-                {/* --- ACTION BUTTONS --- */}
                 <Divider />
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 0' }}>
+                {/* --- ACTION BUTTONS --- */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 0', gap: '30px' }}>
+                    
+                    {/* TOP: Save Checkbox */}
                     <Space>
                         <Form.Item name="saveDocket" valuePropName="checked" noStyle initialValue={true}>
-                            <Checkbox>Save Docket?</Checkbox>
+                            <Checkbox style={{ fontSize: '24px', transform: 'scale(1.5)' }}>
+                                Save Docket?
+                            </Checkbox>
                         </Form.Item>
                     </Space>
-                    <Space>
-                        <Button size="large" style={{ minWidth: 120 }}>Save</Button>
-                    </Space>
-                    <Space size="large">
-                        <Space>
-                            <Text>Printing:</Text>
+
+                    {/* SEPARATOR: Light horizontal line */}
+                    <div style={{ width: '400px', borderBottom: '2px solid #f0f0f0' }}></div>
+
+                    {/* BOTTOM: Print Section */}
+                    <Space size="large" align="center">
+                        <Space size="small">
+                            <Text style={{ fontSize: '24px' }}>Printing:</Text>
                             <Form.Item name="printQty" noStyle initialValue={2}>
-                                <InputNumber min={1} max={10} style={{ width: 60 }} />
+                                <InputNumber 
+                                    min={1} 
+                                    max={10} 
+                                    size="large" 
+                                    style={{ width: 80, fontSize: '24px', height: '45px', paddingTop: '4px' }} 
+                                />
                             </Form.Item>
-                            <Text>Dockets</Text>
+                            <Text style={{ fontSize: '24px' }}>Dockets</Text>
                         </Space>
-                        <Button type="primary" size="large" htmlType="submit" style={{ minWidth: 120 }}>Print</Button>
+                        
+                        <Button 
+                            type="primary" 
+                            size="large" 
+                            htmlType="submit" 
+                            style={{ minWidth: 220, height: 70, fontSize: '28px', marginLeft: '20px' }}
+                        >
+                            Print
+                        </Button>
                     </Space>
+
                 </div>
             </Form>
         </div>
