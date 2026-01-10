@@ -119,13 +119,16 @@ export default function DocketForm() {
             <Form form={form} layout="vertical" onFinish={onFinish}>
                 
                 {/* --- HEADER --- */}
-                <Card variant="borderless" style={{ marginBottom: 20 }}>
+                <Card style={{ marginBottom: 20 }}>
                     <Row justify="space-between" align="middle">
                         {/* LEFT SIDE */}
                         <Col>
                             <Space size="middle">
                                 <Form.Item name="docketType" initialValue="Customer">
-                                    <Select>
+                                    <Select
+                                    size="large" 
+                                    style={{ width: 180, height:85 }}
+                                    >
                                         <Option value="Customer">Customer</Option>
                                         <Option value="Weight">Weight</Option>
                                     </Select>
@@ -139,7 +142,10 @@ export default function DocketForm() {
                             <Space align="center">
                                 <Title level={1}>Company :</Title>
                                 <Form.Item name="companyDetails">
-                                    <Select>
+                                    <Select
+                                        size="large" 
+                                        style={{ width: 300, height:85 }}
+                                    >
                                         <Option value="company1">Example Company A</Option>
                                         <Option value="company2">Example Company B</Option>
                                     </Select>
@@ -147,12 +153,12 @@ export default function DocketForm() {
                             </Space>
                         </Col> 
                     </Row>
-                </Card>
 
-                {/* --- CUSTOMER DETAILS --- */}
-                <CustomerDetails
-                    dateFormat={dateFormat}
-                />
+                    {/* --- CUSTOMER DETAILS --- */}
+                    <CustomerDetails
+                        dateFormat={dateFormat}
+                    />
+                </Card>
 
                 {/* --- ITEMS TABLE --- */}
                 <DocketItemsTable 
