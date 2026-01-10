@@ -1,11 +1,12 @@
 // ./frontend/src/pages/docket/DocketForm.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Typography, Row, Col, Input, Select, InputNumber, Card, Space, Divider, Checkbox, DatePicker } from 'antd';
+import { Form, Button, Typography, Row, Col, Input, Select, InputNumber, Card, Space, Divider, Checkbox } from 'antd';
 
 // Components
 import InvoiceTotalsSummary from '../../components/TotalsSummary';
 import DocketItemsTable from '../../components/docket/DocketItemsTable';
+import CustomerDetails from '../../components/docket/CustomerDetails';
 
 import '../../styles/Form.css'; 
 
@@ -39,7 +40,6 @@ export default function DocketForm() {
     const [preGstDeductions, setPreGstDeductions] = useState([]);
     const [postGstDeductions, setPostGstDeductions] = useState([]);
     
-    // Object structure matches what InvoiceTotalsSummary expects
     const [calculatedTotals, setCalculatedTotals] = useState({
         grossTotal: 0,
         gstAmount: 0,
@@ -88,22 +88,12 @@ export default function DocketForm() {
 
     // --- Master Calculation Effect ---
     useEffect(() => {
-        // 1. Sum of Docket Items
         const itemsTotal = dataSource.reduce((acc, curr) => acc + (curr.total || 0), 0);
-
-        // 2. Sum of Pre-GST Deductions
         const preDedTotal = preGstDeductions.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
         
-        // 3. Gross Total (Subtotal)
         const grossTotal = Math.max(0, itemsTotal - preDedTotal);
-
-        // 4. GST
         const gstAmount = gstEnabled ? grossTotal * (gstPercentage / 100) : 0;
-
-        // 5. Sum of Post-GST Deductions
         const postDedTotal = postGstDeductions.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
-
-        // 6. Final Total
         const finalTotal = Math.max(0, grossTotal + gstAmount - postDedTotal);
 
         setCalculatedTotals({
@@ -146,6 +136,7 @@ export default function DocketForm() {
                             <Form.Item label= "Company Details" name="companyDetails">
                                 <Select
                                     placeholder="Select Company"
+                                    style={{ width: 200 }} 
                                 />
                             </Form.Item>
                         </Col> 
@@ -153,28 +144,17 @@ export default function DocketForm() {
                 </Card>
 
                 {/* --- CUSTOMER DETAILS --- */}
-                <Card title="Customer Details" size="small" style={{ marginBottom: 20 }}>
-                    <Row gutter={16}>
-                        <Col span={8}><Form.Item label="Name" name="name"><Input placeholder="Full Name" /></Form.Item></Col>
-                        <Col span={8}><Form.Item label="License No." name="licenseNo"><Input placeholder="License No." /></Form.Item></Col>
-                        <Col span={8}><Form.Item label="Rego No." name="regoNo"><Input placeholder="Rego No." /></Form.Item></Col>
-                        <Col span={8}><Form.Item label="Date of Birth" name="dob"><DatePicker format={dateFormat} style={{width: '100%'}}/></Form.Item></Col>
-                        <Col span={8}><Form.Item label="PayID" name="payId"><Input placeholder="PayID" /></Form.Item></Col>
-                        <Col span={8}><Form.Item label="Phone No." name="phone"><Input placeholder="Phone Number" /></Form.Item></Col>
-                        <Col span={6}><Form.Item label="BSB" name="bsb"><Input placeholder="BSB" /></Form.Item></Col>
-                        <Col span={6}><Form.Item label="Account No." name="accNo"><Input placeholder="Account No." /></Form.Item></Col>
-                        <Col span={6}><Form.Item label="ABN" name="abn"><Input placeholder="ABN" /></Form.Item></Col>
-                        <Col span={6}><Form.Item label="Address" name="address"><Input placeholder="Address" /></Form.Item></Col>
-                    </Row>
-                </Card>
+                <CustomerDetails
+                    dateFormat={dateFormat}
+                />
 
-                {/* --- ITEMS TABLE COMPONENT --- */}
+                {/* --- ITEMS TABLE --- */}
                 <DocketItemsTable 
                     items={dataSource} 
                     onItemChange={handleItemsChange} 
                 />
 
-                {/* --- TOTALS SUMMARY COMPONENT --- */}
+                {/* --- TOTALS SUMMARY --- */}
                 <Row gutter={24} style={{ marginTop: 20 }}>
                     <Col span={12}>
                         <Form.Item label="Docket Notes" name="paperNotes">
@@ -217,7 +197,7 @@ export default function DocketForm() {
                             </Form.Item>
                             <Text>Dockets</Text>
                         </Space>
-                        <Button type="primary" size="large" style={{ minWidth: 120 }}>
+                        <Button type="primary" size="large" htmlType="submit" style={{ minWidth: 120 }}>
                             Print
                         </Button>
                     </Space>
