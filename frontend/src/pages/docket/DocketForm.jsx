@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from 'react';
+// src/pages/docket/DocketForm.jsx
+
+import React, { useState } from 'react';
 import { Form, Button, Typography, Row, Col, Input, InputNumber, Space, Divider, Checkbox } from 'antd';
 
 // Components
 import InvoiceTotalsSummary from '../../components/TotalsSummary';
 import DocketItemsTable from '../../components/docket/DocketItemsTable';
 import CustomerDetails from '../../components/docket/CustomerDetails';
-import DocketHeader from '../../components/docket/DocketHeader'; // New Import
+import DocketHeader from '../../components/docket/DocketHeader';
+
+// Hooks
+import useDocketCalculations from '../../hooks/docket/useDocketCalculations';
 
 import '../../styles/Form.css'; 
 
@@ -36,11 +41,19 @@ export default function DocketForm() {
     const [gstPercentage, setGstPercentage] = useState(10);
     const [preGstDeductions, setPreGstDeductions] = useState([]);
     const [postGstDeductions, setPostGstDeductions] = useState([]);
-    
-    const [calculatedTotals, setCalculatedTotals] = useState({
-        grossTotal: 0,
-        gstAmount: 0,
-        finalTotal: 0
+
+    // --- HOOK: Calculations ---
+    const { 
+        itemsWithTotals, 
+        grossTotal, 
+        gstAmount, 
+        finalTotal 
+    } = useDocketCalculations({
+        items: dataSource,
+        preGstDeductions,
+        postGstDeductions,
+        includeGST: gstEnabled,
+        gstPercentage
     });
 
     // --- Table Actions (Add/Remove) ---
@@ -63,27 +76,14 @@ export default function DocketForm() {
         setDataSource(dataSource.filter(item => item.key !== key));
     };
 
-    // --- Table Calculation Logic ---
+    // --- Table Data Update ---
     const handleItemsChange = (key, field, value) => {
-        const newData = [...dataSource];
-        const index = newData.findIndex((item) => item.key === key);
-        if (index === -1) return; 
-
-        const item = newData[index];
-        item[field] = value;
-
-        const gross = parseFloat(item.gross) || 0;
-        const tare = parseFloat(item.tare) || 0;
-        const price = parseFloat(item.price) || 0;
-
-        const net = Math.max(0, gross - tare);
-        const total = net * price;
-
-        item.net = parseFloat(net.toFixed(2));
-        item.total = parseFloat(total.toFixed(2));
-
-        newData.splice(index, 1, item);
-        setDataSource(newData);
+        setDataSource(prev => prev.map(item => {
+            if (item.key === key) {
+                return { ...item, [field]: value };
+            }
+            return item;
+        }));
     };
 
     // --- Deduction Handlers ---
@@ -104,29 +104,12 @@ export default function DocketForm() {
         else setPostGstDeductions(updateList(postGstDeductions));
     };
 
-    // --- Master Calculation Effect ---
-    useEffect(() => {
-        const itemsTotal = dataSource.reduce((acc, curr) => acc + (curr.total || 0), 0);
-        const preDedTotal = preGstDeductions.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
-        
-        const grossTotal = Math.max(0, itemsTotal - preDedTotal);
-        const gstAmount = gstEnabled ? grossTotal * (gstPercentage / 100) : 0;
-        const postDedTotal = postGstDeductions.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
-        const finalTotal = Math.max(0, grossTotal + gstAmount - postDedTotal);
-
-        setCalculatedTotals({
-            grossTotal,
-            gstAmount,
-            finalTotal
-        });
-
-    }, [dataSource, gstEnabled, gstPercentage, preGstDeductions, postGstDeductions]);
-
     const onFinish = (values) => {
         const payload = {
             ...values,
-            items: dataSource.filter(item => item.gross > 0 || item.metal),
-            totals: calculatedTotals,
+            // Filter out empty rows, using the calculated items
+            items: itemsWithTotals.filter(item => item.gross > 0 || item.metal),
+            totals: { grossTotal, gstAmount, finalTotal },
             deductions: { pre: preGstDeductions, post: postGstDeductions }
         };
         console.log('Form Submitted:', payload);
@@ -144,7 +127,7 @@ export default function DocketForm() {
 
                 {/* --- COMPONENT: ITEMS TABLE --- */}
                 <DocketItemsTable 
-                    items={dataSource} 
+                    items={itemsWithTotals} // Pass calculated items
                     onItemChange={handleItemsChange} 
                     addRow={addRow}       
                     removeRow={removeRow} 
@@ -162,7 +145,7 @@ export default function DocketForm() {
                         setIncludeGST={setGstEnabled}
                         gstPercentage={gstPercentage}
                         setGstPercentage={setGstPercentage}
-                        calculatedTotals={calculatedTotals}
+                        calculatedTotals={{ grossTotal, gstAmount, finalTotal }}
                         preGstDeductions={preGstDeductions}
                         postGstDeductions={postGstDeductions}
                         handleDeductionChange={handleDeductionChange}
