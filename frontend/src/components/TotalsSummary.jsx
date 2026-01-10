@@ -1,4 +1,4 @@
-// ./frontend/src/components/invoice/InvoiceTotalsSummary.jsx
+// ./frontend/src/components/TotalsSummary.jsx
 
 import { Row, Col, Typography, Input, InputNumber, Button, Checkbox } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../scripts/utilities/AUDformatters';
