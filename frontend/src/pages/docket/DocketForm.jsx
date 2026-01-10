@@ -1,20 +1,16 @@
-// ./frontend/src/pages/docket/DocketForm.jsx
-
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Typography, Row, Col, Input, Select, InputNumber, Card, Space, Divider, Checkbox } from 'antd';
+import { Form, Button, Typography, Row, Col, Input, InputNumber, Space, Divider, Checkbox } from 'antd';
 
 // Components
 import InvoiceTotalsSummary from '../../components/TotalsSummary';
 import DocketItemsTable from '../../components/docket/DocketItemsTable';
 import CustomerDetails from '../../components/docket/CustomerDetails';
+import DocketHeader from '../../components/docket/DocketHeader'; // New Import
 
 import '../../styles/Form.css'; 
 
-const { Title, Text } = Typography;
-const { Option } = Select;
+const { Text } = Typography;
 
-// Helper for initial rows
-// We use Date.now() + index to ensure unique keys on initial load
 const generateInitialRows = (count) => {
     return Array.from({ length: count }, (_, index) => ({
         key: Date.now() + index, 
@@ -47,10 +43,9 @@ export default function DocketForm() {
         finalTotal: 0
     });
 
-// --- Table Actions (Add/Remove) ---
+    // --- Table Actions (Add/Remove) ---
     const addRow = (count = 1) => {
-        const timestamp = Date.now(); // Get time once
-        
+        const timestamp = Date.now(); 
         const newRows = Array.from({ length: count }, (_, index) => ({
             key: timestamp + index, 
             metal: '',
@@ -61,7 +56,6 @@ export default function DocketForm() {
             price: null,
             total: 0
         }));
-        
         setDataSource([...dataSource, ...newRows]);
     };
 
@@ -73,7 +67,7 @@ export default function DocketForm() {
     const handleItemsChange = (key, field, value) => {
         const newData = [...dataSource];
         const index = newData.findIndex((item) => item.key === key);
-        if (index === -1) return; // Guard clause in case row is deleted fast
+        if (index === -1) return; 
 
         const item = newData[index];
         item[field] = value;
@@ -142,60 +136,21 @@ export default function DocketForm() {
         <div style={{ padding: '20px', maxWidth: '1600px', margin: '0 auto' }}>
             <Form form={form} layout="vertical" onFinish={onFinish}>
                 
-                {/* --- HEADER --- */}
-                <Card style={{ marginBottom: 20 }}>
-                    <Row justify="space-between" align="middle">
-                        {/* LEFT SIDE: Vertically centered automatically by Row align="middle" */}
-                        <Col>
-                            <Space size="middle">
-                                <Form.Item name="docketType" initialValue="Customer" noStyle>
-                                    <Select size="large" style={{ width: 180, fontSize: '18px' }}>
-                                        <Option value="Customer">Customer</Option>
-                                        <Option value="Weight">Weight</Option>
-                                    </Select>
-                                </Form.Item>
-                                <Title level={1} style={{ margin: 0 }}>Docket</Title>
-                            </Space>
-                        </Col>
+                {/* --- COMPONENT: HEADER --- */}
+                <DocketHeader />
 
-                        {/* RIGHT SIDE: Stacked vertically */}
-                        <Col>
-                            <Space direction="vertical" align="end" size={0}>
-                                {/* Top: Company Selector */}
-                                <Space align="center" style={{ marginBottom: 8 }}>
-                                    <Title level={4} style={{ margin: 0 }}>Company:</Title>
-                                    <Form.Item name="companyDetails" noStyle>
-                                        <Select size="large" style={{ width: 300 }} placeholder="Select Company">
-                                            <Option value="company1">Example Company A</Option>
-                                            <Option value="company2">Example Company B</Option>
-                                        </Select>
-                                    </Form.Item>
-                                </Space>
-
-                                {/* Bottom: Docket Number */}
-                                <Space align="center">
-                                    <Title level={4} style={{ margin: 0 }}>Docket #:</Title>
-                                    <Form.Item name="docketNumber" noStyle>
-                                        <InputNumber size="large" readOnly style={{ width: 150 }} placeholder="#" />
-                                    </Form.Item>
-                                </Space>
-                            </Space>
-                        </Col> 
-                    </Row>
-                </Card>
-
-                {/* --- CUSTOMER DETAILS --- */}
+                {/* --- COMPONENT: CUSTOMER DETAILS --- */}
                 <CustomerDetails dateFormat={dateFormat} />
 
-                {/* --- ITEMS TABLE --- */}
+                {/* --- COMPONENT: ITEMS TABLE --- */}
                 <DocketItemsTable 
                     items={dataSource} 
                     onItemChange={handleItemsChange} 
-                    addRow={addRow}       // PASSING PROP
-                    removeRow={removeRow} // PASSING PROP
+                    addRow={addRow}       
+                    removeRow={removeRow} 
                 />
 
-                {/* --- TOTALS SUMMARY --- */}
+                {/* --- COMPONENT: TOTALS SUMMARY --- */}
                 <Row gutter={24} style={{ marginTop: 20 }}>
                     <Col span={12}>
                         <Form.Item label="Docket Notes" name="paperNotes">
@@ -218,7 +173,8 @@ export default function DocketForm() {
                 </Row>
 
                 <Divider />
-                {/* --- ACTION BUTTONS --- */}
+                
+                {/* --- ACTION BUTTONS (FOOTER) --- */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 0', gap: '30px' }}>
                     
                     {/* TOP: Save Checkbox */}
@@ -230,7 +186,7 @@ export default function DocketForm() {
                         </Form.Item>
                     </Space>
 
-                    {/* SEPARATOR: Light horizontal line */}
+                    {/* SEPARATOR */}
                     <div style={{ width: '400px', borderBottom: '2px solid #f0f0f0' }}></div>
 
                     {/* BOTTOM: Print Section */}
@@ -257,7 +213,6 @@ export default function DocketForm() {
                             Print
                         </Button>
                     </Space>
-
                 </div>
             </Form>
         </div>
