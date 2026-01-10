@@ -1,8 +1,12 @@
 // ./frontend/src/pages/docket/DocketForm.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Typography, Row, Col, Input, Select, Table, InputNumber, Card, Space, Divider, Checkbox, DatePicker } from 'antd';
+import { Form, Button, Typography, Row, Col, Input, Select, InputNumber, Card, Space, Divider, Checkbox, DatePicker } from 'antd';
+
+// Components
 import InvoiceTotalsSummary from '../../components/TotalsSummary';
+import DocketItemsTable from '../../components/docket/DocketItemsTable';
+
 import '../../styles/Form.css'; 
 
 const { Title, Text } = Typography;
@@ -29,7 +33,7 @@ export default function DocketForm() {
     // --- Data States ---
     const [dataSource, setDataSource] = useState(generateInitialRows(24));
     
-    // --- Totals & Deductions States (Required for Summary Component) ---
+    // --- Totals & Deductions States ---
     const [gstEnabled, setGstEnabled] = useState(false);
     const [gstPercentage, setGstPercentage] = useState(10);
     const [preGstDeductions, setPreGstDeductions] = useState([]);
@@ -43,7 +47,7 @@ export default function DocketForm() {
     });
 
     // --- Table Calculation Logic ---
-    const handleTableCalculation = (key, field, value) => {
+    const handleItemsChange = (key, field, value) => {
         const newData = [...dataSource];
         const index = newData.findIndex((item) => item.key === key);
         const item = newData[index];
@@ -64,7 +68,7 @@ export default function DocketForm() {
         setDataSource(newData);
     };
 
-    // --- Deduction Handlers (Replicated for Docket) ---
+    // --- Deduction Handlers ---
     const addDeduction = (type) => {
         const newDeduction = { key: Date.now(), label: '', amount: null };
         if (type === 'pre') setPreGstDeductions([...preGstDeductions, newDeduction]);
@@ -110,63 +114,6 @@ export default function DocketForm() {
 
     }, [dataSource, gstEnabled, gstPercentage, preGstDeductions, postGstDeductions]);
 
-
-    // --- Table Columns ---
-    const columns = [
-        {
-            title: 'Serial #',
-            dataIndex: 'key',
-            width: 80,
-            align: 'center',
-            render: (text) => <Text strong style={{ fontSize: '18px' }}>{text + 1}</Text>,
-        },
-        {
-            title: 'Metal',
-            dataIndex: 'metal',
-            render: (_, record) => (
-                <Input placeholder="Metal" onChange={(e) => handleTableCalculation(record.key, 'metal', e.target.value)} />
-            )
-        },
-        {
-            title: 'Notes',
-            dataIndex: 'notes',
-            render: (_, record) => (
-                <Input placeholder="Notes" onChange={(e) => handleTableCalculation(record.key, 'notes', e.target.value)} />
-            )
-        },
-        {
-            title: 'Gross (kg)',
-            dataIndex: 'gross',
-            render: (_, record) => (
-                <InputNumber min={0} style={{ width: '100%' }} placeholder="0" onChange={(val) => handleTableCalculation(record.key, 'gross', val)} />
-            )
-        },
-        {
-            title: 'Tare (kg)',
-            dataIndex: 'tare',
-            render: (_, record) => (
-                <InputNumber min={0} style={{ width: '100%' }} placeholder="0" onChange={(val) => handleTableCalculation(record.key, 'tare', val)} />
-            )
-        },
-        {
-            title: 'Net Weight (kg)',
-            dataIndex: 'net',
-            render: (text) => <Input value={text} readOnly style={{ backgroundColor: '#f0f0f0', cursor: 'default', fontWeight: 'bold' }} />
-        },
-        {
-            title: 'Price/kg ($)',
-            dataIndex: 'price',
-            render: (_, record) => (
-                <InputNumber min={0} step={0.01} prefix="$" style={{ width: '100%' }} placeholder="0.00" onChange={(val) => handleTableCalculation(record.key, 'price', val)} />
-            )
-        },
-        {
-            title: 'Total ($)',
-            dataIndex: 'total',
-            render: (text) => <Input prefix="$" value={text} readOnly className="large-total-input" />
-        },
-    ];
-
     const onFinish = (values) => {
         const payload = {
             ...values,
@@ -195,7 +142,6 @@ export default function DocketForm() {
                         <Col>
                             <Title level={1} style={{ margin: 0 }}>Docket</Title>
                         </Col>
-                        {/* Removed GST Checkbox from here, it is now in the Summary component */}
                         <Col></Col> 
                     </Row>
                 </Card>
@@ -203,18 +149,10 @@ export default function DocketForm() {
                 {/* --- CUSTOMER DETAILS --- */}
                 <Card title="Customer Details" size="small" style={{ marginBottom: 20 }}>
                     <Row gutter={16}>
-                        <Col span={8}>
-                            <Form.Item label="Name" name="name">
-                                <Input placeholder="Full Name" />
-                            </Form.Item>
-                        </Col>
+                        <Col span={8}><Form.Item label="Name" name="name"><Input placeholder="Full Name" /></Form.Item></Col>
                         <Col span={8}><Form.Item label="License No." name="licenseNo"><Input placeholder="License No." /></Form.Item></Col>
                         <Col span={8}><Form.Item label="Rego No." name="regoNo"><Input placeholder="Rego No." /></Form.Item></Col>
-                        <Col span={8}>
-                            <Form.Item label="Date of Birth" name="dob">
-                                <DatePicker format={dateFormat}/>
-                            </Form.Item>
-                        </Col>
+                        <Col span={8}><Form.Item label="Date of Birth" name="dob"><DatePicker format={dateFormat} style={{width: '100%'}}/></Form.Item></Col>
                         <Col span={8}><Form.Item label="PayID" name="payId"><Input placeholder="PayID" /></Form.Item></Col>
                         <Col span={8}><Form.Item label="Phone No." name="phone"><Input placeholder="Phone Number" /></Form.Item></Col>
                         <Col span={6}><Form.Item label="BSB" name="bsb"><Input placeholder="BSB" /></Form.Item></Col>
@@ -224,27 +162,19 @@ export default function DocketForm() {
                     </Row>
                 </Card>
 
-                {/* --- WEIGHT TABLE --- */}
-                <Table
-                    rowClassName={() => 'docket-table-row'}
-                    dataSource={dataSource}
-                    columns={columns}
-                    pagination={false}
-                    bordered
-                    size="middle"
-                    style={{ marginBottom: 30 }}
+                {/* --- ITEMS TABLE COMPONENT --- */}
+                <DocketItemsTable 
+                    items={dataSource} 
+                    onItemChange={handleItemsChange} 
                 />
 
-                {/* --- TOTALS SECTION --- */}
+                {/* --- TOTALS SUMMARY COMPONENT --- */}
                 <Row gutter={24} style={{ marginTop: 20 }}>
-                    {/* Notes */}
                     <Col span={12}>
                         <Form.Item label="Docket Notes" name="paperNotes">
                             <Input.TextArea rows={4} placeholder="Additional notes for this docket..." />
                         </Form.Item>
                     </Col>
-
-                    {/* Totals Summary Component */}
                     <InvoiceTotalsSummary
                         includeGST={gstEnabled}
                         setIncludeGST={setGstEnabled}

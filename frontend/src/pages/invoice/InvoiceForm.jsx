@@ -20,7 +20,7 @@ import { getInitialValues } from '../../scripts/utilities/invoiceFormHelpers';
 import BillingInfo from '../../components/invoice/BillingInfo';
 import InvoiceItemsTable from '../../components/invoice/InvoiceItemsTable';
 import TransportTable from '../../components/invoice/TransportTable';
-import InvoiceTotalsSummary from '../../components/TotalsSummary';
+import TotalsSummary from '../../components/TotalsSummary';
 import PayAccountSection from '../../components/invoice/PayAccountSection';
 
 export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
@@ -159,7 +159,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
                 <Input.TextArea rows={4} maxLength={280}/>
               </Form.Item>
             </Col>
-            <InvoiceTotalsSummary
+            <TotalsSummary
               includeGST={invoice.includeGST}
               setIncludeGST={invoice.setIncludeGST}
               gstPercentage={invoice.gstPercentage}

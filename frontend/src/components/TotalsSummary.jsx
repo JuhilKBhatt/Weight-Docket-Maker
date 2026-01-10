@@ -4,7 +4,7 @@ import { Row, Col, Typography, Input, InputNumber, Button, Checkbox } from 'antd
 import { audFormatter, audParser, audFormatterFixed } from '../scripts/utilities/AUDformatters';
 import { getCurrencyLabel } from '../scripts/utilities/invoiceConstants';
 
-export default function InvoiceTotalsSummary({
+export default function TotalsSummary({
   includeGST,
   setIncludeGST,
   gstPercentage,
