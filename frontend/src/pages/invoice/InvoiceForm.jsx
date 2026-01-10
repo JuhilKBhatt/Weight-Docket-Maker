@@ -20,7 +20,7 @@ import { getInitialValues } from '../../scripts/utilities/invoiceFormHelpers';
 import BillingInfo from '../../components/invoice/BillingInfo';
 import InvoiceItemsTable from '../../components/invoice/InvoiceItemsTable';
 import TransportTable from '../../components/invoice/TransportTable';
-import InvoiceTotalsSummary from '../../components/invoice/InvoiceTotalsSummary';
+import InvoiceTotalsSummary from '../../components/TotalsSummary';
 import PayAccountSection from '../../components/invoice/PayAccountSection';
 
 export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
