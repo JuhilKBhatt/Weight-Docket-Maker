@@ -22,7 +22,7 @@ export const PrintDocket = async ({
     docket_date: values.date ? values.date.format('YYYY-MM-DD') : null,
     status: status || "Draft",
     is_saved: values.saveDocket,
-    print_Qty: Number(values.printQty),
+    print_qty: Number(values.printQty),
     
     // Header Data
     docket_type: safeValue(values.docketType, "Customer"),

@@ -29,6 +29,8 @@ class DocketCreate(BaseModel):
     scrdkt_number: Optional[str] = None
     docket_date: Optional[date] = None
     status: Optional[str] = "Draft"
+    is_saved: bool = True
+    print_qty: int = 0
     
     docket_type: str
     company_name: Optional[str] = None

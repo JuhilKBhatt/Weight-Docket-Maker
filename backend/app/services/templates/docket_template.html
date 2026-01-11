@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Docket {{ docket.scrdkt_number }}</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Helvetica, sans-serif; padding: 20px; font-size: 12pt; }
+        .header { text-align: center; border-bottom: 2px solid #333; margin-bottom: 20px; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .col { width: 48%; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #333; color: #fff; padding: 8px; text-align: left; }
+        td { border-bottom: 1px solid #ddd; padding: 8px; }
+        .totals { margin-top: 20px; text-align: right; }
+        .totals-row { font-size: 14pt; font-weight: bold; }
+        .watermark { position: fixed; top: 30%; left: 20%; opacity: 0.1; font-size: 80pt; transform: rotate(-45deg); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>WEIGHT DOCKET</h1>
+        <h3>{{ docket.company_name or "SAFARI COPPER RECYCLING" }}</h3>
+        <p>Docket ID: <strong>{{ docket.scrdkt_number }}</strong> | Date: {{ formatted_date }}</p>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <strong>Customer Details:</strong><br>
+            {{ docket.customer_name }}<br>
+            {{ docket.customer_address }}<br>
+            Phone: {{ docket.customer_phone }}
+        </div>
+        <div class="col">
+            <strong>Payment Details:</strong><br>
+            PayID: {{ docket.customer_pay_id }}<br>
+            BSB: {{ docket.bank_bsb }}<br>
+            Acc: {{ docket.bank_account_number }}
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Metal</th>
+                <th>Gross (kg)</th>
+                <th>Tare (kg)</th>
+                <th>Net (kg)</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in docket.items %}
+            <tr>
+                <td>{{ item.metal }}</td>
+                <td>{{ item.gross }}</td>
+                <td>{{ item.tare }}</td>
+                <td><strong>{{ item.net }}</strong></td>
+                <td>${{ "{:,.2f}".format(item.price) }}</td>
+                <td>${{ "{:,.2f}".format(item.total) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <p>Subtotal: ${{ "{:,.2f}".format(totals.grossTotal) }}</p>
+        {% if docket.include_gst %}
+        <p>GST ({{ docket.gst_percentage }}%): ${{ "{:,.2f}".format(totals.gstAmount) }}</p>
+        {% endif %}
+        <p class="totals-row">Total: ${{ "{:,.2f}".format(totals.finalTotal) }}</p>
+    </div>
+
+    {% if not docket.is_saved %}
+        <div class="watermark">COPY</div>
+    {% endif %}
+</body>
+</html>

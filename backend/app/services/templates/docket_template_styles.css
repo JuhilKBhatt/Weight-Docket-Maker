@@ -1,0 +1,93 @@
+/* app/services/templates/docket_template_styles.css */
+
+@page {
+    size: A4;
+    margin: 1cm;
+}
+
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 11pt;
+    color: #333;
+    line-height: 1.4;
+}
+
+.header {
+    text-align: center;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    margin: 0;
+    color: #b01c2e;
+}
+
+.meta-info {
+    text-align: right;
+    font-size: 10pt;
+    margin-bottom: 20px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.col {
+    width: 48%;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background: #f9f9f9;
+}
+
+.col h3 { margin-top: 0; font-size: 12pt; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th {
+    background: #333;
+    color: #fff;
+    padding: 8px;
+    text-align: left;
+    font-size: 10pt;
+}
+
+td {
+    border-bottom: 1px solid #ddd;
+    padding: 8px;
+    font-size: 10pt;
+    vertical-align: top;
+}
+
+.text-right { text-align: right; }
+.bold { font-weight: bold; }
+
+.totals-section {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.totals-table {
+    width: 40%;
+    border: none;
+}
+
+.totals-table td {
+    border: none;
+    padding: 4px;
+}
+
+.grand-total {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #b01c2e;
+    border-top: 2px solid #333;
+}

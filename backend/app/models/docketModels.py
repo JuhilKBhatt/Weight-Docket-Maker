@@ -15,6 +15,8 @@ class Docket(Base):
     scrdkt_number = Column(String(15), unique=True)
     docket_date = Column(Date, nullable=True)
     status = Column(String(20), default="Draft") # Draft, Final, Printed, etc.
+    is_saved = Column(Boolean, default=True)
+    print_qty = Column(Integer, default=0)
     
     # Meta
     docket_type = Column(String(50), default="Customer") # "Customer" or "Weight"

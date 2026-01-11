@@ -26,6 +26,8 @@ def upsert_docket(db: Session, data: DocketCreate):
         # --- UPDATE EXISTING ---
         docket.docket_date = data.docket_date
         docket.status = data.status
+        docket.is_saved = data.is_saved
+        docket.print_qty = data.print_qty
         docket.docket_type = data.docket_type
         docket.company_name = data.company_name
         docket.include_gst = data.include_gst
