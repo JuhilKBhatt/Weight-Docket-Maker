@@ -4,58 +4,84 @@
     <title>Docket {{ docket.scrdkt_number }}</title>
     <meta charset="UTF-8">
     <style>
-        body { font-family: Helvetica, sans-serif; padding: 20px; font-size: 12pt; }
-        .header { text-align: center; border-bottom: 2px solid #333; margin-bottom: 20px; }
-        .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .col { width: 48%; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #333; color: #fff; padding: 8px; text-align: left; }
-        td { border-bottom: 1px solid #ddd; padding: 8px; }
-        .totals { margin-top: 20px; text-align: right; }
-        .totals-row { font-size: 14pt; font-weight: bold; }
-        .watermark { position: fixed; top: 30%; left: 20%; opacity: 0.1; font-size: 80pt; transform: rotate(-45deg); }
+        {{ css_content }}
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>WEIGHT DOCKET</h1>
-        <h3>{{ docket.company_name or "SAFARI COPPER RECYCLING" }}</h3>
-        <p>Docket ID: <strong>{{ docket.scrdkt_number }}</strong> | Date: {{ formatted_date }}</p>
+    <div class="docket-id">{{ docket.scrdkt_number }}</div>
+    <div class="header-section">
+        <h1>Purchase Receipt</h1>
+        <div class="sub-info">Date: {{ formatted_date }}</div>
+        
+        <h2>{{ docket.company_name or "SAFARI COPPER RECYCLING" }}</h2>
+        <div class="sub-info">
+            Address: 4 Tarlington Pl, Smithfield, NSW, 2164<br>
+            ABN: 93 686 008 640 | Phone No: 0411 499 553<br>
+            Email: smithfield.scrap@gmail.com
+        </div>
     </div>
 
-    <div class="row">
-        <div class="col">
-            <strong>Customer Details:</strong><br>
-            {{ docket.customer_name }}<br>
-            {{ docket.customer_address }}<br>
-            Phone: {{ docket.customer_phone }}
+    <div class="date-line"></div>
+
+    <div class="customer-section">
+        <div class="customer-row">
+            <strong>Customer Name:</strong> {{ docket.customer_name }}
         </div>
-        <div class="col">
-            <strong>Payment Details:</strong><br>
-            PayID: {{ docket.customer_pay_id }}<br>
-            BSB: {{ docket.bank_bsb }}<br>
-            Acc: {{ docket.bank_account_number }}
+        <div class="other-info-box">
+            <strong>Other Information:</strong><br>
+            
+            <span class="other-info-label">DOB:</span>
+            <span class="other-info-val">{{ docket.customer_dob or '' }}</span> | 
+            
+            <span class="other-info-label">License No.:</span>
+            <span class="other-info-val">{{ docket.customer_license_no }}</span> | 
+            
+            <span class="other-info-label">Rego No.:</span>
+            <span class="other-info-val">{{ docket.customer_rego_no }}</span> | 
+            
+            <span class="other-info-label">PayID:</span>
+            <span class="other-info-val">{{ docket.customer_pay_id }}</span><br>
+            
+            <span class="other-info-label">Phone No.:</span>
+            <span class="other-info-val">{{ docket.customer_phone }}</span> | 
+            
+            <span class="other-info-label">ABN:</span>
+            <span class="other-info-val">{{ docket.customer_abn }}</span> | 
+            
+            <span class="other-info-label">BSB:</span>
+            <span class="other-info-val">{{ docket.bank_bsb }}</span> | 
+            
+            <span class="other-info-label">Acc No.:</span>
+            <span class="other-info-val">{{ docket.bank_account_number }}</span><br>
+            
+            <span class="other-info-label">Address:</span>
+            <span class="other-info-val">{{ docket.customer_address }}</span><br>
+            
+            <span class="other-info-label">Notes:</span>
+            <span class="other-info-val">{{ docket.notes }}</span>
         </div>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th>Metal</th>
-                <th>Gross (kg)</th>
-                <th>Tare (kg)</th>
-                <th>Net (kg)</th>
-                <th>Price</th>
-                <th>Total</th>
+                <th style="width: 25%;">Metal</th>
+                <th style="width: 15%;">Notes</th>
+                <th style="width: 12%;">Gross</th>
+                <th style="width: 12%;">Tare</th>
+                <th style="width: 12%;">Net</th>
+                <th style="width: 12%;">$/kg</th>
+                <th style="width: 12%;">Total</th>
             </tr>
         </thead>
         <tbody>
-            {% for item in docket.items %}
+            {% for item in items %}
             <tr>
-                <td>{{ item.metal }}</td>
-                <td>{{ item.gross }}</td>
-                <td>{{ item.tare }}</td>
-                <td><strong>{{ item.net }}</strong></td>
+                <td class="text-left">{{ loop.index }}) {{ item.metal }}</td>
+                <td>{{ item.notes or '' }}</td>
+                <td>{{ "{:,.0f}".format(item.gross) }}kg</td>
+                <td>{{ "{:,.0f}".format(item.tare) }}kg</td>
+                <td><strong>{{ "{:,.0f}".format(item.net) }}kg</strong></td>
                 <td>${{ "{:,.2f}".format(item.price) }}</td>
                 <td>${{ "{:,.2f}".format(item.total) }}</td>
             </tr>
@@ -63,16 +89,27 @@
         </tbody>
     </table>
 
-    <div class="totals">
-        <p>Subtotal: ${{ "{:,.2f}".format(totals.grossTotal) }}</p>
+    <div class="totals-section">
         {% if docket.include_gst %}
-        <p>GST ({{ docket.gst_percentage }}%): ${{ "{:,.2f}".format(totals.gstAmount) }}</p>
+            <div style="font-size: 11pt; font-weight: normal;">Subtotal: ${{ "{:,.2f}".format(totals.grossTotal) }}</div>
+            <div style="font-size: 11pt; font-weight: normal;">GST: ${{ "{:,.2f}".format(totals.gstAmount) }}</div>
         {% endif %}
-        <p class="totals-row">Total: ${{ "{:,.2f}".format(totals.finalTotal) }}</p>
+        <div>Total: ${{ "{:,.2f}".format(totals.finalTotal) }}</div>
+    </div>
+
+    <div class="footer-section">
+        <div style="text-align: center;">
+            Staff + Customer
+        </div>
+        <div style="text-align: center;">
+            <div class="signature-line"></div>
+            <div>Signature</div>
+        </div>
     </div>
 
     {% if not docket.is_saved %}
         <div class="watermark">COPY</div>
     {% endif %}
+
 </body>
 </html>

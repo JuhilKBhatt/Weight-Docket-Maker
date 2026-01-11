@@ -50,13 +50,11 @@ def render_docket_html(db: Session, docket_id: int):
     final_total = max(0, gross_total + gst_amount - post_deductions)
 
     # 4. Setup Template Environment
-    # Assuming this file is in app/services/docket/
-    # Templates are in app/services/templates/
     template_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template("docket_template.html")
     
-    # Read CSS
+    # Read CSS (Optional check to prevent errors if file missing)
     css_path = os.path.join(template_dir, "docket_template_styles.css")
     css_content = ""
     if os.path.exists(css_path):
@@ -70,9 +68,9 @@ def render_docket_html(db: Session, docket_id: int):
         docket=dkt,
         items=items_data,
         totals={
-            "subtotal": gross_total,
-            "gst": gst_amount,
-            "total": final_total
+            "grossTotal": gross_total,
+            "gstAmount": gst_amount,
+            "finalTotal": final_total  
         },
         formatted_date=formatted_date,
         css_content=css_content
