@@ -1,12 +1,12 @@
-# app/utilities/scrinv_generator.py
+# app/utilities/scrdkt_generator.py
 
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from app.models.invoiceModels import Invoice
+from app.models.docketModels import Docket
 
-def generate_next_scrinv(db: Session) -> str:
+def generate_next_scrdkt(db: Session) -> str:
     # 1. Start with the next predicted ID based on the table's max ID
-    max_id = db.query(func.max(Invoice.id)).scalar()
+    max_id = db.query(func.max(Docket.id)).scalar()
     # Start at 1 if DB is empty, otherwise continue from last ID
     next_idx = (max_id or 0) + 1
 
@@ -24,17 +24,18 @@ def generate_next_scrinv(db: Session) -> str:
 
         # Check for Exhaustion (if we go past 9Z9999)
         if leading_digit > 9:
-            raise ValueError("SCRINV range exhausted (Limit 9Z9999 reached)")
+            raise ValueError("SCRDKT range exhausted (Limit 9Z9999 reached)")
 
         # --- FORMATTING ---
-        candidate_scrinv = f"SCRINV{leading_digit}{letter_part}{digits_part:04d}"
+        # Format: SCRDKT + 1 + A + 0001
+        candidate_scrdkt = f"SCRDKT{leading_digit}{letter_part}{digits_part:04d}"
 
         # --- COLLISION CHECK ---
-        exists = db.query(Invoice).filter(Invoice.scrinv_number == candidate_scrinv).first()
+        exists = db.query(Docket).filter(Docket.scrdkt_number == candidate_scrdkt).first()
 
         if not exists:
             # Found a unique number!
-            return candidate_scrinv
+            return candidate_scrdkt
         
         # 4. If taken, increment and try again
         next_idx += 1
