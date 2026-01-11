@@ -1,27 +1,27 @@
 /* ./backend/app/services/templates/docket_template_styles.css */
 
-body { font-family: Helvetica, Arial, sans-serif; padding: 20px; font-size: 11pt; }
+body { font-family: Helvetica, Arial, sans-serif; padding: 0px; margin: 0px; font-size: 12pt; }
 
 /* HEADER TABLE STYLES */
 .header-layout-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
     border: 1px solid #000;
 }
 
 .header-layout-table td {
     border: 1px solid #000;
-    padding: 10px;
+    padding: 5px;
     vertical-align: middle;
 }
 
 .title-cell h1 { 
-    margin: 0; font-size: 20pt; font-weight: bold; text-align: center; color: #000; 
+    margin: 0; font-size: 16pt; font-weight: bold; text-align: center; color: #000; 
 }
 
 .docket-id { font-weight: bold; font-size: 12pt; }
-.sub-info { font-size: 11pt; }
+.sub-info { font-size: 10pt; }
 
 /* Company Block Styling - Updated for Side-by-Side */
 .company-block-container {
@@ -33,42 +33,41 @@ body { font-family: Helvetica, Arial, sans-serif; padding: 20px; font-size: 11pt
 
 .company-logo {
     display: block;
-    max-height: 120px; 
+    max-height: 40px; 
     width: auto;
 }
 
 .company-text h2 { 
-    margin: 0 0 5px 0; 
-    font-size: 18pt; 
+    margin: 0 0 0px 0; 
+    font-size: 10pt; 
     font-weight: bold; 
     text-align: center; 
 }
 .company-text .sub-info { 
-    font-size: 14pt; 
+    font-size: 8pt; 
     line-height: 1.4; 
     text-align: center;
 }
 
 .date-line { border-bottom: 1px solid #ccc; margin-bottom: 15px; }
 
-.customer-section { margin-bottom: 20px; font-size: 11pt; }
+.customer-section { margin-bottom: 0px; font-size: 10pt; }
 .other-info-box { 
     border: 1px solid #000;
-    padding: 8px; 
-    font-size: 12pt; 
+    padding: 1px; 
+    font-size: 8pt; 
     background-color: #fff; 
-    line-height: 1.6;
+    line-height: 1.2;
 }
-.other-info-label { font-weight: bold; margin-right: 5px; }
-.other-info-val { margin-right: 15px; color: #333; }
+.other-info-label { font-weight: bold; margin-right: 1px; }
+.other-info-val { margin-right: 1px; color: #333; }
 
 /* Data Table Styles */
-table.data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14pt; }
-table.data-table th { border: 1px solid #000; padding: 6px; background-color: #eee; text-align: left; font-weight: bold; }
-table.data-table td { border: 1px solid #000; padding: 6px; text-align: left; }
+table.data-table { width: 100%; border-collapse: collapse; margin-top: 1px; font-size: 9pt; }
+table.data-table th { border: 1px solid #000; padding: 3px; background-color: #eee; text-align: left; font-weight: bold; }
+table.data-table td { border: 1px solid #000; padding: 2px; text-align: left; }
 td.text-left { text-align: left; }
 
-.totals-section { margin-top: 20px; text-align: right; font-size: 14pt; font-weight: bold; }
-.footer-section { margin-top: 50px; display: flex; justify-content: space-between; font-size: 12pt; font-weight: bold; }
-.signature-line { border-top: 1px solid #000; width: 250px; display: inline-block; margin-top: 40px; }
-.watermark { position: fixed; top: 35%; left: 25%; opacity: 0.1; font-size: 100pt; transform: rotate(-45deg); z-index: -1; }
+.totals-section { margin-top: 5px; text-align: right; font-size: 14pt; font-weight: bold; }
+.footer-section { margin-top: 0px; display: flex; justify-content: space-between; font-size: 8pt; font-weight: bold; }
+.signature-line { border-top: 1px solid #000; width: 150px; display: inline-block; margin-top: 10px; }

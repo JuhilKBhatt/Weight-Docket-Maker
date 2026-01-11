@@ -40,8 +40,8 @@
                     <div class="company-text">
                         <h2>{{ docket.company_name or "SAFARI COPPER RECYCLING" }}</h2>
                         <div class="sub-info">
-                            Address: 4 Tarlington Pl, Smithfield, NSW, 2164<br>
-                            ABN: 93 686 008 640 | Phone No: 0411 499 553<br>
+                            Address: 4 Tarlington Pl, Smithfield, NSW, 2164 <br>
+                            ABN: 93 686 008 640 | Phone No: 0411 499 553 | 
                             Email: smithfield.scrap@gmail.com
                         </div>
                     </div>
@@ -51,38 +51,38 @@
     </table>
 
     <div class="customer-section">
-        <div style="margin-bottom: 5px; font-size: 18pt;">
+        <div>
             <strong>Customer Name:</strong> {{ docket.customer_name }}
         </div>
         <div class="other-info-box">
-            <strong>Other Information:</strong><br>
+            <strong>Other Information:</strong>
             
             <span class="other-info-label">DOB:</span>
-            <span class="other-info-val">{{ docket.customer_dob or '' }}</span> | 
+            <span class="other-info-val">{{ docket.customer_dob or '' }}</span>|
             
             <span class="other-info-label">License No.:</span>
-            <span class="other-info-val">{{ docket.customer_license_no }}</span> | 
+            <span class="other-info-val">{{ docket.customer_license_no }}</span>|
             
             <span class="other-info-label">Rego No.:</span>
-            <span class="other-info-val">{{ docket.customer_rego_no }}</span> | 
+            <span class="other-info-val">{{ docket.customer_rego_no }}</span>|
             
             <span class="other-info-label">PayID:</span>
-            <span class="other-info-val">{{ docket.customer_pay_id }}</span> |
+            <span class="other-info-val">{{ docket.customer_pay_id }}</span>|
             
             <span class="other-info-label">Phone No.:</span>
-            <span class="other-info-val">{{ docket.customer_phone }}</span> | 
+            <span class="other-info-val">{{ docket.customer_phone }}</span>|
             
             <span class="other-info-label">ABN:</span>
-            <span class="other-info-val">{{ docket.customer_abn }}</span> | 
+            <span class="other-info-val">{{ docket.customer_abn }}</span>|
             
             <span class="other-info-label">BSB:</span>
-            <span class="other-info-val">{{ docket.bank_bsb }}</span> | 
+            <span class="other-info-val">{{docket.bank_bsb}}</span>|
             
             <span class="other-info-label">Acc No.:</span>
-            <span class="other-info-val">{{ docket.bank_account_number }}</span> |
+            <span class="other-info-val">{{ docket.bank_account_number }}</span>|
             
             <span class="other-info-label">Address:</span>
-            <span class="other-info-val">{{ docket.customer_address }}</span> |
+            <span class="other-info-val">{{docket.customer_address}}</span>|
             
             <span class="other-info-label">Notes:</span>
             <span class="other-info-val">{{ docket.notes }}</span>
@@ -120,35 +120,31 @@
 
     <div class="totals-section">    
         {% if pre_deductions %}
-             <div style="font-size: 11pt; font-weight: normal;">Items Total: ${{ "{:,.2f}".format(totals.itemsTotal) }}</div>
+             <div style="font-size: 10pt; font-weight: normal;">Items Total: ${{ "{:,.2f}".format(totals.itemsTotal) }}</div>
              {% for d in pre_deductions %}
-                <div style="font-size: 11pt; font-weight: normal; color: #b01c2e;">{{ d.label }}: -${{ "{:,.2f}".format(d.amount) }}</div>
+                <div style="font-size: 8pt; font-weight: normal; color: #b01c2e;">{{ d.label }}: -${{ "{:,.2f}".format(d.amount) }}</div>
              {% endfor %}
-             <div style="font-size: 11pt; font-weight: bold; border-top: 1px solid #ccc; display: inline-block; margin-top: 2px; padding-top: 2px;">Subtotal: ${{ "{:,.2f}".format(totals.grossTotal) }}</div>
+             <div style="font-size: 8pt; font-weight: bold; border-top: 1px solid #ccc; display: inline-block; margin-top: 2px; padding-top: 2px;">Subtotal: ${{ "{:,.2f}".format(totals.grossTotal) }}</div>
         {% else %}
              {% if docket.include_gst %}
-                <div style="font-size: 11pt; font-weight: normal;">Subtotal: ${{ "{:,.2f}".format(totals.grossTotal) }}</div>
+                <div style="font-size: 10pt; font-weight: normal;">Subtotal: ${{ "{:,.2f}".format(totals.grossTotal) }}</div>
              {% endif %}
         {% endif %}
 
         {% if docket.include_gst %}
-            <div style="font-size: 11pt; font-weight: normal;">GST {{docket.gst_percentage}}%: ${{ "{:,.2f}".format(totals.gstAmount) }}</div>
+            <div style="font-size: 8pt; font-weight: normal;">GST {{docket.gst_percentage}}%: ${{ "{:,.2f}".format(totals.gstAmount) }}</div>
         {% endif %}
 
         {% for d in post_deductions %}
-            <div style="font-size: 11pt; font-weight: normal; color: #b01c2e;">{{ d.label }}: -${{ "{:,.2f}".format(d.amount) }}</div>
+            <div style="font-size: 8pt; font-weight: normal; color: #b01c2e;">{{ d.label }}: -${{ "{:,.2f}".format(d.amount) }}</div>
         {% endfor %}
-        <div style="margin-top: 8px;">Total: ${{ "{:,.2f}".format(totals.finalTotal) }}</div>
+        <div style="margin-top: 8px; font-size: 12pt;">Total: ${{ "{:,.2f}".format(totals.finalTotal) }}</div>
     </div>
 
     <div class="footer-section">
         <div style="text-align: center;">
             <div class="signature-line"></div>
-            <div> Staff Signature</div>
-        </div>
-        <div style="text-align: center;">
-            <div class="signature-line"></div>
-            <div> Customer Signature</div>
+            <div> Staff + Customer Signature</div>
         </div>
     </div>
 </body>
