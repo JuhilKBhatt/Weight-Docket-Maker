@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from sqlalchemy import text
 from .database import engine
 from .routes import invoiceRoutes
+from .routes import docketRoutes
 from fastapi.middleware.cors import CORSMiddleware
 from .utilities.backup_manager import start_backup_scheduler
 
@@ -19,6 +20,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(invoiceRoutes.router)
+app.include_router(docketRoutes.router)
 
 # Test DB connection on startup
 @app.on_event("startup")
