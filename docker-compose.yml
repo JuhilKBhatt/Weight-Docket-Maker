@@ -5,7 +5,7 @@ services:
   # 1. Database
   db:
     image: postgres:15
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env
     ports:
@@ -18,11 +18,12 @@ services:
     build: 
       context: ./backend
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
     env_file:
       - .env
     volumes:
       - ./backend:/app
-      - ${GOOGLE_DRIVE_PATH}:/backups:/backups
+      - ${GOOGLE_DRIVE_PATH}:/backups
     ports:
       - "8000:8000"
     depends_on:
@@ -30,10 +31,11 @@ services:
     environment:
       WATCHFILES_FORCE_POLLING: "true"
 
-  # 3. Frontend (Vite React) - NEW
+  # 3. Frontend (Vite React)
   frontend:
     build:
       context: ./frontend
+    restart: unless-stopped
     volumes:
       - ./frontend:/app
       - /app/node_modules # Prevents host node_modules from overriding container's
