@@ -1,7 +1,8 @@
 // src/pages/docket/DocketForm.jsx
 
-import React, { useState } from 'react';
-import { Form, Button, Typography, Row, Col, Input, InputNumber, Space, Divider, Checkbox } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Form, Button, Row, Col, Input, InputNumber, Space, Divider, Checkbox, Typography } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
 // Components
 import InvoiceTotalsSummary from '../../components/TotalsSummary';
@@ -11,44 +12,40 @@ import DocketHeader from '../../components/docket/DocketHeader';
 
 // Hooks
 import useDocketCalculations from '../../hooks/docket/useDocketCalculations';
+import useDocketForm from '../../hooks/docket/useDocketForm';
+import { useConfirmReset } from '../../scripts/utilities/confirmReset';
+
+// Utilities
+import { saveDraftDocket } from '../../scripts/utilities/docketUtils';
 
 import '../../styles/Form.css'; 
 
 const { Text } = Typography;
 
+// Helper to generate empty rows
 const generateInitialRows = (count) => {
     return Array.from({ length: count }, (_, index) => ({
-        key: Date.now() + index, 
-        metal: '',
-        notes: '',
-        gross: null,
-        tare: null,
-        net: 0,
-        price: null,
-        total: 0
+        key: Date.now() + index, metal: '', notes: '', gross: null, tare: null, net: 0, price: null, total: 0
     }));
 };
 
-export default function DocketForm() {
+export default function DocketForm({ mode = 'new' }) {
     const [form] = Form.useForm();
-    const dateFormat = 'DD/MM/YYYY';
+    const navigate = useNavigate();
+    const confirmReset = useConfirmReset();
     
-    // --- Data States ---
+    // 1. Initialize Docket ID Hook
+    const { scrdktID, resetDocket } = useDocketForm(mode);
+
+    // 2. Data & Calculation States
     const [dataSource, setDataSource] = useState(generateInitialRows(20));
-    
-    // --- Totals & Deductions States ---
     const [gstEnabled, setGstEnabled] = useState(false);
     const [gstPercentage, setGstPercentage] = useState(10);
     const [preGstDeductions, setPreGstDeductions] = useState([]);
     const [postGstDeductions, setPostGstDeductions] = useState([]);
 
-    // --- HOOK: Calculations ---
-    const { 
-        itemsWithTotals, 
-        grossTotal, 
-        gstAmount, 
-        finalTotal 
-    } = useDocketCalculations({
+    // 3. Calculation Logic
+    const { itemsWithTotals, grossTotal, gstAmount, finalTotal } = useDocketCalculations({
         items: dataSource,
         preGstDeductions,
         postGstDeductions,
@@ -56,63 +53,68 @@ export default function DocketForm() {
         gstPercentage
     });
 
-    // --- Table Actions (Add/Remove) ---
+    // 4. Effect: Sync generated ID to the Form Field
+    useEffect(() => {
+        if (scrdktID) {
+            form.setFieldsValue({ docketNumber: scrdktID });
+        }
+    }, [scrdktID, form]);
+
+    // --- Handlers ---
     const addRow = (count = 1) => {
         const timestamp = Date.now(); 
         const newRows = Array.from({ length: count }, (_, index) => ({
-            key: timestamp + index, 
-            metal: '',
-            notes: '',
-            gross: null,
-            tare: null,
-            net: 0,
-            price: null,
-            total: 0
+            key: timestamp + index, metal: '', notes: '', gross: null, tare: null, net: 0, price: null, total: 0
         }));
         setDataSource([...dataSource, ...newRows]);
     };
 
-    const removeRow = (key) => {
-        setDataSource(dataSource.filter(item => item.key !== key));
-    };
+    const removeRow = (key) => setDataSource(dataSource.filter(item => item.key !== key));
 
-    // --- Table Data Update ---
     const handleItemsChange = (key, field, value) => {
-        setDataSource(prev => prev.map(item => {
-            if (item.key === key) {
-                return { ...item, [field]: value };
-            }
-            return item;
-        }));
+        setDataSource(prev => prev.map(item => item.key === key ? { ...item, [field]: value } : item));
     };
 
-    // --- Deduction Handlers ---
     const addDeduction = (type) => {
         const newDeduction = { key: Date.now(), label: '', amount: null };
-        if (type === 'pre') setPreGstDeductions([...preGstDeductions, newDeduction]);
-        else setPostGstDeductions([...postGstDeductions, newDeduction]);
+        type === 'pre' ? setPreGstDeductions([...preGstDeductions, newDeduction]) : setPostGstDeductions([...postGstDeductions, newDeduction]);
     };
 
     const removeDeduction = (type, key) => {
-        if (type === 'pre') setPreGstDeductions(preGstDeductions.filter(d => d.key !== key));
-        else setPostGstDeductions(postGstDeductions.filter(d => d.key !== key));
+        type === 'pre' ? setPreGstDeductions(preGstDeductions.filter(d => d.key !== key)) : setPostGstDeductions(postGstDeductions.filter(d => d.key !== key));
     };
 
     const handleDeductionChange = (type, key, field, value) => {
         const updateList = (list) => list.map(item => item.key === key ? { ...item, [field]: value } : item);
-        if (type === 'pre') setPreGstDeductions(updateList(preGstDeductions));
-        else setPostGstDeductions(updateList(postGstDeductions));
+        type === 'pre' ? setPreGstDeductions(updateList(preGstDeductions)) : setPostGstDeductions(updateList(postGstDeductions));
     };
 
-    const onFinish = (values) => {
-        const payload = {
-            ...values,
-            // Filter out empty rows, using the calculated items
-            items: itemsWithTotals.filter(item => item.gross > 0 || item.metal),
-            totals: { grossTotal, gstAmount, finalTotal },
-            deductions: { pre: preGstDeductions, post: postGstDeductions }
-        };
-        console.log('Form Submitted:', payload);
+    // --- SAVE / SUBMIT HANDLER ---
+    const onFinish = async (values) => {
+        try {
+            await saveDraftDocket({
+                scrdktID,
+                status: values.saveDocket ? "Saved" : "Printed", // Simple logic for status
+                values,
+                items: itemsWithTotals.filter(item => item.gross > 0 || item.metal), // Only save active rows
+                totals: { grossTotal, gstAmount, finalTotal },
+                deductions: { pre: preGstDeductions, post: postGstDeductions },
+                includeGST: gstEnabled,
+                gstPercentage
+            });
+
+            alert('Docket saved successfully!');
+
+            // If it's a new docket, reset for the next one
+            if (mode === 'new') {
+                resetDocket();
+                form.resetFields();
+                window.location.reload(); 
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Failed to save docket.');
+        }
     };
 
     return (
@@ -123,11 +125,11 @@ export default function DocketForm() {
                 <DocketHeader />
 
                 {/* --- COMPONENT: CUSTOMER DETAILS --- */}
-                <CustomerDetails dateFormat={dateFormat} />
+                <CustomerDetails />
 
                 {/* --- COMPONENT: ITEMS TABLE --- */}
                 <DocketItemsTable 
-                    items={itemsWithTotals} // Pass calculated items
+                    items={itemsWithTotals} 
                     onItemChange={handleItemsChange} 
                     addRow={addRow}       
                     removeRow={removeRow} 
@@ -137,7 +139,7 @@ export default function DocketForm() {
                 <Row gutter={24} style={{ marginTop: 20 }}>
                     <Col span={12}>
                         <Form.Item label="Docket Notes" name="paperNotes">
-                            <Input.TextArea rows={4} placeholder="Additional notes for this docket..." />
+                            <Input.TextArea rows={4} placeholder="Additional notes..." />
                         </Form.Item>
                     </Col>
                     <InvoiceTotalsSummary
@@ -163,9 +165,7 @@ export default function DocketForm() {
                     {/* TOP: Save Checkbox */}
                     <Space>
                         <Form.Item name="saveDocket" valuePropName="checked" noStyle initialValue={true}>
-                            <Checkbox style={{ fontSize: '24px', transform: 'scale(1.5)' }}>
-                                Save Docket?
-                            </Checkbox>
+                            <Checkbox style={{ fontSize: '24px', transform: 'scale(1.5)' }}>Save Docket?</Checkbox>
                         </Form.Item>
                     </Space>
 
@@ -177,25 +177,19 @@ export default function DocketForm() {
                         <Space size="small">
                             <Text style={{ fontSize: '24px' }}>Printing:</Text>
                             <Form.Item name="printQty" noStyle initialValue={2}>
-                                <InputNumber 
-                                    min={1} 
-                                    max={10} 
-                                    size="large" 
-                                    style={{ width: 80, fontSize: '24px', height: '45px', paddingTop: '4px' }} 
-                                />
+                                <InputNumber min={1} max={10} size="large" style={{ width: 80, fontSize: '24px', height: '45px', paddingTop: '4px' }} />
                             </Form.Item>
                             <Text style={{ fontSize: '24px' }}>Dockets</Text>
                         </Space>
                         
-                        <Button 
-                            type="primary" 
-                            size="large" 
-                            htmlType="submit" 
-                            style={{ minWidth: 220, height: 70, fontSize: '28px', marginLeft: '20px' }}
-                        >
-                            Print
+                        <Button type="primary" size="large" htmlType="submit" style={{ minWidth: 220, height: 70, fontSize: '28px', marginLeft: '20px' }}>
+                            Print & Save
                         </Button>
                     </Space>
+                    
+                    <Button type="dashed" onClick={() => confirmReset(() => window.location.reload())}>
+                        Reset Form
+                    </Button>
                 </div>
             </Form>
         </div>

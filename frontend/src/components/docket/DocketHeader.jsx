@@ -1,7 +1,7 @@
-// ./frontend/src/components/docket/CustomerInfo.jsx
+// ./frontend/src/components/docket/DocketHeader.jsx
 
 import React from 'react';
-import { Card, Row, Col, Space, Form, Select, Typography, InputNumber } from 'antd';
+import { Card, Row, Col, Space, Form, Select, Typography, Input } from 'antd';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -11,7 +11,7 @@ export default function DocketHeader() {
         <Card style={{ marginBottom: 20 }}>
             <Row justify="space-between" align="middle">
                 
-                {/* LEFT SIDE: Docket Type + Title */}
+                {/* LEFT SIDE */}
                 <Col>
                     <Space size="middle">
                         <Form.Item name="docketType" initialValue="Customer" noStyle>
@@ -24,10 +24,9 @@ export default function DocketHeader() {
                     </Space>
                 </Col>
 
-                {/* RIGHT SIDE: Company + Docket # */}
+                {/* RIGHT SIDE */}
                 <Col>
                     <Space direction="vertical" align="end" size={0}>
-                        {/* Top: Company Selector */}
                         <Space align="center" style={{ marginBottom: 8 }}>
                             <Title level={4} style={{ margin: 0 }}>Company:</Title>
                             <Form.Item name="companyDetails" noStyle>
@@ -38,11 +37,10 @@ export default function DocketHeader() {
                             </Form.Item>
                         </Space>
 
-                        {/* Bottom: Docket Number */}
                         <Space align="center">
                             <Title level={4} style={{ margin: 0 }}>Docket #:</Title>
                             <Form.Item name="docketNumber" noStyle>
-                                <InputNumber size="large" readOnly style={{ width: 150 }} placeholder="#" />
+                                <Input size="large" readOnly style={{ width: 200, fontWeight: 'bold' }} placeholder="#" />
                             </Form.Item>
                         </Space>
                     </Space>
