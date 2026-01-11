@@ -46,18 +46,24 @@ def render_docket_html(db: Session, docket_id: int):
 
     # 3. Calculate Totals
     items_total = sum([i['total'] for i in items_data])
-    pre_deductions = sum([d.amount for d in dkt.deductions if d.type == 'pre'])
-    gross_total = max(0, items_total - pre_deductions)
+
+    # Filter Deductions
+    pre_deductions = [d for d in dkt.deductions if d.type == 'pre']
+    post_deductions = [d for d in dkt.deductions if d.type == 'post']
+
+    pre_deductions_amount = sum([d.amount for d in pre_deductions])
+    post_deductions_amount = sum([d.amount for d in post_deductions])
+
+    # Gross (Taxable) Total
+    gross_total = max(0, items_total - pre_deductions_amount)
     
     gst_amount = 0
     if dkt.include_gst:
         gst_amount = gross_total * (dkt.gst_percentage / 100)
         
-    post_deductions = sum([d.amount for d in dkt.deductions if d.type == 'post'])
-    final_total = max(0, gross_total + gst_amount - post_deductions)
+    final_total = max(0, gross_total + gst_amount - post_deductions_amount)
 
     # 4. Setup Template Environment
-    # This path resolves to backend/app/services/templates
     template_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template("docket_template.html")
@@ -79,7 +85,10 @@ def render_docket_html(db: Session, docket_id: int):
     return template.render(
         docket=dkt,
         items=items_data,
+        pre_deductions=pre_deductions,
+        post_deductions=post_deductions,
         totals={
+            "itemsTotal": items_total,
             "grossTotal": gross_total,
             "gstAmount": gst_amount,
             "finalTotal": final_total  

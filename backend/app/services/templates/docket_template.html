@@ -118,12 +118,27 @@
         </tbody>
     </table>
 
-    <div class="totals-section">
-        {% if docket.include_gst %}
-            <div style="font-size: 11pt; font-weight: normal;">Subtotal: ${{ "{:,.2f}".format(totals.grossTotal) }}</div>
-            <div style="font-size: 11pt; font-weight: normal;">GST: ${{ "{:,.2f}".format(totals.gstAmount) }}</div>
+    <div class="totals-section">    
+        {% if pre_deductions %}
+             <div style="font-size: 11pt; font-weight: normal;">Items Total: ${{ "{:,.2f}".format(totals.itemsTotal) }}</div>
+             {% for d in pre_deductions %}
+                <div style="font-size: 11pt; font-weight: normal; color: #b01c2e;">{{ d.label }}: -${{ "{:,.2f}".format(d.amount) }}</div>
+             {% endfor %}
+             <div style="font-size: 11pt; font-weight: bold; border-top: 1px solid #ccc; display: inline-block; margin-top: 2px; padding-top: 2px;">Subtotal: ${{ "{:,.2f}".format(totals.grossTotal) }}</div>
+        {% else %}
+             {% if docket.include_gst %}
+                <div style="font-size: 11pt; font-weight: normal;">Subtotal: ${{ "{:,.2f}".format(totals.grossTotal) }}</div>
+             {% endif %}
         {% endif %}
-        <div>Total: ${{ "{:,.2f}".format(totals.finalTotal) }}</div>
+
+        {% if docket.include_gst %}
+            <div style="font-size: 11pt; font-weight: normal;">GST {{docket.gst_percentage}}%: ${{ "{:,.2f}".format(totals.gstAmount) }}</div>
+        {% endif %}
+
+        {% for d in post_deductions %}
+            <div style="font-size: 11pt; font-weight: normal; color: #b01c2e;">{{ d.label }}: -${{ "{:,.2f}".format(d.amount) }}</div>
+        {% endfor %}
+        <div style="margin-top: 8px;">Total: ${{ "{:,.2f}".format(totals.finalTotal) }}</div>
     </div>
 
     <div class="footer-section">
