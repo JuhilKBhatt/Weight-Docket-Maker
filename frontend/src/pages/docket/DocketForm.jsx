@@ -119,7 +119,7 @@ export default function DocketForm({ mode = 'new' }) {
 
     return (
         <div style={{ padding: '20px', maxWidth: '1600px', margin: '0 auto' }}>
-            <Form form={form} layout="vertical" onFinish={onFinish}>
+            <Form form={form} layout="vertical">
                 
                 {/* --- COMPONENT: HEADER --- */}
                 <DocketHeader />

@@ -4,7 +4,8 @@ import React from 'react';
 import { Card, Row, Col, Form, Input, DatePicker, Select } from 'antd';
 import {SearchOutlined} from '@ant-design/icons';
 
-export default function CustomerDetails({ dateFormat = 'DD/MM/YYYY' }) {
+export default function CustomerDetails() {
+    const dateFormat = ['DD/MM/YYYY', 'D/M/YYYY'];
     return (
         <Card title="Customer Details" size="large" style={{ marginBottom: 20 }}>
             <Row gutter={16}>
