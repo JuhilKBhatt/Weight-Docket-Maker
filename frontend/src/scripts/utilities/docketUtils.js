@@ -4,7 +4,7 @@ import axios from "axios";
 
 const API = 'http://localhost:8000/api/dockets';
 
-export const saveDraftDocket = async ({
+export const PrintDocket = async ({
   scrdktID,
   status,
   values,
@@ -21,6 +21,8 @@ export const saveDraftDocket = async ({
     scrdkt_number: scrdktID,
     docket_date: values.date ? values.date.format('YYYY-MM-DD') : null,
     status: status || "Draft",
+    is_saved: values.saveDocket,
+    print_Qty: Number(values.printQty),
     
     // Header Data
     docket_type: safeValue(values.docketType, "Customer"),

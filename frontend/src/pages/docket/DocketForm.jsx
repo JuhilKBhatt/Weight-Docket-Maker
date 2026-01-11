@@ -17,7 +17,7 @@ import useDocketForm from '../../hooks/docket/useDocketForm';
 import { useConfirmReset } from '../../scripts/utilities/confirmReset';
 
 // Utilities
-import { saveDraftDocket } from '../../scripts/utilities/docketUtils';
+import { PrintDocket } from '../../scripts/utilities/docketUtils';
 
 import '../../styles/Form.css'; 
 
@@ -91,9 +91,10 @@ export default function DocketForm({ mode = 'new' }) {
     };
 
     // --- SAVE / SUBMIT HANDLER ---
-    const onFinish = async (values) => {
+    const handlePrintAndSave = async () => {
         try {
-            await saveDraftDocket({
+            const values = form.getFieldsValue();
+            await PrintDocket({
                 scrdktID,
                 status: values.saveDocket ? "Saved" : "Printed", 
                 values,
@@ -188,7 +189,7 @@ export default function DocketForm({ mode = 'new' }) {
                         <Button 
                             type="primary" 
                             size="large" 
-                            onClick={onFinish}
+                            onClick={handlePrintAndSave}
                             style={{ minWidth: 220, height: 70, fontSize: '28px', marginLeft: '20px' }}
                         >
                             Print & Save
