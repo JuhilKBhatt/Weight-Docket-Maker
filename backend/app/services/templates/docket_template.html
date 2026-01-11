@@ -8,28 +8,50 @@
     </style>
 </head>
 <body>
-    <div class="docket-id">{{ docket.scrdkt_number }}</div>
-    <div class="header-section">
-        {% if docket.docket_type == 'Weight' %}
-            <h1>Weight Docket</h1>
-        {% else %}
-            <h1>Purchase Receipt</h1>
-        {% endif %}
 
-        <div class="sub-info">Date: {{ formatted_date }}</div>
-        
-        <h2>{{ docket.company_name or "SAFARI COPPER RECYCLING" }}</h2>
-        <div class="sub-info">
-            Address: 4 Tarlington Pl, Smithfield, NSW, 2164<br>
-            ABN: 93 686 008 640 | Phone No: 0411 499 553<br>
-            Email: smithfield.scrap@gmail.com
-        </div>
-    </div>
+    <table class="header-layout-table">
+        <tr>
+            <td rowspan="2" class="title-cell" style="width: 60%;">
+                {% if docket.docket_type == 'Weight' %}
+                    <h1>Weight Docket</h1>
+                {% else %}
+                    <h1>Purchase Receipt</h1>
+                {% endif %}
+            </td>
+            
+            <td style="width: 40%;">
+                <div class="docket-id">ID #: {{ docket.scrdkt_number }}</div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="sub-info">Date: {{ formatted_date }}</div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div class="company-block-container">
+                    {% if recycling_icon %}
+                        <div>
+                            <img src="data:image/png;base64,{{ recycling_icon }}" class="company-logo" alt="Logo" />
+                        </div>
+                    {% endif %}
 
-    <div class="date-line"></div>
+                    <div class="company-text">
+                        <h2>{{ docket.company_name or "SAFARI COPPER RECYCLING" }}</h2>
+                        <div class="sub-info">
+                            Address: 4 Tarlington Pl, Smithfield, NSW, 2164<br>
+                            ABN: 93 686 008 640 | Phone No: 0411 499 553<br>
+                            Email: smithfield.scrap@gmail.com
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
 
     <div class="customer-section">
-        <div class="customer-row">
+        <div style="margin-bottom: 5px; font-size: 18pt;">
             <strong>Customer Name:</strong> {{ docket.customer_name }}
         </div>
         <div class="other-info-box">
@@ -45,7 +67,7 @@
             <span class="other-info-val">{{ docket.customer_rego_no }}</span> | 
             
             <span class="other-info-label">PayID:</span>
-            <span class="other-info-val">{{ docket.customer_pay_id }}</span><br>
+            <span class="other-info-val">{{ docket.customer_pay_id }}</span> |
             
             <span class="other-info-label">Phone No.:</span>
             <span class="other-info-val">{{ docket.customer_phone }}</span> | 
@@ -57,17 +79,17 @@
             <span class="other-info-val">{{ docket.bank_bsb }}</span> | 
             
             <span class="other-info-label">Acc No.:</span>
-            <span class="other-info-val">{{ docket.bank_account_number }}</span><br>
+            <span class="other-info-val">{{ docket.bank_account_number }}</span> |
             
             <span class="other-info-label">Address:</span>
-            <span class="other-info-val">{{ docket.customer_address }}</span><br>
+            <span class="other-info-val">{{ docket.customer_address }}</span> |
             
             <span class="other-info-label">Notes:</span>
             <span class="other-info-val">{{ docket.notes }}</span>
         </div>
     </div>
 
-    <table>
+    <table class="data-table">
         <thead>
             <tr>
                 <th style="width: 25%;">Metal</th>
@@ -104,17 +126,13 @@
 
     <div class="footer-section">
         <div style="text-align: center;">
-            Staff + Customer
+            <div class="signature-line"></div>
+            <div> Staff Signature</div>
         </div>
         <div style="text-align: center;">
             <div class="signature-line"></div>
-            <div>Signature</div>
+            <div> Customer Signature</div>
         </div>
     </div>
-
-    {% if not docket.is_saved %}
-        <div class="watermark">COPY</div>
-    {% endif %}
-
 </body>
 </html>

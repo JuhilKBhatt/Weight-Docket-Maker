@@ -1,6 +1,7 @@
 # app/services/docket/docket_pdf.py
 
 import os
+import base64
 from io import BytesIO
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -8,6 +9,13 @@ from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 
 from app.models.docketModels import Docket
+
+# --- Helper to load images ---
+def get_image_base64(image_path):
+    if not os.path.exists(image_path):
+        return ""
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode('utf-8')
 
 def render_docket_html(db: Session, docket_id: int):
     # 1. Fetch Data
@@ -17,7 +25,6 @@ def render_docket_html(db: Session, docket_id: int):
 
     # 2. Prepare Items Data
     items_data = []
-    items_total = 0
     
     for item in dkt.items:
         gross = item.gross or 0
@@ -26,7 +33,6 @@ def render_docket_html(db: Session, docket_id: int):
         
         net = max(0, gross - tare)
         total = net * price
-        items_total += total
         
         items_data.append({
             "metal": item.metal,
@@ -39,6 +45,7 @@ def render_docket_html(db: Session, docket_id: int):
         })
 
     # 3. Calculate Totals
+    items_total = sum([i['total'] for i in items_data])
     pre_deductions = sum([d.amount for d in dkt.deductions if d.type == 'pre'])
     gross_total = max(0, items_total - pre_deductions)
     
@@ -50,16 +57,21 @@ def render_docket_html(db: Session, docket_id: int):
     final_total = max(0, gross_total + gst_amount - post_deductions)
 
     # 4. Setup Template Environment
+    # This path resolves to backend/app/services/templates
     template_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template("docket_template.html")
     
-    # Read CSS (Optional check to prevent errors if file missing)
+    # Read CSS
     css_path = os.path.join(template_dir, "docket_template_styles.css")
     css_content = ""
     if os.path.exists(css_path):
         with open(css_path, 'r') as f:
             css_content = f.read()
+
+    # --- Load Icon ---
+    icon_path = os.path.join(template_dir, "Recycling_Icon.png")
+    recycling_icon_b64 = get_image_base64(icon_path)
 
     formatted_date = dkt.docket_date.strftime("%d/%m/%Y") if dkt.docket_date else "N/A"
 
@@ -73,7 +85,8 @@ def render_docket_html(db: Session, docket_id: int):
             "finalTotal": final_total  
         },
         formatted_date=formatted_date,
-        css_content=css_content
+        css_content=css_content,
+        recycling_icon=recycling_icon_b64
     )
 
 def generate_docket_pdf(db: Session, docket_id: int):
