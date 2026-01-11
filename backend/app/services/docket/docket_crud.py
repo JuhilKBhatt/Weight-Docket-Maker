@@ -56,6 +56,7 @@ def upsert_docket(db: Session, data: DocketCreate):
         # --- CREATE NEW (Fallback) ---
         docket = Docket(
             scrdkt_number=data.scrdkt_number,
+            docket_date=data.docket_date,
             status=data.status,
             docket_type=data.docket_type,
             company_name=data.company_name,

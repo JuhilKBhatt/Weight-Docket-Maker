@@ -1,12 +1,14 @@
 // ./frontend/src/components/docket/DocketHeader.jsx
 
 import React from 'react';
-import { Card, Row, Col, Space, Form, Select, Typography, Input } from 'antd';
+import { Card, Row, Col, Space, Form, Select, Typography, Input, DatePicker } from 'antd';
 
 const { Title } = Typography;
 const { Option } = Select;
 
 export default function DocketHeader() {
+    const dateFormat = 'DD/MM/YYYY';
+
     return (
         <Card style={{ marginBottom: 20 }}>
             <Row justify="space-between" align="middle">
@@ -41,6 +43,13 @@ export default function DocketHeader() {
                             <Title level={4} style={{ margin: 0 }}>Docket #:</Title>
                             <Form.Item name="docketNumber" noStyle>
                                 <Input size="large" readOnly style={{ width: 200, fontWeight: 'bold' }} placeholder="#" />
+                            </Form.Item>
+                        </Space>
+
+                        <Space align="center">
+                            <Title level={4} style={{ margin: 0 }}>Date :</Title>
+                            <Form.Item name="date" noStyle>
+                                <DatePicker size="large" format={dateFormat} style={{ width: 200 }} />
                             </Form.Item>
                         </Space>
                     </Space>

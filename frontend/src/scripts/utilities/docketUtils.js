@@ -1,6 +1,7 @@
 // ./frontend/src/scripts/utilities/docketUtils.js
 
 import axios from "axios";
+import dayjs from "dayjs";
 
 const API = 'http://localhost:8000/api/dockets';
 
@@ -15,11 +16,20 @@ export const PrintDocket = async ({
   gstPercentage
 }) => {
   const safeValue = (val, fallback = "") => val ?? fallback;
-
+  
+  let formattedDate = null;
+  if (values.date) {
+      if (dayjs.isDayjs(values.date) && values.date.isValid()) {
+          formattedDate = values.date.format('YYYY-MM-DD');
+      } else if (typeof values.date === 'string') {
+          formattedDate = values.date.substring(0, 10);
+      }
+  }
+  
   // Map Frontend Form -> Backend Schema
   const payload = {
     scrdkt_number: scrdktID,
-    docket_date: values.date ? values.date.format('YYYY-MM-DD') : null,
+    docket_date: formattedDate,
     status: status || "Draft",
     is_saved: values.saveDocket,
     print_qty: Number(values.printQty),
@@ -39,7 +49,8 @@ export const PrintDocket = async ({
     customer_abn: safeValue(values.abn),
     customer_license_no: safeValue(values.licenseNo),
     customer_rego_no: safeValue(values.regoNo),
-    customer_dob: values.dob ? values.dob.format('YYYY-MM-DD') : null,
+    // Ensure DOB is also formatted correctly if present
+    customer_dob: values.dob ? (dayjs.isDayjs(values.dob) ? values.dob.format('YYYY-MM-DD') : values.dob) : null,
     customer_pay_id: safeValue(values.payId),
     
     // Bank Details
@@ -49,7 +60,7 @@ export const PrintDocket = async ({
     // Notes
     notes: safeValue(values.paperNotes),
 
-    // Items Table (Map 'itemsWithTotals' to schema)
+    // Items Table
     items: items.map(i => ({
       metal: safeValue(i.metal),
       notes: safeValue(i.notes), 
@@ -64,7 +75,6 @@ export const PrintDocket = async ({
       ...deductions.post.map(d => ({ type: "post", label: safeValue(d.label), amount: Number(d.amount ?? 0) })),
     ]
   };
-
   try {
     const res = await axios.post(`${API}/saveDraft`, payload);
     return res.data;

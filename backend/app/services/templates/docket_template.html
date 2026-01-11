@@ -10,7 +10,12 @@
 <body>
     <div class="docket-id">{{ docket.scrdkt_number }}</div>
     <div class="header-section">
-        <h1>Purchase Receipt</h1>
+        {% if docket.docket_type == 'Weight' %}
+            <h1>Weight Docket</h1>
+        {% else %}
+            <h1>Purchase Receipt</h1>
+        {% endif %}
+
         <div class="sub-info">Date: {{ formatted_date }}</div>
         
         <h2>{{ docket.company_name or "SAFARI COPPER RECYCLING" }}</h2>
