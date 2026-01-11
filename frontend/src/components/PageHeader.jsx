@@ -12,19 +12,23 @@ export default function PageHeader() {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    // If on Settings page, go back to the previous page in history
+    // 1. Special Handling for Settings (Global Page)
     if (location.pathname === '/settings') {
-      navigate(-1);
+      // Check if there is history state to go back to (React Router specific)
+      if (window.history.length > 2) { 
+        navigate(-1);
+      } else {
+        // If opened directly in new tab, go Home instead of nowhere
+        navigate('/'); 
+      }
     } else {
-      // Default behavior: Use the static route map
+      // 2. Standard Behavior: Use the static route map
       const target = getBackRoute(location.pathname);
       navigate(target);
     }
   };
 
   const isHome = location.pathname === '/';
-  
-  // Hide settings button if already on settings page
   const isSettings = location.pathname === '/settings';
 
   return (
