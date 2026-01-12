@@ -25,11 +25,21 @@ export const PrintDocket = async ({
           formattedDate = values.date.substring(0, 10);
       }
   }
+
+  let formattedTime = null;
+  if(values.time){
+      if(dayjs.isDayjs(values.time) && values.time.isValid()){
+          formattedTime = values.time.format('HH:mm a');
+      } else if (typeof values.time === 'string'){
+          formattedTime = values.time;
+      }
+  }
   
   // Map Frontend Form -> Backend Schema
   const payload = {
     scrdkt_number: scrdktID,
     docket_date: formattedDate,
+    docket_time: formattedTime,
     status: status || "Draft",
     is_saved: values.saveDocket,
     print_qty: Number(values.printQty),
@@ -77,6 +87,7 @@ export const PrintDocket = async ({
   };
   try {
     const res = await axios.post(`${API}/saveDraft`, payload);
+    console.log("Docket saved:", payload);
     return res.data;
   } catch (err) {
     console.error("Error saving docket:", err);

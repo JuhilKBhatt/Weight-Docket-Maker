@@ -1,14 +1,15 @@
 // ./frontend/src/components/docket/DocketHeader.jsx
 
 import React from 'react';
-import { Card, Row, Col, Space, Form, Select, Typography, Input, DatePicker } from 'antd';
+import { Card, Row, Col, Space, Form, Select, Typography, Input, DatePicker, TimePicker } from 'antd';
+import dayjs from 'dayjs';
 
 const { Title } = Typography;
 const { Option } = Select;
 
 export default function DocketHeader() {
     const dateFormat = 'DD/MM/YYYY';
-
+    const timeFormat = 'hh:mm a';
     return (
         <Card style={{ marginBottom: 20 }}>
             <Row justify="space-between" align="middle">
@@ -48,8 +49,15 @@ export default function DocketHeader() {
 
                         <Space align="center">
                             <Title level={4} style={{ margin: 0 }}>Date :</Title>
-                            <Form.Item name="date" noStyle>
+                            <Form.Item name="date" initialValue={dayjs()} noStyle>
                                 <DatePicker size="large" format={dateFormat} style={{ width: 200 }} />
+                            </Form.Item>
+                        </Space>
+                        
+                        <Space align="center">
+                            <Title level={4} style={{ margin: 0 }}>Time :</Title>
+                            <Form.Item name="time" initialValue={dayjs()} noStyle>
+                                <TimePicker size="large" format={timeFormat} needConfirm={false} style={{ width: 200 }} />
                             </Form.Item>
                         </Space>
                     </Space>

@@ -25,6 +25,7 @@ def upsert_docket(db: Session, data: DocketCreate):
     if docket:
         # --- UPDATE EXISTING ---
         docket.docket_date = data.docket_date
+        docket.docket_time = data.docket_time
         docket.status = data.status
         docket.is_saved = data.is_saved
         docket.print_qty = data.print_qty
@@ -57,6 +58,7 @@ def upsert_docket(db: Session, data: DocketCreate):
         docket = Docket(
             scrdkt_number=data.scrdkt_number,
             docket_date=data.docket_date,
+            docket_time=data.docket_time,
             status=data.status,
             docket_type=data.docket_type,
             company_name=data.company_name,
