@@ -1,11 +1,11 @@
 // src/pages/docket/InventoryReport.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Table, DatePicker, Input, Button, Card, Typography, Row, Col, Space, message } from 'antd';
-import { SearchOutlined, FilterOutlined } from '@ant-design/icons';
+import { Table, DatePicker, Input, Card, Typography, Row, Col, message } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { getInventoryReport } from '../../services/inventoryService';
-import { audFormatterFixed } from '../../scripts/utilities/AUDformatters'; // Reuse your formatter
+import { audFormatterFixed } from '../../scripts/utilities/AUDformatters'; 
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -23,8 +23,8 @@ export default function InventoryReport() {
     const [metalSearch, setMetalSearch] = useState('');
 
     const fetchReport = async () => {
+        // If dates are cleared, return early or handle as needed
         if (!dateRange || !dateRange[0] || !dateRange[1]) {
-            message.warning("Please select a date range.");
             return;
         }
 
@@ -45,10 +45,11 @@ export default function InventoryReport() {
         }
     };
 
-    // Auto-fetch on mount
+    // Trigger fetch automatically on mount AND when dateRange or metalSearch changes
     useEffect(() => {
         fetchReport();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dateRange, metalSearch]);
 
     const columns = [
         {
@@ -104,16 +105,7 @@ export default function InventoryReport() {
                                 style={{ width: 250 }}
                             />
                         </Col>
-                        <Col>
-                            <Button 
-                                type="primary" 
-                                icon={<FilterOutlined />} 
-                                onClick={fetchReport}
-                                loading={loading}
-                            >
-                                Filter Report
-                            </Button>
-                        </Col>
+                        {/* Filter Button removed; logic moved to useEffect */}
                     </Row>
                 </Card>
 
@@ -123,7 +115,7 @@ export default function InventoryReport() {
                     rowKey="metal"
                     loading={loading}
                     bordered
-                    pagination={false} // Usually reports show all data
+                    pagination={false} 
                     summary={() => (
                         <Table.Summary fixed>
                             <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
