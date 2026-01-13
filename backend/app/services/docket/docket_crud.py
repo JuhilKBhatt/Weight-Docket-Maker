@@ -103,3 +103,44 @@ def upsert_docket(db: Session, data: DocketCreate):
 
     db.commit()
     return {"message": "docket saved", "id": docket.id}
+
+def get_docket_by_id(db: Session, docket_id: int):
+    docket = db.query(Docket).filter(Docket.id == docket_id).first()
+    if not docket:
+        raise HTTPException(status_code=404, detail="Docket not found")
+    
+    return {
+        "id": docket.id,
+        "scrdkt_number": docket.scrdkt_number,
+        "docket_date": docket.docket_date,
+        "docket_time": docket.docket_time,
+        "status": docket.status,
+        "is_saved": docket.is_saved,
+        "print_qty": docket.print_qty,
+        "docket_type": docket.docket_type,
+        "company_name": docket.company_name,
+        "include_gst": docket.include_gst,
+        "gst_percentage": docket.gst_percentage,
+        "notes": docket.notes,
+        "customer_name": docket.customer_name,
+        "customer_address": docket.customer_address,
+        "customer_phone": docket.customer_phone,
+        "customer_abn": docket.customer_abn,
+        "customer_license_no": docket.customer_license_no,
+        "customer_rego_no": docket.customer_rego_no,
+        "customer_dob": docket.customer_dob,
+        "customer_pay_id": docket.customer_pay_id,
+        "bank_bsb": docket.bank_bsb,
+        "bank_account_number": docket.bank_account_number,
+        "items": [
+            {
+                "id": i.id, "metal": i.metal, "notes": i.row_notes, 
+                "gross": i.gross, "tare": i.tare, "price": i.price
+            } 
+            for i in docket.items
+        ],
+        "deductions": [
+            {"id": d.id, "type": d.type, "label": d.label, "amount": d.amount} 
+            for d in docket.deductions
+        ]
+    }

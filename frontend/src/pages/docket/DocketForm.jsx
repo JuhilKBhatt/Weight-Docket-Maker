@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Row, Col, Input, InputNumber, Space, Divider, Checkbox, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
 
 // Components
 import InvoiceTotalsSummary from '../../components/TotalsSummary';
@@ -18,7 +19,6 @@ import { useConfirmReset } from '../../scripts/utilities/confirmReset';
 
 // Utilities
 import { PrintDocket } from '../../scripts/utilities/docketUtils';
-
 import '../../styles/Form.css'; 
 
 const { Text } = Typography;
@@ -30,20 +30,41 @@ const generateInitialRows = (count) => {
     }));
 };
 
-export default function DocketForm({ mode = 'new' }) {
+export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const [form] = Form.useForm();
     const navigate = useNavigate();
     const confirmReset = useConfirmReset();
     
-    // 1. Initialize Docket ID Hook
-    const { scrdktID, resetDocket } = useDocketForm(mode);
+    // 1. Initialize Docket ID Hook (Pass existingDocket)
+    const { scrdktID, resetDocket } = useDocketForm(mode, existingDocket);
 
     // 2. Data & Calculation States
-    const [dataSource, setDataSource] = useState(generateInitialRows(20));
-    const [gstEnabled, setGstEnabled] = useState(false);
-    const [gstPercentage, setGstPercentage] = useState(10);
-    const [preGstDeductions, setPreGstDeductions] = useState([]);
-    const [postGstDeductions, setPostGstDeductions] = useState([]);
+    const [dataSource, setDataSource] = useState(() => {
+        if (existingDocket && existingDocket.items) {
+            // Map existing items to table format
+            return existingDocket.items.map(i => ({
+                key: i.key || i.id,
+                metal: i.metal || '',
+                notes: i.notes || '',
+                gross: i.gross,
+                tare: i.tare,
+                net: Math.max(0, (i.gross || 0) - (i.tare || 0)),
+                price: i.price,
+                total: 0 // Calculated by hook
+            }));
+        }
+        return generateInitialRows(20);
+    });
+
+    const [gstEnabled, setGstEnabled] = useState(existingDocket?.include_gst || false);
+    const [gstPercentage, setGstPercentage] = useState(existingDocket?.gst_percentage || 10);
+    
+    const [preGstDeductions, setPreGstDeductions] = useState(() => 
+        existingDocket?.deductions?.filter(d => d.type === 'pre') || []
+    );
+    const [postGstDeductions, setPostGstDeductions] = useState(() => 
+        existingDocket?.deductions?.filter(d => d.type === 'post') || []
+    );
 
     // 3. Calculation Logic
     const { itemsWithTotals, grossTotal, gstAmount, finalTotal } = useDocketCalculations({
@@ -60,6 +81,36 @@ export default function DocketForm({ mode = 'new' }) {
             form.setFieldsValue({ docketNumber: scrdktID });
         }
     }, [scrdktID, form]);
+
+    // 5. Effect: Populate Form Fields if Edit Mode
+    useEffect(() => {
+        if (mode === 'edit' && existingDocket) {
+            form.setFieldsValue({
+                // Header
+                docketType: existingDocket.docket_type,
+                companyDetails: existingDocket.company_name,
+                date: existingDocket.docket_date ? dayjs(existingDocket.docket_date) : dayjs(),
+                time: existingDocket.docket_time ? dayjs(existingDocket.docket_time, 'hh:mm a') : dayjs(),
+                
+                // Customer
+                name: existingDocket.customer_name,
+                licenseNo: existingDocket.customer_license_no,
+                regoNo: existingDocket.customer_rego_no,
+                dob: existingDocket.customer_dob ? dayjs(existingDocket.customer_dob) : null,
+                payId: existingDocket.customer_pay_id,
+                phone: existingDocket.customer_phone,
+                bsb: existingDocket.bank_bsb,
+                accNo: existingDocket.bank_account_number,
+                abn: existingDocket.customer_abn,
+                address: existingDocket.customer_address,
+
+                // Footer
+                paperNotes: existingDocket.notes,
+                saveDocket: existingDocket.is_saved,
+                printQty: existingDocket.print_qty || 2
+            });
+        }
+    }, [mode, existingDocket, form]);
 
     // --- Handlers ---
     const addRow = (count = 1) => {
@@ -109,8 +160,10 @@ export default function DocketForm({ mode = 'new' }) {
 
             if (mode === 'new') {
                resetDocket();
-               // form.resetFields();
-               // window.location.reload(); 
+               window.location.reload(); 
+            } else {
+               // If edit, maybe go back to view list?
+               navigate('/view-docket');
             }
         } catch (error) {
             console.error(error);

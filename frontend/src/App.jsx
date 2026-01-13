@@ -17,6 +17,7 @@ import SalesRecord from './pages/invoice/SalesRecord.jsx'
 import DocketHome from './pages/DocketHome.jsx'
 import NewDocket from './pages/docket/DocketForm.jsx'
 import ViewDocket from './pages/docket/DocketList'
+import EditDocketForm from './pages/docket/EditDocketForm.jsx'
 import InventoryReport from './pages/docket/InventoryReport.jsx'
 
 const { Header, Content } = Layout
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/DocketHome" element={<DocketHome />} />
           <Route path="/new-docket" element={<NewDocket mode="new"/>} />
           <Route path="/view-docket" element={<ViewDocket />} />
+          <Route path="/edit-docket/:id" element={<EditDocketForm />} />
           <Route path="/inventory-report" element={<InventoryReport />} />
         </Routes>
       </Content>

@@ -29,6 +29,10 @@ def save_docket(data: DocketCreate, db: Session = Depends(get_db)):
 def get_dockets(db: Session = Depends(get_db)):
     return docket_list.get_all_dockets_calculated(db)
 
+@router.get("/{docket_id}")
+def get_docket(docket_id: int, db: Session = Depends(get_db)):
+    return docket_crud.get_docket_by_id(db, docket_id)
+
 # --- INVENTORY REPORT ---
 @router.get("/inventory-report")
 def get_inventory_report(
