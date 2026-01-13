@@ -1,5 +1,6 @@
 // ./frontend/src/components/invoice/InvoiceItemsTable.jsx
 
+import React, {useState} from 'react';
 import { Table, Input, InputNumber, Button, Popconfirm, Typography, Select } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
 import { CURRENCY_OPTIONS, UNIT_OPTIONS, getCurrencyLabel } from '../../scripts/utilities/invoiceConstants';
@@ -16,6 +17,7 @@ export default function InvoiceItemsTable({
   removeRow,
 }) {
 
+  const [selectedRowKey, setSelectedRowKey] = useState(null);
   // Helper: Get symbol (e.g. "AUD$")
   const currentSymbolLabel = getCurrencyLabel(currency);
 
@@ -163,7 +165,18 @@ export default function InvoiceItemsTable({
   return (
     <>
       <Typography.Title level={5}>Invoice Items</Typography.Title>
-      <Table columns={getColumns()} dataSource={items} pagination={false} bordered />
+      <Table
+      // Conditionally apply class if key matches state
+      rowClassName={(record) => 
+          record.key === selectedRowKey ? 'docket-table-row selected-row' : 'docket-table-row'
+      }
+      // Handle row click
+      onRow={(record) => ({
+          onClick: () => {
+              setSelectedRowKey(record.key);
+          },
+      })}
+      columns={getColumns()} dataSource={items} pagination={false} bordered />
       <Button type="dashed" onClick={addRow} style={{ marginTop: 10 }}>+ Add Row</Button>
     </>
   );
