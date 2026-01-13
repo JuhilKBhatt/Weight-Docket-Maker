@@ -13,6 +13,7 @@ export const routeBackMap = {
   '/new-docket': '/DocketHome',
   '/view-docket': '/DocketHome',
   '/edit-docket': '/view-docket',
+  '/inventory-report': '/DocketHome',
   
   // General
   '/settings': '/', // Default parent for settings if history fails

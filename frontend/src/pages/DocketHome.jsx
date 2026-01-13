@@ -19,8 +19,8 @@ export default function DocketHome() {
         <Link to="/view-docket">
           <Button type="primary">View Saved Docket</Button>
         </Link>
-        <Link to='/sales-dockets'>
-          <Button type="primary" disabled>View Inventory</Button>
+        <Link to='/inventory-report'>
+          <Button type="primary">View Inventory</Button>
         </Link>
       </div>
     </div>

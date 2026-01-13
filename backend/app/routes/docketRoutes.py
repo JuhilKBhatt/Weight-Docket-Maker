@@ -3,9 +3,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
 from sqlalchemy.orm import Session
+from typing import Optional
+from datetime import date
 from app.database import get_db
 from app.schema.docketSchema import DocketCreate
-from app.services.docket import docket_crud, docket_list , docket_pdf
+from app.services.docket import docket_crud, docket_list, docket_pdf, inventory_service
 
 router = APIRouter(
     prefix="/api/dockets",
@@ -26,6 +28,16 @@ def save_docket(data: DocketCreate, db: Session = Depends(get_db)):
 @router.get("/list")
 def get_dockets(db: Session = Depends(get_db)):
     return docket_list.get_all_dockets_calculated(db)
+
+# --- INVENTORY REPORT ---
+@router.get("/inventory-report")
+def get_inventory_report(
+    start_date: date, 
+    end_date: date, 
+    metal: Optional[str] = None, 
+    db: Session = Depends(get_db)
+):
+    return inventory_service.get_inventory_report(db, start_date, end_date, metal)
 
 # --- PREVIEW (HTML) ---
 @router.get("/{docket_id}/preview", response_class=HTMLResponse)
