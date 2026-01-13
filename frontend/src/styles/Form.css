@@ -20,6 +20,22 @@
     width: 100%;
 }
 
+/* High Specificity to override standard striping or column colors */
+.ant-table .ant-table-tbody > tr.selected-row > td,
+.ant-table .ant-table-tbody > tr.selected-row:hover > td {
+    background-color: #aad8ad !important; /* highlight */
+    color: #000000 !important; /* Ensure text is black (overrides white text from striping) */
+    transition: background-color 0.3s;
+}
+
+/* Ensure inputs inside the selected row blend in */
+.selected-row .ant-input, 
+.selected-row .ant-input-number, 
+.selected-row .ant-input-number-input {
+    background-color: #ffffff; 
+    color: #000000;
+}
+
 /* Typography overrides */
 .ant-typography {
   color: #000000;

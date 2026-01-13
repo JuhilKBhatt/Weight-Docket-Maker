@@ -10,6 +10,8 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
     
     // Local state to track how many rows to add
     const [rowsToAdd, setRowsToAdd] = useState(1);
+    // State to track the currently selected row
+    const [selectedRowKey, setSelectedRowKey] = useState(null);
 
     const columns = [
         {
@@ -114,7 +116,10 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
                     type="text" 
                     danger 
                     icon={<DeleteOutlined />} 
-                    onClick={() => removeRow(record.key)}
+                    onClick={(e) => {
+                        e.stopPropagation(); // Prevent row selection when clicking delete
+                        removeRow(record.key);
+                    }}
                 />
             )
         }
@@ -123,7 +128,16 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
     return (
         <div style={{ marginBottom: 30 }}>
             <Table
-                rowClassName={() => 'docket-table-row'}
+                // Conditionally apply class if key matches state
+                rowClassName={(record) => 
+                    record.key === selectedRowKey ? 'docket-table-row selected-row' : 'docket-table-row'
+                }
+                // Handle row click
+                onRow={(record) => ({
+                    onClick: () => {
+                        setSelectedRowKey(record.key);
+                    },
+                })}
                 dataSource={items}
                 columns={columns}
                 pagination={false}
