@@ -131,20 +131,6 @@ export default function DocketList() {
         align: 'right',
       },
       {
-        title: 'Status',
-        dataIndex: 'status',
-        key: 'status',
-        render: (status) => {
-          let color = 'default';
-          if (status === 'Printed') color = 'green';
-          else if (status === 'Draft') color = 'orange';
-          else if (status === 'Saved') color = 'blue';
-
-          return <Tag color={color}>{status || 'Unknown'}</Tag>;
-        },
-        width: 100,
-      },
-      {
         title: 'Actions',
         key: 'actions',
         align: 'center',
