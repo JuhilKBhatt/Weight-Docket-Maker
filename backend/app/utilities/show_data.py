@@ -38,6 +38,7 @@ for inv in invoices:
 for dkt in dockets:
     print(f"Docket: {dkt.scrdkt_number}")
     print(f"  ID: {dkt.id}")
+    print(f"  Is Saved: {dkt.is_saved}")
     print(f"  Date: {dkt.docket_date}, Type: {dkt.docket_type}, Status: {dkt.status}")
     print(f"  Company: {dkt.company_name}, Include GST: {dkt.include_gst}, GST%: {dkt.gst_percentage}")
     print(f"  Customer: {dkt.customer_name}, {dkt.customer_address}, {dkt.customer_abn}")

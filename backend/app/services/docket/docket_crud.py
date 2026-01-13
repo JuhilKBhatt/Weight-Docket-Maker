@@ -60,6 +60,8 @@ def upsert_docket(db: Session, data: DocketCreate):
             docket_date=data.docket_date,
             docket_time=data.docket_time,
             status=data.status,
+            is_saved=data.is_saved,
+            print_qty=data.print_qty,
             docket_type=data.docket_type,
             company_name=data.company_name,
             include_gst=data.include_gst,

@@ -12,6 +12,10 @@ def get_all_dockets_calculated(db: Session):
         if not dkt.scrdkt_number:
             continue
 
+        # Filter out unsaved dockets
+        if not dkt.is_saved:
+            continue
+
         # --- Calculate Totals Dynamically ---
         # 1. Items Total
         items_total = 0
@@ -43,6 +47,7 @@ def get_all_dockets_calculated(db: Session):
             "id": dkt.id,
             "scrdkt_number": dkt.scrdkt_number,
             "docket_date": dkt.docket_date,
+            "docket_time": dkt.docket_time,
             "customer_name": display_name, # Generic field for the table
             "docket_type": dkt.docket_type,
             "total_amount": round(final_total, 2),

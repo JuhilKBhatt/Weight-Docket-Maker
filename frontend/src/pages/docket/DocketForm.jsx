@@ -108,7 +108,7 @@ export default function DocketForm({ mode = 'new' }) {
             alert('Docket saved successfully!');
 
             if (mode === 'new') {
-               // resetDocket();
+               resetDocket();
                // form.resetFields();
                // window.location.reload(); 
             }
