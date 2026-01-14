@@ -20,7 +20,7 @@ def create_docket_id(db: Session = Depends(get_db)):
     return docket_crud.generate_new_docket_id(db)
 
 # --- SAVE / UPSERT DOCKET ---
-@router.post("/saveDraft")
+@router.post("/saveDocket")
 def save_docket(data: DocketCreate, db: Session = Depends(get_db)):
     return docket_crud.upsert_docket(db, data)
 

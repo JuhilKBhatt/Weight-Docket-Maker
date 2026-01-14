@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 
 const API = 'http://localhost:8000/api/dockets';
 
-export const PrintDocket = async ({
+export const SaveDocket = async ({
   scrdktID,
   status,
   values,
@@ -86,11 +86,31 @@ export const PrintDocket = async ({
     ]
   };
   try {
-    const res = await axios.post(`${API}/saveDraft`, payload);
+    const res = await axios.post(`${API}/saveDocket`, payload);
     console.log("Docket saved:", payload);
     return res.data;
   } catch (err) {
     console.error("Error saving docket:", err);
     throw err;
+  }
+};
+
+export const DownloadPDFDocket = async (docketId, scrdktID) => {
+  try {
+      const response = await axios.get(`${API}/${docketId}/download`, {
+      responseType: 'blob',
+    });
+
+    const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+    const link = document.createElement('a');
+    link.href = url;
+    // We can still use the SCR ID for the filename so it looks nice for the user
+    link.setAttribute('download', `Docket_${scrdktID}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode.removeChild(link);
+  } catch (error) {
+    console.error('Error downloading PDF docket:', error);
+    throw error;
   }
 };

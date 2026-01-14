@@ -18,7 +18,7 @@ import useDocketForm from '../../hooks/docket/useDocketForm';
 import { useConfirmReset } from '../../scripts/utilities/confirmReset';
 
 // Utilities
-import { PrintDocket } from '../../scripts/utilities/docketUtils';
+import { SaveDocket, DownloadPDFDocket } from '../../scripts/utilities/docketUtils';
 import '../../styles/Form.css'; 
 
 const { Text } = Typography;
@@ -35,7 +35,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const navigate = useNavigate();
     const confirmReset = useConfirmReset();
     
-    // 1. Initialize Docket ID Hook (Pass existingDocket)
+    // 1. Initialize Docket ID Hook
     const { scrdktID, resetDocket } = useDocketForm(mode, existingDocket);
 
     // 2. Data & Calculation States
@@ -141,13 +141,13 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         type === 'pre' ? setPreGstDeductions(updateList(preGstDeductions)) : setPostGstDeductions(updateList(postGstDeductions));
     };
 
-    // --- SAVE / SUBMIT HANDLER ---
-    const handlePrintAndSave = async () => {
+    // --- SAVE HANDLER ---
+    const handleSave = async () => {
         try {
             const values = form.getFieldsValue();
-            await PrintDocket({
+            await SaveDocket({
                 scrdktID,
-                status: values.saveDocket ? "Saved" : "Printed", 
+                status: "Saved", 
                 values,
                 items: itemsWithTotals.filter(item => item.gross > 0 || item.metal),
                 totals: { grossTotal, gstAmount, finalTotal },
@@ -160,14 +160,43 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
             if (mode === 'new') {
                resetDocket();
-               window.location.reload(); 
             } else {
-               // If edit, maybe go back to view list?
                navigate('/view-docket');
             }
         } catch (error) {
             console.error(error);
             alert('Failed to save docket.');
+        }
+    };
+
+    const handleDownload = async () => {
+        try {
+            const values = form.getFieldsValue();
+            
+            const result = await SaveDocket({
+                scrdktID,
+                status: "Downloaded", 
+                values,
+                items: itemsWithTotals.filter(item => item.gross > 0 || item.metal),
+                totals: { grossTotal, gstAmount, finalTotal },
+                deductions: { pre: preGstDeductions, post: postGstDeductions },
+                includeGST: gstEnabled,
+                gstPercentage
+            });
+
+            await DownloadPDFDocket(result.id, scrdktID);
+
+            alert('Docket saved and download initiated!');
+
+            if (mode === 'new') {
+               resetDocket();
+               window.location.reload();
+            } else {
+               navigate('/view-docket');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Failed to download docket.');
         }
     };
 
@@ -242,13 +271,21 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                         <Button 
                             type="primary" 
                             size="large" 
-                            onClick={handlePrintAndSave}
                             style={{ minWidth: 220, height: 70, fontSize: '28px', marginLeft: '20px' }}
                         >
-                            Print & Save
+                            Print
                         </Button>
                     </Space>
-                    
+                    <Button
+                        onClick={handleSave}
+                    >
+                        Save Docket
+                    </Button>
+                    <Button
+                        onClick={handleDownload}
+                    >
+                        Download Docket
+                    </Button>
                     <Button type="dashed" onClick={() => confirmReset(() => window.location.reload())}>
                         Reset Form
                     </Button>
