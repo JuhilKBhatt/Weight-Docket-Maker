@@ -5,11 +5,11 @@ import sys
 import subprocess
 import tempfile
 from sqlalchemy.orm import Session
-from app.services.docket.docket_pdf import generate_docket_pdf_bytes
+from app.services.docket.docket_pdf import generate_docket_pdf
 
 def print_docket_to_printer(db: Session, docket_id: int, copies: int = 1):
     # 1. Generate PDF content
-    pdf_buffer = generate_docket_pdf_bytes(db, docket_id)
+    pdf_buffer = generate_docket_pdf(db, docket_id)
     
     # 2. Save to a temporary file
     # We use delete=False so we can close it before printing (Windows requirement)
@@ -42,7 +42,8 @@ def send_to_os_printer(file_path):
     
     if platform.startswith('win'):
         # Windows approach: Uses the default associated application for 'print' verb
-        # Requires a PDF reader to be installed and set as default.
+        # Note: Windows 'startfile' uses the User's Default Printer Preferences.
+        # To print mono/draft on Windows, you must set those defaults in the Control Panel.
         try:
             os.startfile(file_path, "print")
         except OSError:
@@ -52,7 +53,15 @@ def send_to_os_printer(file_path):
             
     elif platform.startswith('linux') or platform.startswith('darwin'):
         # Linux / Mac (CUPS)
-        # '-o fit-to-page' is optional, adjust as needed
-        subprocess.run(["lp", file_path], check=True)
+        # Ensure 'lp' (CUPS client) is installed in your Docker container
+        # OPTIONS ADDED:
+        # -o ColorModel=Gray   -> Forces Black & White
+        # -o print-quality=3   -> Sets Draft Quality (Saves Ink)
+        subprocess.run([
+            "lp", 
+            "-o", "ColorModel=Gray", 
+            "-o", "print-quality=3", 
+            file_path
+        ], check=True)
     else:
         print("Unsupported OS for server-side printing")

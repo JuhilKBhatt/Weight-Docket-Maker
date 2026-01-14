@@ -18,7 +18,7 @@ import useDocketForm from '../../hooks/docket/useDocketForm';
 import { useConfirmReset } from '../../scripts/utilities/confirmReset';
 
 // Utilities
-import { SaveDocket, DownloadPDFDocket } from '../../scripts/utilities/docketUtils';
+import { SaveDocket, DownloadPDFDocket, PrintDocket } from '../../scripts/utilities/docketUtils';
 import '../../styles/Form.css'; 
 
 const { Text } = Typography;
@@ -169,6 +169,39 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         }
     };
 
+    const handlePrint = async () => {
+        try {
+            const values = form.getFieldsValue();
+            const qty = values.printQty || 1;
+
+            // 1. Save First (Update DB and get ID)
+            const savedData = await SaveDocket({
+                scrdktID,
+                status: "Printed", 
+                values,
+                items: itemsWithTotals.filter(item => item.gross > 0 || item.metal),
+                totals: { grossTotal, gstAmount, finalTotal },
+                deductions: { pre: preGstDeductions, post: postGstDeductions },
+                includeGST: gstEnabled,
+                gstPercentage
+            });
+
+            // 2. Call Print Endpoint with the ID
+            await PrintDocket(savedData.id, qty); 
+
+            alert(`Docket saved and sent to printer (${qty} copies).`);
+
+            if (mode === 'new') {
+               resetDocket();
+            } else {
+               navigate('/view-docket');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Failed to print docket.');
+        }
+    };
+
     const handleDownload = async () => {
         try {
             const values = form.getFieldsValue();
@@ -269,7 +302,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                         
                         <Button 
                             type="primary" 
-                            size="large" 
+                            size="large"
+                            onClick={handlePrint}
                             style={{ minWidth: 220, height: 70, fontSize: '28px', marginLeft: '20px' }}
                         >
                             Print
