@@ -276,6 +276,9 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                             Print
                         </Button>
                     </Space>
+
+                    <div style={{ width: '400px', borderBottom: '2px solid #f0f0f0' }}></div>
+                    
                     <Button
                         onClick={handleSave}
                     >
