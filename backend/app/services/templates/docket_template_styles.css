@@ -1,5 +1,11 @@
 /* ./backend/app/services/templates/docket_template_styles.css */
 
+@page {
+    size: A4; 
+    margin: 0.1cm;
+    padding: 0;
+}
+
 body { font-family: Helvetica, Arial, sans-serif; padding: 0px; margin: 0px; font-size: 12pt; }
 
 /* HEADER TABLE STYLES */

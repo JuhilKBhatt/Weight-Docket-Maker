@@ -190,7 +190,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
             if (mode === 'new') {
                resetDocket();
-               window.location.reload();
             } else {
                navigate('/view-docket');
             }
