@@ -7,7 +7,7 @@ from typing import Optional
 from datetime import date
 from app.database import get_db
 from app.schema.docketSchema import DocketCreate
-from app.services.docket import docket_crud, docket_list, docket_pdf, inventory_service, docket_printer
+from app.services.docket import docket_crud, docket_list, docket_pdf, inventory_service
 
 router = APIRouter(
     prefix="/api/dockets",
@@ -57,11 +57,6 @@ def download_docket(docket_id: int, db: Session = Depends(get_db)):
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename=docket_{docket_id}.pdf"}
     )
-
-# --- PRINT TO PRINTER ---
-@router.post("/{docket_id}/print")
-def print_docket(docket_id: int, copies: int = 1, db: Session = Depends(get_db)):
-    return docket_printer.print_docket_to_printer(db, docket_id, copies)
 
 # --- DELETE ---
 @router.delete("/{docket_id}")
