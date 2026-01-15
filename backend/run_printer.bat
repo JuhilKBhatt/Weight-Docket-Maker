@@ -1,25 +1,46 @@
 @echo off
-REM ./run_printer.bat
-echo Starting Printer Watcher for Docker...
-echo Waiting for PDF files in .\backend\print_spool...
+REM ./backend/run_printer.bat
+set "SPOOL_DIR=print_spool"
+set "PROC_DIR=%SPOOL_DIR%\processing"
+
+if not exist "%SPOOL_DIR%" mkdir "%SPOOL_DIR%"
+if not exist "%PROC_DIR%" mkdir "%PROC_DIR%"
+
+echo --------------------------------------------------
+echo   Async Printer Watcher (Windows)
+echo   1. Monitoring: %SPOOL_DIR%
+echo   2. Processing: %PROC_DIR%
+echo --------------------------------------------------
 
 :loop
-REM Find any PDF starting with PRINT_
-if exist ".\backend\print_spool\PRINT_*.pdf" (
-    for %%f in (".\backend\print_spool\PRINT_*.pdf") do (
-        echo Found %%f - Printing...
+REM 1. INSTANTLY CLAIM FILES
+REM Move all PDFs to processing folder so UI unblocks immediately
+if exist "%SPOOL_DIR%\*.pdf" (
+    move /y "%SPOOL_DIR%\*.pdf" "%PROC_DIR%\" >nul 2>&1
+    echo [Queue] Moved new files to processing...
+)
+
+REM 2. PROCESS QUEUE SEQUENTIALLY
+if exist "%PROC_DIR%\*.pdf" (
+    for %%f in ("%PROC_DIR%\*.pdf") do (
+        echo [Print] Processing: %%~nxf
         
-        REM Extract copies is hard in pure Batch, simplified to print 1 copy loop here 
-        REM or call a powershell helper for advanced logic.
-        REM For simplicity, we just trigger the print verb:
-        
-        powershell -Command "Start-Process -FilePath '%%f' -Verb Print -PassThru | %%{sleep 5;}"
-        
-        REM Delete file so we don't print it again
+        REM Powershell: Extract copies -> Print -> Sleep
+        powershell -NoProfile -Command ^
+            "$f='%%f'; " ^
+            "$n='%%~nxf'; " ^
+            "if ($n -match 'Qty-(\d+)') { $copies=[int]$matches[1] } else { $copies=1 }; " ^
+            "Write-Host '       Sending' $copies 'copies to spooler...'; " ^
+            "1..$copies | ForEach-Object { " ^
+            "   Start-Process -FilePath $f -Verb Print -PassThru | ForEach-Object { Start-Sleep -Seconds 6 } " ^
+            "}"
+
+        REM Delete from processing folder
         del "%%f"
-        echo Done.
+        echo [Done] Finished %%~nxf
     )
 )
-REM Check every 3 seconds
-timeout /t 3 /nobreak >nul
+
+REM Check every 2 seconds
+timeout /t 2 /nobreak >nul
 goto loop

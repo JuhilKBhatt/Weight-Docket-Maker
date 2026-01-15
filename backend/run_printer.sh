@@ -1,34 +1,50 @@
 #!/bin/bash
-# ./run_printer.sh
+# ./backend/run_printer.sh
 
 SPOOL_DIR="print_spool"
+PROC_DIR="$SPOOL_DIR/processing"
 
-echo "Watcher started. Monitoring $SPOOL_DIR..."
+mkdir -p "$SPOOL_DIR"
+mkdir -p "$PROC_DIR"
+
+echo "🖨️  Async Watcher started."
+echo "   Watching: $SPOOL_DIR"
+echo "   Queueing: $PROC_DIR"
+
+# Enable nullglob to handle empty directories gracefully
+shopt -s nullglob
 
 while true; do
-    # Look for files matching the pattern
-    for file in "$SPOOL_DIR"/PRINT_Qty-*.pdf; do
-        if [ -e "$file" ]; then
-            echo "Found: $(basename "$file")"
-
-            # 1. Extract Copies from filename (Qty-X)
-            # Uses grep/sed to find the number between 'Qty-' and '_'
-            COPIES=$(echo "$file" | grep -o 'Qty-[0-9]*' | cut -d'-' -f2)
-            
-            # Default to 1 if parsing failed
-            if [ -z "$COPIES" ]; then COPIES=1; fi
-
-            echo "Printing $COPIES copies..."
-
-            # 2. Send to default printer
-            # -n = Number of copies
-            # -o fit-to-page = Avoid cutting off edges
-            lp -n "$COPIES" -o fit-to-page "$file"
-
-            # 3. Delete file
-            rm "$file"
-            echo "Done."
+    # 1. INSTANTLY CLAIM FILES
+    # Move all new PDFs to processing to unblock the UI
+    for file in "$SPOOL_DIR"/*.pdf; do
+        if [ -f "$file" ]; then
+            mv "$file" "$PROC_DIR/"
+            echo "📥 Queued: $(basename "$file")"
         fi
     done
+
+    # 2. PROCESS QUEUE
+    for file in "$PROC_DIR"/*.pdf; do
+        if [ -f "$file" ]; then
+            filename=$(basename "$file")
+            
+            # Extract Copies
+            if [[ "$filename" =~ Qty-([0-9]+) ]]; then
+                COPIES="${BASH_REMATCH[1]}"
+            else
+                COPIES=1
+            fi
+
+            echo "🖨️  Printing $COPIES copies of $filename..."
+
+            # Send to CUPS (lp queues immediately, so this is fast)
+            lp -n "$COPIES" -o fit-to-page "$file"
+
+            # Delete
+            rm "$file"
+        fi
+    done
+
     sleep 2
 done
