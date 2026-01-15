@@ -63,6 +63,10 @@ def download_docket(docket_id: int, db: Session = Depends(get_db)):
 def print_docket(docket_id: int, copies: int = 1, db: Session = Depends(get_db)):
     return docket_printer.print_docket_to_printer(db, docket_id, copies)
 
+@router.get("/print-status/{filename}")
+def check_print_status(filename: str):
+    return docket_printer.check_print_status(filename)
+
 # --- DELETE ---
 @router.delete("/{docket_id}")
 def delete_docket(docket_id: int, db: Session = Depends(get_db)):

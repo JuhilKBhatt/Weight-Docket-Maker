@@ -126,3 +126,12 @@ export const PrintDocket = async (docketId, copies = 1) => {
     throw err;
   }
 };
+
+export const CheckPrintStatus = async (filename) => {
+    try {
+        const res = await axios.get(`${API}/print-status/${filename}`);
+        return res.data.status; // "pending" or "completed"
+    } catch (err) {
+        return "error";
+    }
+}

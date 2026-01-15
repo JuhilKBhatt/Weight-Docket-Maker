@@ -13,3 +13,5 @@ lpstat -p
 lpoptions -d <Your_Printer_Name>
 
 lpstat -p
+
+Add Printer via settings
