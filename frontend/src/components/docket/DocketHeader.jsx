@@ -3,6 +3,7 @@
 import React from 'react';
 import { Card, Row, Col, Space, Form, Select, Typography, Input, DatePicker, TimePicker } from 'antd';
 import dayjs from 'dayjs';
+import useInvoiceSelectors from '../../hooks/invoice/useInvoiceSelectors';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -10,6 +11,35 @@ const { Option } = Select;
 export default function DocketHeader() {
     const dateFormat = 'DD/MM/YYYY';
     const timeFormat = 'hh:mm a';
+    
+    // 1. Fetch saved "Bill From" companies
+    const { savedCompaniesFrom } = useInvoiceSelectors();
+    const form = Form.useFormInstance();
+
+    // 2. Handle selection
+    const handleCompanyChange = (value) => {
+        // Find the full company object based on the name selected
+        const selectedCompany = savedCompaniesFrom.find(c => c.name === value);
+        
+        if (selectedCompany) {
+            // Populate hidden fields
+            form.setFieldsValue({
+                companyAddress: selectedCompany.address,
+                companyPhone: selectedCompany.phone,
+                companyEmail: selectedCompany.email,
+                companyABN: selectedCompany.abn
+            });
+        } else {
+            // Clear if cleared
+            form.setFieldsValue({
+                companyAddress: '',
+                companyPhone: '',
+                companyEmail: '',
+                companyABN: ''
+            });
+        }
+    };
+
     return (
         <Card style={{ marginBottom: 20 }}>
             <Row justify="space-between" align="middle">
@@ -32,10 +62,24 @@ export default function DocketHeader() {
                     <Space direction="vertical" align="end" size={0}>
                         <Space align="center" style={{ marginBottom: 8 }}>
                             <Title level={4} style={{ margin: 0 }}>Company:</Title>
+                            
+                            {/* Hidden fields to store the details for saving */}
+                            <Form.Item name="companyAddress" hidden><Input /></Form.Item>
+                            <Form.Item name="companyPhone" hidden><Input /></Form.Item>
+                            <Form.Item name="companyEmail" hidden><Input /></Form.Item>
+                            <Form.Item name="companyABN" hidden><Input /></Form.Item>
+
                             <Form.Item name="companyDetails" noStyle>
-                                <Select size="large" style={{ width: 300 }} placeholder="Select Company">
-                                    <Option value="company1">Example Company A</Option>
-                                    <Option value="company2">Example Company B</Option>
+                                <Select 
+                                    size="large" 
+                                    style={{ width: 300 }} 
+                                    placeholder="Select Company"
+                                    onChange={handleCompanyChange}
+                                    showSearch
+                                >
+                                    {savedCompaniesFrom.map((c, idx) => (
+                                        <Option key={idx} value={c.name}>{c.name}</Option>
+                                    ))}
                                 </Select>
                             </Form.Item>
                         </Space>

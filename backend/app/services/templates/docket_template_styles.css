@@ -74,6 +74,27 @@ table.data-table th { border: 1px solid #000; padding: 3px; background-color: #e
 table.data-table td { border: 1px solid #000; padding: 2px; text-align: left; }
 td.text-left { text-align: left; }
 
+/* Applies when items <= 15 */
+.layout-spacious .data-table {
+    font-size: 11pt; /* Increase font size from 9pt to 11pt */
+    margin-top: 20px; /* Add some breathing room at the top */
+}
+
+.layout-spacious .data-table th {
+    padding: 10px 5px; /* Increase header padding */
+    font-size: 11pt;
+}
+
+.layout-spacious .data-table td {
+    padding: 12px 5px; /* Significantly increase row height */
+}
+
+/* Optional: Make the totals section larger too */
+.layout-spacious .totals-section {
+    margin-top: 30px;
+    font-size: 16pt;
+}
+
 .totals-section { margin-top: 5px; text-align: right; font-size: 14pt; font-weight: bold; }
 .footer-section { margin-top: 0px; display: flex; justify-content: space-between; font-size: 8pt; font-weight: bold; }
 .signature-line { border-top: 1px solid #000; width: 150px; display: inline-block; margin-top: 10px; }

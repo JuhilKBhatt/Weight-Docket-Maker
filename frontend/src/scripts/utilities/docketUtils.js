@@ -63,6 +63,13 @@ export const SaveDocket = async ({
     customer_dob: values.dob ? (dayjs.isDayjs(values.dob) ? values.dob.format('YYYY-MM-DD') : values.dob) : null,
     customer_pay_id: safeValue(values.payId),
     
+    // Company Details
+    company_name: safeValue(values.companyDetails), // The select gives us the name
+    company_address: safeValue(values.companyAddress),
+    company_phone: safeValue(values.companyPhone),
+    company_email: safeValue(values.companyEmail),
+    company_abn: safeValue(values.companyABN),
+
     // Bank Details
     bank_bsb: safeValue(values.bsb),
     bank_account_number: safeValue(values.accNo),

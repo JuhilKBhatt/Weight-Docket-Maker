@@ -30,7 +30,14 @@ def upsert_docket(db: Session, data: DocketCreate):
         docket.is_saved = data.is_saved
         docket.print_qty = data.print_qty
         docket.docket_type = data.docket_type
+        
+        # Company Details
         docket.company_name = data.company_name
+        docket.company_address = data.company_address
+        docket.company_phone = data.company_phone
+        docket.company_email = data.company_email
+        docket.company_abn = data.company_abn
+        
         docket.include_gst = data.include_gst
         docket.gst_percentage = data.gst_percentage
         docket.notes = data.notes
@@ -54,7 +61,7 @@ def upsert_docket(db: Session, data: DocketCreate):
         db.query(DocketDeduction).filter(DocketDeduction.docket_id == docket.id).delete()
     
     else:
-        # --- CREATE NEW (Fallback) ---
+        # --- CREATE NEW ---
         docket = Docket(
             scrdkt_number=data.scrdkt_number,
             docket_date=data.docket_date,
@@ -63,7 +70,13 @@ def upsert_docket(db: Session, data: DocketCreate):
             is_saved=data.is_saved,
             print_qty=data.print_qty,
             docket_type=data.docket_type,
+            
             company_name=data.company_name,
+            company_address=data.company_address,
+            company_phone=data.company_phone,
+            company_email=data.company_email,
+            company_abn=data.company_abn,
+            
             include_gst=data.include_gst,
             gst_percentage=data.gst_percentage,
             notes=data.notes,
@@ -79,7 +92,7 @@ def upsert_docket(db: Session, data: DocketCreate):
             bank_account_number=data.bank_account_number
         )
         db.add(docket)
-        db.flush() # Flush to get the new docket.id
+        db.flush()
 
     # --- ADD ITEMS ---
     for i in data.items:
@@ -118,7 +131,13 @@ def get_docket_by_id(db: Session, docket_id: int):
         "is_saved": docket.is_saved,
         "print_qty": docket.print_qty,
         "docket_type": docket.docket_type,
+        
         "company_name": docket.company_name,
+        "company_address": docket.company_address,
+        "company_phone": docket.company_phone,
+        "company_email": docket.company_email,
+        "company_abn": docket.company_abn,
+        
         "include_gst": docket.include_gst,
         "gst_percentage": docket.gst_percentage,
         "notes": docket.notes,

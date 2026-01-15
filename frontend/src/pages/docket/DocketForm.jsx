@@ -89,6 +89,10 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             form.setFieldsValue({
                 docketType: existingDocket.docket_type,
                 companyDetails: existingDocket.company_name,
+                companyAddress: existingDocket.company_address,
+                companyPhone: existingDocket.company_phone,
+                companyEmail: existingDocket.company_email,
+                companyABN: existingDocket.company_abn,
                 date: existingDocket.docket_date ? dayjs(existingDocket.docket_date) : dayjs(),
                 time: existingDocket.docket_time ? dayjs(existingDocket.docket_time, 'hh:mm a') : dayjs(),
                 name: existingDocket.customer_name,

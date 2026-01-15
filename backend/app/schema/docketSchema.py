@@ -7,7 +7,7 @@ from datetime import date
 # --- ITEM SCHEMA ---
 class DocketItemSchema(BaseModel):
     metal: Optional[str] = None
-    notes: Optional[str] = None # Row-level notes
+    notes: Optional[str] = None
     gross: float
     tare: float
     price: float
@@ -17,7 +17,7 @@ class DocketItemSchema(BaseModel):
 
 # --- DEDUCTION SCHEMA ---
 class DocketDeductionSchema(BaseModel):
-    type: str # "pre" or "post"
+    type: str 
     label: str
     amount: float
 
@@ -34,7 +34,13 @@ class DocketCreate(BaseModel):
     print_qty: int = 0
     
     docket_type: str
+    
+    # Company Details (Updated)
     company_name: Optional[str] = None
+    company_address: Optional[str] = None
+    company_phone: Optional[str] = None
+    company_email: Optional[str] = None
+    company_abn: Optional[str] = None
     
     include_gst: bool
     gst_percentage: float = 10.0

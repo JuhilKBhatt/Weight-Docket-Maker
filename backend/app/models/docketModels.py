@@ -11,17 +11,23 @@ class Docket(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # SCR Docket ID (e.g. SCRDKT1A0001)
+    # SCR Docket ID
     scrdkt_number = Column(String(15), unique=True)
     docket_date = Column(Date, nullable=True)
     docket_time = Column(String(10), nullable=True)
-    status = Column(String(20), default="Draft") # Draft, Final, Printed, etc.
+    status = Column(String(20), default="Draft") 
     is_saved = Column(Boolean, default=True)
     print_qty = Column(Integer, default=0)
     
     # Meta
-    docket_type = Column(String(50), default="Customer") # "Customer" or "Weight"
-    company_name = Column(String(255), nullable=True)    # From "Company" selector
+    docket_type = Column(String(50), default="Customer") 
+    
+    # COMPANY DETAILS
+    company_name = Column(String(255), nullable=True)
+    company_address = Column(String(255), nullable=True)
+    company_phone = Column(String(50), nullable=True)
+    company_email = Column(String(200), nullable=True)
+    company_abn = Column(String(50), nullable=True)
     
     # Financials
     include_gst = Column(Boolean, default=False)
@@ -38,12 +44,12 @@ class Docket(Base):
     customer_dob = Column(Date, nullable=True)
     customer_pay_id = Column(String(100))
 
-    # BANK DETAILS (For payment to customer)
+    # BANK DETAILS
     bank_bsb = Column(String(20))
     bank_account_number = Column(String(50))
 
     # Notes
-    notes = Column(String)  # Maps to 'paperNotes'
+    notes = Column(String) 
 
     # RELATIONSHIPS
     items = relationship("DocketItem", cascade="all, delete-orphan", back_populates="docket")
@@ -62,14 +68,11 @@ class DocketItem(Base):
     # Weights (kg)
     gross = Column(Float, default=0.0)
     tare = Column(Float, default=0.0)
-    # Net is derived (gross - tare), usually not stored, but can be if required. 
-    # For DB normalization we usually store inputs only.
-
+    
     # Financials
-    price = Column(Float, default=0.0) # Price per unit (usually per kg)
+    price = Column(Float, default=0.0)
 
     docket = relationship("Docket", back_populates="items")
-
 
 class DocketDeduction(Base):
     __tablename__ = "docket_deductions"

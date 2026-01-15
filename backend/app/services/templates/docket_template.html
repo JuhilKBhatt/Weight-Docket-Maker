@@ -7,8 +7,7 @@
         {{ css_content }}
     </style>
 </head>
-<body>
-
+<body class="{% if items|length <= 15 %}layout-spacious{% endif %}" >
     <table class="header-layout-table">
         <tr>
             <td rowspan="2" class="title-cell" style="width: 60%;">
@@ -40,9 +39,9 @@
                     <div class="company-text">
                         <h2>{{ docket.company_name or "SAFARI COPPER RECYCLING" }}</h2>
                         <div class="sub-info">
-                            Address: 4 Tarlington Pl, Smithfield, NSW, 2164 <br>
-                            ABN: 93 686 008 640 | Phone No: 0411 499 553 | 
-                            Email: smithfield.scrap@gmail.com
+                            Address: {{ docket.company_address or "" }} <br>
+                            ABN: {{ docket.company_abn or "" }} | Phone No: {{ docket.company_phone or "" }} | 
+                            Email: {{ docket.company_email or "" }}
                         </div>
                     </div>
                 </div>
