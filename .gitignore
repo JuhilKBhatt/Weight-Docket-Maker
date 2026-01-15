@@ -14,6 +14,8 @@ backend/.venv
 backend/venv
 backend/.env
 backend/WrittenDockets/*.png
+backend/print_spool
+backend/print_spool/*
 backend/train/
 backend/*.json
 backend/app/__pycache__

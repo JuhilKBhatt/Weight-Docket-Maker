@@ -18,7 +18,7 @@ import useDocketForm from '../../hooks/docket/useDocketForm';
 import { useConfirmReset } from '../../scripts/utilities/confirmReset';
 
 // Utilities
-import { SaveDocket, DownloadPDFDocket } from '../../scripts/utilities/docketUtils';
+import { SaveDocket, DownloadPDFDocket, PrintDocket } from '../../scripts/utilities/docketUtils';
 import '../../styles/Form.css'; 
 
 const { Text } = Typography;
@@ -199,6 +199,40 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         }
     };
 
+    const handlePrint = async () => {
+        try {
+            // 1. Validate Form
+            const values = await form.validateFields();
+            const qty = values.printQty || 1;
+
+            // 2. Save Docket First (to ensure DB has latest data for PDF generation)
+            const result = await SaveDocket({
+                scrdktID,
+                status: "Printed", // Update status to printed
+                values,
+                items: itemsWithTotals.filter(item => item.gross > 0 || item.metal),
+                totals: { grossTotal, gstAmount, finalTotal },
+                deductions: { pre: preGstDeductions, post: postGstDeductions },
+                includeGST: gstEnabled,
+                gstPercentage
+            });
+
+            // 3. Call Print Endpoint
+            await PrintDocket(result.id, qty);
+
+            alert(`Docket saved and sent to printer (${qty} copies)!`);
+
+            if (mode === 'new') {
+               resetDocket();
+            } else {
+               navigate('/view-docket');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Failed to print docket. Ensure printer is connected to server.');
+        }
+    };
+
     return (
         <div style={{ padding: '20px', maxWidth: '1600px', margin: '0 auto', position: 'relative' }}>
             
@@ -270,6 +304,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                         <Button 
                             type="primary" 
                             size="large" 
+                            onClick={handlePrint}
                             style={{ minWidth: 220, height: 70, fontSize: '28px', marginLeft: '20px' }}
                         >
                             Print

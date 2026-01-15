@@ -114,3 +114,15 @@ export const DownloadPDFDocket = async (docketId, scrdktID) => {
     throw error;
   }
 };
+
+export const PrintDocket = async (docketId, copies = 1) => {
+  try {
+    const res = await axios.post(`${API}/${docketId}/print`, null, {
+      params: { copies }
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Error printing docket:", err);
+    throw err;
+  }
+};

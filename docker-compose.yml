@@ -2,7 +2,7 @@
 # ./docker-compose.yml
 
 services:
-  # 1. Database
+  # 1. Database (PostgreSQL)
   db:
     image: postgres:15
     restart: unless-stopped
@@ -23,6 +23,7 @@ services:
       - .env
     volumes:
       - ./backend:/app
+      - ./backend/print_spool:/app/print_spool
       - ${GOOGLE_DRIVE_PATH}:/backups
     ports:
       - "8000:8000"
