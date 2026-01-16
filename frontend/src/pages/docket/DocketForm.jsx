@@ -1,7 +1,7 @@
 // src/pages/docket/DocketForm.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Row, Col, Input, InputNumber, Space, Divider, Checkbox, Typography, message } from 'antd'; // Added message import
+import { Form, Button, Row, Col, Input, InputNumber, Space, Divider, Checkbox, Typography, App } from 'antd'; // CHANGED: Imported 'App', removed 'message'
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 
@@ -31,6 +31,9 @@ const generateInitialRows = (count) => {
 };
 
 export default function DocketForm({ mode = 'new', existingDocket = null }) {
+    // CHANGED: Use the App hook to get the message instance that respects the context
+    const { message } = App.useApp(); 
+    
     const [form] = Form.useForm();
     const navigate = useNavigate();
     const confirmReset = useConfirmReset();
@@ -191,6 +194,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const handlePrint = async () => {
         setPrinting(true); 
         try {
+            message.info('Preparing docket for printing...');
             const values = await form.validateFields();
             const qty = values.printQty || 1;
 
@@ -218,9 +222,10 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             }
 
             // 3. Start Polling Loop (Wait for watcher to delete file)
-            const maxRetries = 20; // Wait max 20 seconds (20 * 1s)
+            const maxRetries = 10; // Wait max 20 seconds (20 * 1s)
             let attempts = 0;
             
+            message.info('Sending to printer, please wait...');
             const pollInterval = setInterval(async () => {
                 attempts++;
                 const status = await CheckPrintStatus(filename);
@@ -251,7 +256,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             message.error('Failed to print docket.');
             setPrinting(false);
         }
-        // Note: We removed 'finally { setPrinting(false) }' because the polling loop handles it now
     };
 
     return (

@@ -97,7 +97,6 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
             dataIndex: 'price',
             render: (_, record) => (
                 <InputNumber 
-                    // Removed min={0} to allow negative price adjustments
                     step={0.01} 
                     prefix="$" 
                     style={{ width: '100%' }} 
