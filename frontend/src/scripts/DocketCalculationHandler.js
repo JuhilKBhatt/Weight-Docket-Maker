@@ -32,8 +32,7 @@ export default class DocketCalculationHandler {
       const tare = this.safeNumber(item.tare);
       const price = this.safeNumber(item.price);
 
-      // Ensure net is not negative
-      const net = Math.max(0, this.round(gross - tare));
+      const net = this.round(gross - tare);
       
       // Calculate Total
       const total = this.round(net * price);
@@ -66,17 +65,19 @@ export default class DocketCalculationHandler {
     const preGstDeductionTotal = this.calculateDeductionsTotal(this.preGstDeductions);
 
     // Gross (Items - Pre-Deductions)
-    // Ensure we don't go below zero for the subtotal
-    const grossTotal = Math.max(0, this.round(itemsTotal - preGstDeductionTotal));
+    const grossTotal = this.round(itemsTotal - preGstDeductionTotal);
     
     const gstRate = this.gstPercentage / 100;
+    
+    // Calculate GST even if gross is negative (standard behavior for credit notes, etc.)
+    // If you prefer GST to be 0 on negative totals, check if (grossTotal > 0)
     const gstAmount = this.includeGST ? this.round(grossTotal * gstRate) : 0;
     
     // Post-GST Deductions
     const postGstDeductionTotal = this.calculateDeductionsTotal(this.postGstDeductions);
     
     // Final Total
-    const finalTotal = Math.max(0, this.round(grossTotal + gstAmount - postGstDeductionTotal));
+    const finalTotal = this.round(grossTotal + gstAmount - postGstDeductionTotal);
 
     return {
       itemsWithTotals,

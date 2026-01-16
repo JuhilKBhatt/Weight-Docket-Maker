@@ -1,4 +1,4 @@
-// ./frontend/src/components/docket/DocketItemsTable.jsx
+// src/components/docket/DocketItemsTable.jsx
 
 import React, { useState } from 'react';
 import { Table, Input, InputNumber, Typography, Button, Row, Col } from 'antd';
@@ -48,7 +48,8 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
             dataIndex: 'gross',
             render: (_, record) => (
                 <InputNumber 
-                    min={0} 
+                    // Removed min={0} to allow negative gross typing if needed, 
+                    // though usually Gross is positive.
                     style={{ width: '100%' }} 
                     placeholder="0" 
                     value={record.gross}
@@ -61,7 +62,7 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
             dataIndex: 'tare',
             render: (_, record) => (
                 <InputNumber 
-                    min={0} 
+                    // Removed min={0}
                     style={{ width: '100%' }} 
                     placeholder="0" 
                     value={record.tare}
@@ -72,20 +73,31 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
         {
             title: 'Net Weight (kg)',
             dataIndex: 'net',
-            render: (text) => (
-                <Input 
-                    value={text} 
-                    readOnly 
-                    style={{ backgroundColor: '#f0f0f0', cursor: 'default', fontWeight: 'bold' }} 
-                />
-            )
+            render: (text) => {
+                const val = Number(text);
+                const isNegative = !isNaN(val) && val < 0;
+                
+                return (
+                    <Input 
+                        value={text} 
+                        readOnly 
+                        style={{ 
+                            // If negative red. Else default grey.
+                            backgroundColor: isNegative ? '#de5959' : '#f0f0f0', 
+                            color: isNegative ? '#ffffff' : undefined,
+                            cursor: 'default', 
+                            fontWeight: 'bold' 
+                        }} 
+                    />
+                );
+            }
         },
         {
             title: 'Price/kg ($)',
             dataIndex: 'price',
             render: (_, record) => (
                 <InputNumber 
-                    min={0} 
+                    // Removed min={0} to allow negative price adjustments
                     step={0.01} 
                     prefix="$" 
                     style={{ width: '100%' }} 
