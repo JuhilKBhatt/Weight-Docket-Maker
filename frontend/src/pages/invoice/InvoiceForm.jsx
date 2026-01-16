@@ -1,7 +1,7 @@
 // ./frontend/src/pages/InvoiceForm.jsx
 
 import React from 'react';
-import { Form, Button, Typography, Checkbox, Row, Col, Input } from 'antd';
+import { Form, Button, Typography, Checkbox, Row, Col, Input, App } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/Form.css';
 
@@ -24,6 +24,8 @@ import TotalsSummary from '../../components/TotalsSummary';
 import PayAccountSection from '../../components/invoice/PayAccountSection';
 
 export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
+  const { message } = App.useApp();
+  
   const [form] = Form.useForm();
   const Navigate = useNavigate();
   const confirmReset = useConfirmReset();
@@ -53,7 +55,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       };
       
       await saveDraftInvoice(payload);
-      alert('Invoice saved successfully!');
+      message.success('Invoice saved successfully!');
       
       sessionStorage.removeItem("scrinvID");
 
@@ -66,7 +68,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       }
     } catch (error) {
       console.error('Error saving invoice:', error);
-      alert('Failed to save invoice. Please try again.');
+      message.error('Failed to save invoice. Please try again.');
     }
   };
 
@@ -82,7 +84,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       
       const savedData = await saveDraftInvoice(payload);
       await DownloadPDFInvoice(savedData.id, payload.scrinvID);
-      alert('Invoice saved and download initiated!');
+      message.success('Invoice saved and download initiated!');
       
       sessionStorage.removeItem("scrinvID");
       if (mode === 'new'){
@@ -94,7 +96,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       }
     } catch (error) {
       console.error('Error saving invoice:', error);
-      alert('Failed to save invoice. Please try again.');
+      message.error('Failed to save invoice. Please try again.');
     }
   };
 
