@@ -1,8 +1,11 @@
 docker compose up --build -d
 
-docker compose exec backend python -m app.utilities.reset_tables
+docker compose exec backend alembic stamp head
+
 
 docker system prune -a --volumes -f
+
+**Printer**
 
 chmod +x run_printer.sh
 
@@ -17,3 +20,7 @@ lpstat -p
 Add Printer via settings
 
 Add Company In Bill Form Invoice
+
+**To Update DB Models**
+
+from ./: docker compose exec backend python manage_db.py
