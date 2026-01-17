@@ -1,5 +1,3 @@
-# app/schema/docketSchema.py
-
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import date
@@ -11,6 +9,7 @@ class DocketItemSchema(BaseModel):
     gross: float
     tare: float
     price: float
+    unit: Optional[str] = "kg"
 
     class Config:
         from_attributes = True
@@ -34,6 +33,8 @@ class DocketCreate(BaseModel):
     print_qty: int = 0
     
     docket_type: str
+    currency: str = "AUD"
+    currency_symbol: str = "$"
     
     # Company Details (Updated)
     company_name: Optional[str] = None

@@ -21,6 +21,8 @@ class Docket(Base):
     
     # Meta
     docket_type = Column(String(50), default="Customer") 
+    currency = Column(String(10), default="AUD")
+    currency_symbol = Column(String(5), default="$")
     
     # COMPANY DETAILS
     company_name = Column(String(255), nullable=True)
@@ -71,6 +73,7 @@ class DocketItem(Base):
     
     # Financials
     price = Column(Float, default=0.0)
+    unit = Column(String(20), default="kg")
 
     docket = relationship("Docket", back_populates="items")
 

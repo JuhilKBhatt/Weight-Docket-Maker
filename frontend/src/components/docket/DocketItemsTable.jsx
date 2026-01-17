@@ -1,12 +1,14 @@
 // ./frontend/src/components/docket/DocketItemsTable.jsx
 
 import React, { useState, useRef } from 'react';
-import { Table, Input, InputNumber, Typography, Button, Row, Col, AutoComplete, Form } from 'antd'; 
+import { Table, Input, InputNumber, Typography, Button, Row, Col, AutoComplete, Form, Select } from 'antd'; 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import docketService from '../../services/docketService'; 
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
+import { CURRENCY_OPTIONS, UNIT_OPTIONS, getCurrencyLabel } from '../../scripts/utilities/invoiceConstants';
 
 const { Text } = Typography;
+const { Option } = Select;
 
 // --- Helper Component for the Metal Cell ---
 const MetalCell = ({ value, onChange, onPriceUpdate }) => {
@@ -55,7 +57,7 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
     );
 };
 
-export default function DocketItemsTable({ items, onItemChange, addRow, removeRow }) {
+export default function DocketItemsTable({ items, onItemChange, addRow, removeRow, currency = 'AUD', setCurrency }) {
     
     const [rowsToAdd, setRowsToAdd] = useState(1);
     const [selectedRowKey, setSelectedRowKey] = useState(null);
@@ -63,6 +65,38 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
     // Helper for weight formatting (10,000)
     const weightFormatter = (value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     const weightParser = (value) => value.replace(/,/g, '');
+
+    // Helper: Get symbol (e.g. "AUD$")
+    const currentSymbolLabel = getCurrencyLabel(currency);
+
+    // --- Selectors ---
+    const renderUnitSelector = (record) => (
+      <Select
+        value={record.unit || 'kg'}
+        style={{ width: 70, margin: '-5px 0' }}
+        showSearch
+        optionFilterProp="children"
+        onChange={(val) => onItemChange(record.key, 'unit', val)}
+      >
+        {UNIT_OPTIONS.map(unit => (
+          <Option key={unit.value} value={unit.value}>{unit.label}</Option>
+        ))}
+      </Select>
+    );
+
+    const renderCurrencySelector = () => (
+      <Select
+        value={currency} 
+        style={{ width: 98, margin: '-5px 0' }}
+        showSearch
+        optionFilterProp="children"
+        onChange={(val) => setCurrency(val)}
+      >
+        {CURRENCY_OPTIONS.map(curr => (
+          <Option key={curr.code} value={curr.code}>{curr.label}</Option>
+        ))}
+      </Select>
+    );
 
     const columns = [
         {
@@ -97,7 +131,7 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
             )
         },
         {
-            title: 'Gross (kg)',
+            title: 'Gross',
             dataIndex: 'gross',
             width: 130, 
             render: (_, record) => (
@@ -106,14 +140,13 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
                     placeholder="0" 
                     value={record.gross}
                     onChange={(val) => onItemChange(record.key, 'gross', val)}
-                    // CHANGED: Added formatter/parser for comma separation
                     formatter={weightFormatter}
                     parser={weightParser}
                 />
             )
         },
         {
-            title: 'Tare (kg)',
+            title: 'Tare',
             dataIndex: 'tare',
             width: 130,
             render: (_, record) => (
@@ -122,63 +155,59 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
                     placeholder="0" 
                     value={record.tare}
                     onChange={(val) => onItemChange(record.key, 'tare', val)}
-                    // CHANGED: Added formatter/parser for comma separation
                     formatter={weightFormatter}
                     parser={weightParser}
                 />
             )
         },
         {
-            title: 'Net Weight (kg)',
+            title: 'Net Weight',
             dataIndex: 'net',
-            width: 120,
-            render: (text) => {
+            width: 150,
+            render: (text, record) => {
                 const val = Number(text);
                 const isNegative = !isNaN(val) && val < 0;
-                // CHANGED: Format number with commas (e.g. 10,000)
                 const formattedVal = !isNaN(val) ? val.toLocaleString('en-US') : text;
                 
                 return (
                     <Input 
                         value={formattedVal} 
+                        addonAfter={renderUnitSelector(record)}
                         readOnly 
                         style={{ 
                             backgroundColor: isNegative ? '#ffcccc' : '#f0f0f0', 
                             color: isNegative ? '#cf1322' : undefined,
                             cursor: 'default', 
                             fontWeight: 'bold',
-                            textAlign: 'right' // Right align numbers usually looks better
+                            textAlign: 'right'
                         }} 
                     />
                 );
             }
         },
         {
-            title: 'Price/kg ($)',
+            title: 'Price / unit',
             dataIndex: 'price',
-            width: 100,
+            width: 140,
             render: (_, record) => (
                 <InputNumber 
-                    step={0.01} 
-                    prefix="$" 
+                    addonBefore={renderCurrencySelector()}
                     style={{ width: '100%' }} 
                     placeholder="0.00" 
                     value={record.price === 0 ? null : record.price}
                     onChange={(val) => onItemChange(record.key, 'price', val)} 
-                    // CHANGED: Use shared currency formatters
                     formatter={audFormatter}
                     parser={audParser}
                 />
             )
         },
         {
-            title: 'Total ($)',
+            title: 'Total',
             dataIndex: 'total',
             width: 140,
             render: (text) => (
                 <Input 
-                    prefix="$" 
-                    // CHANGED: Format total to currency string (e.g. 100,000.00)
+                    prefix={currentSymbolLabel} 
                     value={audFormatterFixed(text)} 
                     readOnly 
                     className="large-total-input" 

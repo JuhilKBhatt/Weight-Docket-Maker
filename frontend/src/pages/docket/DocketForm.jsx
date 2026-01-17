@@ -25,7 +25,7 @@ const { Text } = Typography;
 
 const generateInitialRows = (count) => {
     return Array.from({ length: count }, (_, index) => ({
-        key: Date.now() + index, metal: '', notes: '', gross: null, tare: null, net: 0, price: null, total: 0
+        key: Date.now() + index, metal: '', notes: '', gross: null, tare: null, net: 0, price: null, total: 0, unit: 'kg'
     }));
 };
 
@@ -53,7 +53,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 tare: i.tare,
                 net: Math.max(0, (i.gross || 0) - (i.tare || 0)),
                 price: i.price,
-                total: 0
+                total: 0,
+                unit: i.unit || 'kg'
             }));
         }
         return generateInitialRows(20);
@@ -61,6 +62,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
     const [gstEnabled, setGstEnabled] = useState(existingDocket?.include_gst || false);
     const [gstPercentage, setGstPercentage] = useState(existingDocket?.gst_percentage || 10);
+    const [currency, setCurrency] = useState(existingDocket?.currency || 'AUD');
     
     const [preGstDeductions, setPreGstDeductions] = useState(() => 
         existingDocket?.deductions?.filter(d => d.type === 'pre') || []
@@ -87,7 +89,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         preGstDeductions,
         postGstDeductions,
         gstEnabled,
-        gstPercentage
+        gstPercentage,
+        currency
     });
 
     // 2. Sync Ref with State changes
@@ -98,9 +101,10 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             preGstDeductions,
             postGstDeductions,
             gstEnabled,
-            gstPercentage
+            gstPercentage,
+            currency
         };
-    }, [scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage]);
+    }, [scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency]);
 
     // 3. Attach Event Listener
     useEffect(() => {
@@ -135,6 +139,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 is_saved: values.saveDocket ?? true,
                 print_qty: num(values.printQty),
                 docket_type: safe(values.docketType) || "Customer",
+                currency: safe(state.currency) || "AUD",
                 
                 // Company
                 company_name: safe(values.companyDetails),
@@ -172,7 +177,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                         notes: safe(i.notes),
                         gross: num(i.gross),
                         tare: num(i.tare),
-                        price: num(i.price)
+                        price: num(i.price),
+                        unit: safe(i.unit) || 'kg'
                     })),
 
                 // Deductions
@@ -214,6 +220,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
     useEffect(() => {
         if (mode === 'edit' && existingDocket) {
+            setCurrency(existingDocket.currency || 'AUD'); // Set Initial Currency
             form.setFieldsValue({
                 docketType: existingDocket.docket_type,
                 companyDetails: existingDocket.company_name,
@@ -244,7 +251,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const addRow = (count = 1) => {
         const timestamp = Date.now(); 
         const newRows = Array.from({ length: count }, (_, index) => ({
-            key: timestamp + index, metal: '', notes: '', gross: null, tare: null, net: 0, price: null, total: 0
+            key: timestamp + index, metal: '', notes: '', gross: null, tare: null, net: 0, price: null, total: 0, unit: 'kg'
         }));
         setDataSource([...dataSource, ...newRows]);
     };
@@ -276,7 +283,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 totals: { grossTotal, gstAmount, finalTotal },
                 deductions: { pre: preGstDeductions, post: postGstDeductions },
                 includeGST: gstEnabled,
-                gstPercentage
+                gstPercentage,
+                currency
             });
 
             message.success('Docket saved successfully!');
@@ -284,6 +292,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             if (mode === 'new') {
                resetDocket();
                form.resetFields(); // Optional: clear form
+               setCurrency('AUD');
             } else {
                navigate('/view-docket');
             }
@@ -304,7 +313,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 totals: { grossTotal, gstAmount, finalTotal },
                 deductions: { pre: preGstDeductions, post: postGstDeductions },
                 includeGST: gstEnabled,
-                gstPercentage
+                gstPercentage,
+                currency
             });
 
             await DownloadPDFDocket(result.id, scrdktID);
@@ -332,7 +342,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 totals: { grossTotal, gstAmount, finalTotal },
                 deductions: { pre: preGstDeductions, post: postGstDeductions },
                 includeGST: gstEnabled,
-                gstPercentage
+                gstPercentage,
+                currency
             });
 
             // 2. Send Print Request
@@ -365,6 +376,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     if (mode === 'new') {
                        resetDocket();
                        form.resetFields(); 
+                       setCurrency('AUD');
                     } else {
                        navigate('/view-docket');
                     }
@@ -403,6 +415,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     onItemChange={handleItemsChange} 
                     addRow={addRow}       
                     removeRow={removeRow} 
+                    currency={currency}
+                    setCurrency={setCurrency}
                 />
 
                 {/* --- COMPONENT: TOTALS SUMMARY --- */}
@@ -423,7 +437,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                         handleDeductionChange={handleDeductionChange}
                         addDeduction={addDeduction}
                         removeDeduction={removeDeduction}
-                        currency="AUD"
+                        currency={currency}
                     />
                 </Row>
 

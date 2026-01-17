@@ -30,6 +30,8 @@ def upsert_docket(db: Session, data: DocketCreate):
         docket.is_saved = data.is_saved
         docket.print_qty = data.print_qty
         docket.docket_type = data.docket_type
+        docket.currency = data.currency
+        docket.currency_symbol = data.currency_symbol
         
         # Company Details
         docket.company_name = data.company_name
@@ -70,6 +72,8 @@ def upsert_docket(db: Session, data: DocketCreate):
             is_saved=data.is_saved,
             print_qty=data.print_qty,
             docket_type=data.docket_type,
+            currency=data.currency,
+            currency_symbol=data.currency_symbol,
             
             company_name=data.company_name,
             company_address=data.company_address,
@@ -102,7 +106,8 @@ def upsert_docket(db: Session, data: DocketCreate):
             row_notes=i.notes,
             gross=i.gross,
             tare=i.tare,
-            price=i.price
+            price=i.price,
+            unit=i.unit
         ))
 
     # --- ADD DEDUCTIONS ---
@@ -131,6 +136,8 @@ def get_docket_by_id(db: Session, docket_id: int):
         "is_saved": docket.is_saved,
         "print_qty": docket.print_qty,
         "docket_type": docket.docket_type,
+        "currency": docket.currency,
+        "currency_symbol": docket.currency_symbol,
         
         "company_name": docket.company_name,
         "company_address": docket.company_address,
@@ -154,7 +161,8 @@ def get_docket_by_id(db: Session, docket_id: int):
         "items": [
             {
                 "id": i.id, "metal": i.metal, "notes": i.row_notes, 
-                "gross": i.gross, "tare": i.tare, "price": i.price
+                "gross": i.gross, "tare": i.tare, "price": i.price,
+                "unit": i.unit
             } 
             for i in docket.items
         ],

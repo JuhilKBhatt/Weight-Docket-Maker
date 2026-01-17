@@ -97,7 +97,7 @@
                 <th style="width: 12%; text-align: center;">Gross</th>
                 <th style="width: 12%; text-align: center;">Tare</th>
                 <th style="width: 12%; text-align: center;">Net</th>
-                <th style="width: 8%; text-align: center;">$/kg</th>
+                <th style="width: 8%; text-align: center;">{{ currency_label }}/Unit</th>
                 <th style="width: 12%; text-align: center;">Total</th>
             </tr>
         </thead>
@@ -107,11 +107,11 @@
                 <td style="text-align: center;">{{ loop.index }}</td>
                 <td>{{ item.metal }}</td>
                 <td>{{ item.notes or '' }}</td>
-                <td>{{ "{:,.0f}".format(item.gross) }}kg</td>
-                <td>{{ "{:,.0f}".format(item.tare) }}kg</td>
-                <td><strong>{{ "{:,.0f}".format(item.net) }}kg</strong></td>
-                <td>${{ "{:,.2f}".format(item.price) }}</td>
-                <td>${{ "{:,.2f}".format(item.total) }}</td>
+                <td>{{ "{:,.0f}".format(item.gross) }} {{ item.unit }}</td>
+                <td>{{ "{:,.0f}".format(item.tare) }} {{ item.unit }}</td>
+                <td><strong>{{ "{:,.0f}".format(item.net) }} {{ item.unit }}</strong></td>
+                <td>{{ currency_label }}{{ "{:,.2f}".format(item.price) }}</td>
+                <td>{{ currency_label }}{{ "{:,.2f}".format(item.total) }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -119,25 +119,25 @@
 
     <div class="totals-section">    
         {% if pre_deductions %}
-             <div style="font-size: 10pt; font-weight: normal;">Items Total: ${{ "{:,.2f}".format(totals.itemsTotal) }}</div>
+             <div style="font-size: 10pt; font-weight: normal;">Items Total: {{ currency_label }}{{ "{:,.2f}".format(totals.itemsTotal) }}</div>
              {% for d in pre_deductions %}
-                <div style="font-size: 8pt; font-weight: normal; color: #b01c2e;">{{ d.label }}: -${{ "{:,.2f}".format(d.amount) }}</div>
+                <div style="font-size: 8pt; font-weight: normal; color: #b01c2e;">{{ d.label }}: -{{ currency_label }}{{ "{:,.2f}".format(d.amount) }}</div>
              {% endfor %}
-             <div style="font-size: 8pt; font-weight: bold; border-top: 1px solid #ccc; display: inline-block; margin-top: 2px; padding-top: 2px;">Subtotal: ${{ "{:,.2f}".format(totals.grossTotal) }}</div>
+             <div style="font-size: 8pt; font-weight: bold; border-top: 1px solid #ccc; display: inline-block; margin-top: 2px; padding-top: 2px;">Subtotal: {{ currency_label }}{{ "{:,.2f}".format(totals.grossTotal) }}</div>
         {% else %}
              {% if docket.include_gst %}
-                <div style="font-size: 10pt; font-weight: normal;">Subtotal: ${{ "{:,.2f}".format(totals.grossTotal) }}</div>
+                <div style="font-size: 10pt; font-weight: normal;">Subtotal: {{ currency_label }}{{ "{:,.2f}".format(totals.grossTotal) }}</div>
              {% endif %}
         {% endif %}
 
         {% if docket.include_gst %}
-            <div style="font-size: 8pt; font-weight: normal;">GST {{docket.gst_percentage}}%: ${{ "{:,.2f}".format(totals.gstAmount) }}</div>
+            <div style="font-size: 8pt; font-weight: normal;">GST {{docket.gst_percentage}}%: {{ currency_label }}{{ "{:,.2f}".format(totals.gstAmount) }}</div>
         {% endif %}
 
         {% for d in post_deductions %}
-            <div style="font-size: 8pt; font-weight: normal; color: #b01c2e;">{{ d.label }}: -${{ "{:,.2f}".format(d.amount) }}</div>
+            <div style="font-size: 8pt; font-weight: normal; color: #b01c2e;">{{ d.label }}: -{{ currency_label }}{{ "{:,.2f}".format(d.amount) }}</div>
         {% endfor %}
-        <div style="margin-top: 8px; font-size: 12pt;">Total: ${{ "{:,.2f}".format(totals.finalTotal) }}</div>
+        <div style="margin-top: 8px; font-size: 12pt;">Total: {{ currency_label }}{{ "{:,.2f}".format(totals.finalTotal) }}</div>
     </div>
 
     <div class="footer-section">

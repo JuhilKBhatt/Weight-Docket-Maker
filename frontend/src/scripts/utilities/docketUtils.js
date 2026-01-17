@@ -2,6 +2,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
+import { CURRENCY_OPTIONS } from "./invoiceConstants";
 
 const API = 'http://localhost:8000/api/dockets';
 
@@ -13,10 +14,15 @@ export const SaveDocket = async ({
   deductions,
   totals,
   includeGST,
-  gstPercentage
+  gstPercentage,
+  currency
 }) => {
   const safeValue = (val, fallback = "") => val ?? fallback;
   
+  // 1. Resolve Currency Symbol from Frontend Config
+  const selectedOption = CURRENCY_OPTIONS.find(c => c.code === currency) || CURRENCY_OPTIONS[0];
+  const symbol = selectedOption.symbol || '$';
+
   let formattedDate = null;
   if (values.date) {
       if (dayjs.isDayjs(values.date) && values.date.isValid()) {
@@ -47,6 +53,8 @@ export const SaveDocket = async ({
     // Header Data
     docket_type: safeValue(values.docketType, "Customer"),
     company_name: safeValue(values.companyDetails),
+    currency: safeValue(currency, "AUD"),
+    currency_symbol: symbol,
     
     // Financials
     include_gst: includeGST,
@@ -83,7 +91,8 @@ export const SaveDocket = async ({
       notes: safeValue(i.notes), 
       gross: Number(i.gross ?? 0),
       tare: Number(i.tare ?? 0),
-      price: Number(i.price ?? 0)
+      price: Number(i.price ?? 0),
+      unit: safeValue(i.unit, "kg")
     })),
 
     // Deductions

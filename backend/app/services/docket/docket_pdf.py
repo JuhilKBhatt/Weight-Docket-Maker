@@ -41,7 +41,8 @@ def render_docket_html(db: Session, docket_id: int):
             "net": net,
             "price": price,
             "total": total,
-            "notes": item.row_notes
+            "notes": item.row_notes,
+            "unit": item.unit or "kg"
         })
 
     # 3. Calculate Totals
@@ -63,7 +64,15 @@ def render_docket_html(db: Session, docket_id: int):
         
     final_total = max(0, gross_total + gst_amount - post_deductions_amount)
 
-    # 4. Setup Template Environment
+    # 4. Use Stored Currency Symbol
+    # We rely on the DB, which got it from Frontend configuration
+    currency_code = dkt.currency or 'AUD'
+    sym = dkt.currency_symbol or '$'
+    
+    # Construct the display label: e.g. "AUD$"
+    currency_label = f"{currency_code}{sym}"
+
+    # 5. Setup Template Environment
     template_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template("docket_template.html")
@@ -81,7 +90,7 @@ def render_docket_html(db: Session, docket_id: int):
 
     formatted_date = dkt.docket_date.strftime("%d/%m/%Y") if dkt.docket_date else "N/A"
 
-    # 5. Render
+    # 6. Render
     return template.render(
         docket=dkt,
         items=items_data,
@@ -95,7 +104,8 @@ def render_docket_html(db: Session, docket_id: int):
         },
         formatted_date=formatted_date,
         css_content=css_content,
-        recycling_icon=recycling_icon_b64
+        recycling_icon=recycling_icon_b64,
+        currency_label=currency_label 
     )
 
 def generate_docket_pdf(db: Session, docket_id: int):
