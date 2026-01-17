@@ -1,10 +1,8 @@
 docker compose up --build -d
 
-docker compose exec backend python -m app.utilities.create_tables
+docker compose exec backend python -m app.utilities.reset_tables
 
 docker system prune -a --volumes -f
-
-
 
 chmod +x run_printer.sh
 
@@ -17,7 +15,5 @@ lpoptions -d <Your_Printer_Name>
 lpstat -p
 
 Add Printer via settings
-
-
 
 Add Company In Bill Form Invoice
