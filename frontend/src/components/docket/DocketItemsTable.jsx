@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { Table, Input, InputNumber, Typography, Button, Row, Col, AutoComplete, Form } from 'antd'; 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import docketService from '../../services/docketService'; 
+import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDFormatters';
 
 const { Text } = Typography;
 
@@ -12,7 +13,6 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
     const [options, setOptions] = useState([]);
     const timeoutRef = useRef(null);
     
-    // Access the form to get the current customer name
     const form = Form.useFormInstance();
 
     const handleSearch = (val) => {
@@ -23,13 +23,10 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
             return;
         }
 
-        // Get current customer name from form
         const customerName = form.getFieldValue('name') || '';
 
-        // Debounce search (300ms)
         timeoutRef.current = setTimeout(async () => {
             try {
-                // Pass customerName to service
                 const data = await docketService.getUniqueMetals(val, customerName);
                 setOptions(data);
             } catch (err) {
@@ -39,9 +36,7 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
     };
 
     const handleSelect = (val, option) => {
-        // 1. Update Metal Name
         onChange(val);
-        // 2. Update Price if available
         if (option.price !== undefined && option.price !== null) {
             onPriceUpdate(option.price);
         }
@@ -65,18 +60,22 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
     const [rowsToAdd, setRowsToAdd] = useState(1);
     const [selectedRowKey, setSelectedRowKey] = useState(null);
 
+    // Helper for weight formatting (10,000)
+    const weightFormatter = (value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const weightParser = (value) => value.replace(/,/g, '');
+
     const columns = [
         {
             title: 'Serial #',
             key: 'serial',
-            width: '2%', // Fixed width for Serial
+            width: '2%', 
             align: 'center',
             render: (_, __, index) => <Text strong style={{ fontSize: '18px' }}>{index + 1}</Text>,
         },
         {
             title: 'Metal',
             dataIndex: 'metal',
-            width: '15%', // Percentage width for flexible columns
+            width: '15%',
             render: (_, record) => (
                 <MetalCell 
                     value={record.metal}
@@ -106,7 +105,10 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
                     style={{ width: '100%' }} 
                     placeholder="0" 
                     value={record.gross}
-                    onChange={(val) => onItemChange(record.key, 'gross', val)} 
+                    onChange={(val) => onItemChange(record.key, 'gross', val)}
+                    // CHANGED: Added formatter/parser for comma separation
+                    formatter={weightFormatter}
+                    parser={weightParser}
                 />
             )
         },
@@ -119,7 +121,10 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
                     style={{ width: '100%' }} 
                     placeholder="0" 
                     value={record.tare}
-                    onChange={(val) => onItemChange(record.key, 'tare', val)} 
+                    onChange={(val) => onItemChange(record.key, 'tare', val)}
+                    // CHANGED: Added formatter/parser for comma separation
+                    formatter={weightFormatter}
+                    parser={weightParser}
                 />
             )
         },
@@ -130,16 +135,19 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
             render: (text) => {
                 const val = Number(text);
                 const isNegative = !isNaN(val) && val < 0;
+                // CHANGED: Format number with commas (e.g. 10,000)
+                const formattedVal = !isNaN(val) ? val.toLocaleString('en-US') : text;
                 
                 return (
                     <Input 
-                        value={text} 
+                        value={formattedVal} 
                         readOnly 
                         style={{ 
                             backgroundColor: isNegative ? '#ffcccc' : '#f0f0f0', 
                             color: isNegative ? '#cf1322' : undefined,
                             cursor: 'default', 
-                            fontWeight: 'bold' 
+                            fontWeight: 'bold',
+                            textAlign: 'right' // Right align numbers usually looks better
                         }} 
                     />
                 );
@@ -148,7 +156,7 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
         {
             title: 'Price/kg ($)',
             dataIndex: 'price',
-            width: 80,
+            width: 100,
             render: (_, record) => (
                 <InputNumber 
                     step={0.01} 
@@ -157,19 +165,24 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
                     placeholder="0.00" 
                     value={record.price === 0 ? null : record.price}
                     onChange={(val) => onItemChange(record.key, 'price', val)} 
+                    // CHANGED: Use shared currency formatters
+                    formatter={audFormatter}
+                    parser={audParser}
                 />
             )
         },
         {
             title: 'Total ($)',
             dataIndex: 'total',
-            width: 120,
+            width: 140,
             render: (text) => (
                 <Input 
                     prefix="$" 
-                    value={text} 
+                    // CHANGED: Format total to currency string (e.g. 100,000.00)
+                    value={audFormatterFixed(text)} 
                     readOnly 
                     className="large-total-input" 
+                    style={{ textAlign: 'right' }}
                 />
             )
         },
@@ -208,7 +221,6 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
                 pagination={false}
                 bordered
                 size="middle"
-                // Adding scroll ensures columns respect their widths
                 scroll={{ x: 'max-content' }} 
             />
             
