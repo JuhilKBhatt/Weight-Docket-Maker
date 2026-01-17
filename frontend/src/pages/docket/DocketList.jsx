@@ -1,6 +1,6 @@
 // src/pages/docket/DocketList.jsx
 
-import { useEffect, useState, useRef } from 'react'; // CHANGED: Added useRef
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Input, Table, Button, Typography, Popconfirm, Tag, message, Row, Col, Space, Tooltip, App } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -13,7 +13,6 @@ import {
 } from '../../services/docketListService';
 
 export default function DocketList() {
-  // Use App hook for messages if configured in App.jsx, otherwise fallback to static message
   // const { message } = App.useApp(); 
   
   const [loading, setLoading] = useState(false);
@@ -28,10 +27,8 @@ export default function DocketList() {
 
   const [searchText, setSearchText] = useState('');
   
-  // Ref for debounce timer
   const searchDebounce = useRef(null);
 
-  // Load Dockets (Server Side)
   const fetchDockets = async (page = 1, pageSize = 10, search = '') => {
     try {
       setLoading(true);
@@ -51,34 +48,28 @@ export default function DocketList() {
     }
   };
 
-  // Initial Load
   useEffect(() => {
     fetchDockets(1, 10, '');
   }, []);
 
-  // --- CHANGED: Handle Search on Type with Debounce ---
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchText(value);
 
-    // Clear existing timer
     if (searchDebounce.current) {
         clearTimeout(searchDebounce.current);
     }
 
-    // Set new timer (500ms delay)
     searchDebounce.current = setTimeout(() => {
         fetchDockets(1, pagination.pageSize, value);
     }, 500);
   };
 
-  // Keep manual search for Enter key or Button click (Immediate)
   const onSearchManual = (value) => {
     if (searchDebounce.current) clearTimeout(searchDebounce.current);
     fetchDockets(1, pagination.pageSize, value);
   };
 
-  // Handle Table Change (Page Change)
   const handleTableChange = (newPagination) => {
     fetchDockets(newPagination.current, newPagination.pageSize, searchText);
   };
@@ -87,7 +78,6 @@ export default function DocketList() {
     try {
       await deleteDocketById(id);
       message.success('Docket deleted');
-      // Refresh current page
       fetchDockets(pagination.current, pagination.pageSize, searchText);
     } catch (err) {
       console.error(err);
@@ -120,6 +110,27 @@ export default function DocketList() {
         title: 'Customer / Company',
         dataIndex: 'customer_name',
         key: 'customer_name',
+      },
+      // --- ADDED STATUS COLUMN HERE ---
+      {
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+        width: 120,
+        render: (status) => {
+            let color = 'default';
+            if (status === 'Saved') color = 'green';
+            else if (status === 'Draft') color = 'orange';
+            else if (status === 'Printed') color = 'cyan';
+            else if (status === 'Downloaded') color = 'blue';
+            else if (status === 'Imported Log') color = 'purple';
+            
+            return (
+                <Tag color={color} key={status}>
+                    {status ? status.toUpperCase() : 'UNKNOWN'}
+                </Tag>
+            );
+        }
       },
       {
         title: 'Total Value',
@@ -168,8 +179,8 @@ export default function DocketList() {
           <Input.Search
             placeholder="Search Docket# or Name" 
             value={searchText}
-            onChange={handleSearchChange} // Trigger on typing
-            onSearch={onSearchManual}     // Trigger on Enter/Click
+            onChange={handleSearchChange} 
+            onSearch={onSearchManual}     
             allowClear
             style={{ width: 350 }}
             enterButton

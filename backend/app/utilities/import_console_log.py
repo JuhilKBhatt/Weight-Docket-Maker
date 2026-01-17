@@ -151,7 +151,7 @@ def import_logs(file_path):
                 scrdkt_number=scrdkt,
                 docket_date=d_obj,
                 docket_time=meta[2], 
-                status="Imported Log",
+                status="Imported",
                 is_saved=True,
                 docket_type=meta[5] if len(meta) > 5 else "Customer",
                 
