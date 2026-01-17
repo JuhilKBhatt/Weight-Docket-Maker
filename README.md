@@ -24,3 +24,13 @@ Add Company In Bill Form Invoice
 **To Update DB Models**
 
 from ./: docker compose exec backend python manage_db.py
+
+
+**To Import .csv Data**
+
+docker compose exec backend python app/utilities/import_data.py "file"
+
+
+**To Import console.log Data**
+
+docker compose exec backend python app/utilities/import_console_log.py "file"

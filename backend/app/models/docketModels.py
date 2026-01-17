@@ -45,8 +45,8 @@ class Docket(Base):
     customer_pay_id = Column(String(100))
 
     # BANK DETAILS
-    bank_bsb = Column(String(20))
-    bank_account_number = Column(String(50))
+    bank_bsb = Column(String(255))
+    bank_account_number = Column(String(255))
 
     # Notes
     notes = Column(String) 
