@@ -1,7 +1,7 @@
 // src/pages/docket/DocketForm.jsx
 
-import React, { useState, useEffect } from 'react';
-import { Form, Button, Row, Col, Input, InputNumber, Space, Divider, Checkbox, Typography, App } from 'antd'; // CHANGED: Imported 'App', removed 'message'
+import React, { useState, useEffect, useRef } from 'react';
+import { Form, Button, Row, Col, Input, InputNumber, Space, Divider, Checkbox, Typography, App } from 'antd'; 
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 
@@ -23,7 +23,6 @@ import '../../styles/Form.css';
 
 const { Text } = Typography;
 
-// ... (generateInitialRows helper remains the same)
 const generateInitialRows = (count) => {
     return Array.from({ length: count }, (_, index) => ({
         key: Date.now() + index, metal: '', notes: '', gross: null, tare: null, net: 0, price: null, total: 0
@@ -31,7 +30,6 @@ const generateInitialRows = (count) => {
 };
 
 export default function DocketForm({ mode = 'new', existingDocket = null }) {
-    // CHANGED: Use the App hook to get the message instance that respects the context
     const { message } = App.useApp(); 
     
     const [form] = Form.useForm();
@@ -79,6 +77,133 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         includeGST: gstEnabled,
         gstPercentage
     });
+
+    // --- AUTOSAVE ON CLOSE LOGIC START ---
+    
+    // 1. Create a Ref to hold the latest state values (to access them inside the event listener)
+    const stateRef = useRef({
+        scrdktID,
+        itemsWithTotals,
+        preGstDeductions,
+        postGstDeductions,
+        gstEnabled,
+        gstPercentage
+    });
+
+    // 2. Sync Ref with State changes
+    useEffect(() => {
+        stateRef.current = {
+            scrdktID,
+            itemsWithTotals,
+            preGstDeductions,
+            postGstDeductions,
+            gstEnabled,
+            gstPercentage
+        };
+    }, [scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage]);
+
+    // 3. Attach Event Listener
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            // Get latest data from Ref and Form
+            const state = stateRef.current;
+            const values = form.getFieldsValue();
+
+            // Don't save if no ID
+            if (!state.scrdktID) return;
+
+            // Helper for safe values
+            const safe = (val) => val ?? "";
+            const num = (val) => Number(val ?? 0);
+
+            // Format Date/Time manually since we can't use complex util functions easily here
+            let dateStr = null;
+            if (values.date && dayjs.isDayjs(values.date)) dateStr = values.date.format('YYYY-MM-DD');
+            
+            let timeStr = null;
+            if (values.time && dayjs.isDayjs(values.time)) timeStr = values.time.format('HH:mm a');
+
+            let dobStr = null;
+            if (values.dob && dayjs.isDayjs(values.dob)) dobStr = values.dob.format('YYYY-MM-DD');
+
+            // Construct Payload manually
+            const payload = {
+                scrdkt_number: state.scrdktID,
+                docket_date: dateStr,
+                docket_time: timeStr,
+                status: "Draft", // Always save as Draft on exit
+                is_saved: values.saveDocket ?? true,
+                print_qty: num(values.printQty),
+                docket_type: safe(values.docketType) || "Customer",
+                
+                // Company
+                company_name: safe(values.companyDetails),
+                company_address: safe(values.companyAddress),
+                company_phone: safe(values.companyPhone),
+                company_email: safe(values.companyEmail),
+                company_abn: safe(values.companyABN),
+
+                // Financials
+                include_gst: state.gstEnabled,
+                gst_percentage: num(state.gstPercentage),
+
+                // Customer
+                customer_name: safe(values.name),
+                customer_address: safe(values.address),
+                customer_phone: safe(values.phone),
+                customer_abn: safe(values.abn),
+                customer_license_no: safe(values.licenseNo),
+                customer_rego_no: safe(values.regoNo),
+                customer_dob: dobStr,
+                customer_pay_id: safe(values.payId),
+                
+                // Bank
+                bank_bsb: safe(values.bsb),
+                bank_account_number: safe(values.accNo),
+                
+                // Notes
+                notes: safe(values.paperNotes),
+
+                // Items (Filter empty ones)
+                items: state.itemsWithTotals
+                    .filter(i => i.gross > 0 || (i.metal && i.metal.trim() !== ""))
+                    .map(i => ({
+                        metal: safe(i.metal),
+                        notes: safe(i.notes),
+                        gross: num(i.gross),
+                        tare: num(i.tare),
+                        price: num(i.price)
+                    })),
+
+                // Deductions
+                deductions: [
+                    ...state.preGstDeductions.map(d => ({ type: "pre", label: safe(d.label), amount: num(d.amount) })),
+                    ...state.postGstDeductions.map(d => ({ type: "post", label: safe(d.label), amount: num(d.amount) })),
+                ]
+            };
+
+            // Use fetch with keepalive: true to ensure request survives page close
+            // Note: Hardcoding URL here as we can't import variables easily into this specific scope if defined outside
+            const API_URL = 'http://localhost:8000/api/dockets/saveDocket';
+            
+            fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+                keepalive: true // CRITICAL: This keeps the request alive after unload
+            }).catch(err => console.error("Auto-save on exit failed", err));
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [form]); // Re-bind if form instance changes (rare)
+
+    // --- AUTOSAVE END ---
 
     // 4. Effects
     useEffect(() => {
@@ -234,7 +359,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     // Success: File is gone!
                     clearInterval(pollInterval);
                     setPrinting(false);
-                    message.success(`🖨️ Printing Started (${qty} copies)`);
+                    message.success(`Printing Started (${qty} copies)`);
                     
                     // Navigate or Reset
                     if (mode === 'new') {
