@@ -155,7 +155,7 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
                     prefix="$" 
                     style={{ width: '100%' }} 
                     placeholder="0.00" 
-                    value={record.price}
+                    value={record.price === 0 ? null : record.price}
                     onChange={(val) => onItemChange(record.key, 'price', val)} 
                 />
             )
