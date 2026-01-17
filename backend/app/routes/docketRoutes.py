@@ -51,7 +51,14 @@ def get_inventory_report(
 ):
     return inventory_service.get_inventory_report(db, start_date, end_date, metal)
 
-# --- PREVIEW (HTML) ---
+@router.get("/print-status/{filename}")
+def check_print_status(filename: str):
+    return docket_printer.check_print_status(filename)
+
+@router.get("/{docket_id}")
+def get_docket(docket_id: int, db: Session = Depends(get_db)):
+    return docket_crud.get_docket_by_id(db, docket_id)
+
 @router.get("/{docket_id}/preview", response_class=HTMLResponse)
 def preview_docket(docket_id: int, db: Session = Depends(get_db)):
     return docket_pdf.render_docket_html(db, docket_id)

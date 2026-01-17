@@ -1,7 +1,7 @@
 // src/pages/docket/InventoryReport.jsx
 
-import React, { useState, useEffect } from 'react';
-import { Table, DatePicker, Input, Card, Typography, Row, Col, message } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { Table, DatePicker, Input, Card, Typography, Row, Col, App } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { getInventoryReport } from '../../services/inventoryService';
@@ -11,45 +11,66 @@ const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
 export default function InventoryReport() {
+    const { message } = App.useApp(); 
+
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState([]);
     const [grandTotal, setGrandTotal] = useState({ netWeight: 0, value: 0 });
     
-    // Default filters: Current Month
     const [dateRange, setDateRange] = useState([
         dayjs().startOf('month'), 
         dayjs().endOf('month')
     ]);
     const [metalSearch, setMetalSearch] = useState('');
+    
+    // Debounce Ref
+    const searchDebounce = useRef(null);
 
-    const fetchReport = async () => {
-        // If dates are cleared, return early or handle as needed
-        if (!dateRange || !dateRange[0] || !dateRange[1]) {
+    const fetchReport = async (dates, search) => {
+        // If dates are cleared, return early
+        if (!dates || !dates[0] || !dates[1]) {
             return;
         }
 
         setLoading(true);
         try {
-            const startDate = dateRange[0].format('YYYY-MM-DD');
-            const endDate = dateRange[1].format('YYYY-MM-DD');
+            const startDate = dates[0].format('YYYY-MM-DD');
+            const endDate = dates[1].format('YYYY-MM-DD');
             
-            const response = await getInventoryReport(startDate, endDate, metalSearch);
+            const response = await getInventoryReport(startDate, endDate, search);
             
             setData(response.data);
             setGrandTotal(response.grandTotal);
         } catch (error) {
             console.error(error);
-            message.error("Failed to load inventory report.");
+            if (error.response && error.response.data && error.response.data.detail) {
+                const details = JSON.stringify(error.response.data.detail);
+                message.error(`Server Validation Error: ${details}`);
+            } else {
+                message.error("Failed to load inventory report.");
+            }
         } finally {
             setLoading(false);
         }
     };
 
-    // Trigger fetch automatically on mount AND when dateRange or metalSearch changes
+    // Initial Load & Date Change
     useEffect(() => {
-        fetchReport();
+        fetchReport(dateRange, metalSearch);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dateRange, metalSearch]);
+    }, [dateRange]); 
+
+    // Handle Search with Debounce
+    const handleSearchChange = (e) => {
+        const val = e.target.value;
+        setMetalSearch(val);
+
+        if (searchDebounce.current) clearTimeout(searchDebounce.current);
+
+        searchDebounce.current = setTimeout(() => {
+            fetchReport(dateRange, val);
+        }, 500);
+    };
 
     const columns = [
         {
@@ -101,11 +122,10 @@ export default function InventoryReport() {
                                 placeholder="Search Metal (e.g. Copper)" 
                                 prefix={<SearchOutlined />} 
                                 value={metalSearch}
-                                onChange={(e) => setMetalSearch(e.target.value)}
+                                onChange={handleSearchChange}
                                 style={{ width: 250 }}
                             />
                         </Col>
-                        {/* Filter Button removed; logic moved to useEffect */}
                     </Row>
                 </Card>
 

@@ -8,6 +8,7 @@ export const getInventoryReport = async (startDate, endDate, metalSearch) => {
     start_date: startDate,
     end_date: endDate,
   };
+  
   if (metalSearch) {
     params.metal = metalSearch;
   }
