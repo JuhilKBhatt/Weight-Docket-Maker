@@ -24,23 +24,6 @@ def create_docket_id(db: Session = Depends(get_db)):
 def save_docket(data: DocketCreate, db: Session = Depends(get_db)):
     return docket_crud.upsert_docket(db, data)
 
-# --- READ / LIST ---
-@router.get("/list")
-def get_dockets( page: int = 1, limit: int = 10, search: Optional[str] = None, db: Session = Depends(get_db)):
-    return docket_list.get_dockets_paginated(db, page, limit, search)
-
-@router.get("/{docket_id}")
-def get_docket(docket_id: int, db: Session = Depends(get_db)):
-    return docket_crud.get_docket_by_id(db, docket_id)
-
-@router.get("/customers/unique")
-def get_unique_customers_route(q: Optional[str] = None, db: Session = Depends(get_db)):
-    return docket_list.get_unique_customers(db, search=q)
-
-@router.get("/metals/unique")
-def get_unique_metals_route( q: Optional[str] = None, customer: Optional[str] = None, db: Session = Depends(get_db)):
-    return docket_list.get_unique_metals(db, search=q, customer_name=customer)
-
 # --- INVENTORY REPORT ---
 @router.get("/inventory-report")
 def get_inventory_report(
@@ -50,6 +33,23 @@ def get_inventory_report(
     db: Session = Depends(get_db)
 ):
     return inventory_service.get_inventory_report(db, start_date, end_date, metal)
+
+# --- READ / LIST ---
+@router.get("/customers/unique")
+def get_unique_customers_route(q: Optional[str] = None, db: Session = Depends(get_db)):
+    return docket_list.get_unique_customers(db, search=q)
+
+@router.get("/metals/unique")
+def get_unique_metals_route( q: Optional[str] = None, customer: Optional[str] = None, db: Session = Depends(get_db)):
+    return docket_list.get_unique_metals(db, search=q, customer_name=customer)
+
+@router.get("/list")
+def get_dockets( page: int = 1, limit: int = 10, search: Optional[str] = None, db: Session = Depends(get_db)):
+    return docket_list.get_dockets_paginated(db, page, limit, search)
+
+@router.get("/{docket_id}")
+def get_docket(docket_id: int, db: Session = Depends(get_db)):
+    return docket_crud.get_docket_by_id(db, docket_id)
 
 @router.get("/print-status/{filename}")
 def check_print_status(filename: str):
