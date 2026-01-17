@@ -1,40 +1,94 @@
-// src/components/docket/DocketItemsTable.jsx
+// ./frontend/src/components/docket/DocketItemsTable.jsx
 
-import React, { useState } from 'react';
-import { Table, Input, InputNumber, Typography, Button, Row, Col } from 'antd';
+import React, { useState, useRef } from 'react';
+import { Table, Input, InputNumber, Typography, Button, Row, Col, AutoComplete, Form } from 'antd'; 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import docketService from '../../services/docketService'; 
 
 const { Text } = Typography;
 
+// --- Helper Component for the Metal Cell ---
+const MetalCell = ({ value, onChange, onPriceUpdate }) => {
+    const [options, setOptions] = useState([]);
+    const timeoutRef = useRef(null);
+    
+    // Access the form to get the current customer name
+    const form = Form.useFormInstance();
+
+    const handleSearch = (val) => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        
+        if (!val) {
+            setOptions([]);
+            return;
+        }
+
+        // Get current customer name from form
+        const customerName = form.getFieldValue('name') || '';
+
+        // Debounce search (300ms)
+        timeoutRef.current = setTimeout(async () => {
+            try {
+                // Pass customerName to service
+                const data = await docketService.getUniqueMetals(val, customerName);
+                setOptions(data);
+            } catch (err) {
+                console.error("Failed to fetch metals", err);
+            }
+        }, 300);
+    };
+
+    const handleSelect = (val, option) => {
+        // 1. Update Metal Name
+        onChange(val);
+        // 2. Update Price if available
+        if (option.price !== undefined && option.price !== null) {
+            onPriceUpdate(option.price);
+        }
+    };
+
+    return (
+        <AutoComplete
+            value={value}
+            options={options}
+            onSearch={handleSearch}
+            onSelect={handleSelect}
+            onChange={onChange}
+            placeholder="Metal"
+            style={{ width: '100%' }}
+        />
+    );
+};
+
 export default function DocketItemsTable({ items, onItemChange, addRow, removeRow }) {
     
-    // Local state to track how many rows to add
     const [rowsToAdd, setRowsToAdd] = useState(1);
-    // State to track the currently selected row
     const [selectedRowKey, setSelectedRowKey] = useState(null);
 
     const columns = [
         {
             title: 'Serial #',
             key: 'serial',
-            width: 80,
+            width: '2%', // Fixed width for Serial
             align: 'center',
             render: (_, __, index) => <Text strong style={{ fontSize: '18px' }}>{index + 1}</Text>,
         },
         {
             title: 'Metal',
             dataIndex: 'metal',
+            width: '15%', // Percentage width for flexible columns
             render: (_, record) => (
-                <Input 
-                    placeholder="Metal" 
+                <MetalCell 
                     value={record.metal}
-                    onChange={(e) => onItemChange(record.key, 'metal', e.target.value)} 
+                    onChange={(val) => onItemChange(record.key, 'metal', val)}
+                    onPriceUpdate={(price) => onItemChange(record.key, 'price', price)}
                 />
             )
         },
         {
             title: 'Notes',
             dataIndex: 'notes',
+            width: '12%', 
             render: (_, record) => (
                 <Input 
                     placeholder="Notes" 
@@ -46,10 +100,9 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
         {
             title: 'Gross (kg)',
             dataIndex: 'gross',
+            width: 130, 
             render: (_, record) => (
                 <InputNumber 
-                    // Removed min={0} to allow negative gross typing if needed, 
-                    // though usually Gross is positive.
                     style={{ width: '100%' }} 
                     placeholder="0" 
                     value={record.gross}
@@ -60,9 +113,9 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
         {
             title: 'Tare (kg)',
             dataIndex: 'tare',
+            width: 130,
             render: (_, record) => (
                 <InputNumber 
-                    // Removed min={0}
                     style={{ width: '100%' }} 
                     placeholder="0" 
                     value={record.tare}
@@ -73,6 +126,7 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
         {
             title: 'Net Weight (kg)',
             dataIndex: 'net',
+            width: 120,
             render: (text) => {
                 const val = Number(text);
                 const isNegative = !isNaN(val) && val < 0;
@@ -82,9 +136,8 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
                         value={text} 
                         readOnly 
                         style={{ 
-                            // If negative red. Else default grey.
-                            backgroundColor: isNegative ? '#de5959' : '#f0f0f0', 
-                            color: isNegative ? '#ffffff' : undefined,
+                            backgroundColor: isNegative ? '#ffcccc' : '#f0f0f0', 
+                            color: isNegative ? '#cf1322' : undefined,
                             cursor: 'default', 
                             fontWeight: 'bold' 
                         }} 
@@ -95,6 +148,7 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
         {
             title: 'Price/kg ($)',
             dataIndex: 'price',
+            width: 80,
             render: (_, record) => (
                 <InputNumber 
                     step={0.01} 
@@ -109,6 +163,7 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
         {
             title: 'Total ($)',
             dataIndex: 'total',
+            width: 120,
             render: (text) => (
                 <Input 
                     prefix="$" 
@@ -122,13 +177,14 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
             title: '',
             key: 'action',
             width: 50,
+            align: 'center',
             render: (_, record) => (
                 <Button 
                     type="text" 
                     danger 
                     icon={<DeleteOutlined />} 
                     onClick={(e) => {
-                        e.stopPropagation(); // Prevent row selection when clicking delete
+                        e.stopPropagation(); 
                         removeRow(record.key);
                     }}
                 />
@@ -139,11 +195,9 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
     return (
         <div style={{ marginBottom: 30 }}>
             <Table
-                // Conditionally apply class if key matches state
                 rowClassName={(record) => 
                     record.key === selectedRowKey ? 'docket-table-row selected-row' : 'docket-table-row'
                 }
-                // Handle row click
                 onRow={(record) => ({
                     onClick: () => {
                         setSelectedRowKey(record.key);
@@ -154,9 +208,10 @@ export default function DocketItemsTable({ items, onItemChange, addRow, removeRo
                 pagination={false}
                 bordered
                 size="middle"
+                // Adding scroll ensures columns respect their widths
+                scroll={{ x: 'max-content' }} 
             />
             
-            {/* Control Bar for adding rows */}
             <Row gutter={8} style={{ marginTop: 8 }}>
                 <Col flex="auto">
                     <Button 

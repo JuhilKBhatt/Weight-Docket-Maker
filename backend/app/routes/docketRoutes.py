@@ -1,4 +1,4 @@
-# app/routes/docketRoutes.py
+# ./backend/app/routes/docketRoutes.py
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -36,6 +36,10 @@ def get_docket(docket_id: int, db: Session = Depends(get_db)):
 @router.get("/customers/unique")
 def get_unique_customers_route(q: Optional[str] = None, db: Session = Depends(get_db)):
     return docket_list.get_unique_customers(db, search=q)
+
+@router.get("/metals/unique")
+def get_unique_metals_route( q: Optional[str] = None, customer: Optional[str] = None, db: Session = Depends(get_db)):
+    return docket_list.get_unique_metals(db, search=q, customer_name=customer)
 
 # --- INVENTORY REPORT ---
 @router.get("/inventory-report")

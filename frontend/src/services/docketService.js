@@ -14,6 +14,15 @@ const docketService = {
     const params = search ? { q: search } : {};
     const res = await axios.get(`${API}/customers/unique`, { params });
     return res.data;
+  },
+
+  getUniqueMetals: async (search = '', customerName = '') => {
+    const params = { 
+        q: search,
+        customer: customerName 
+    };
+    const res = await axios.get(`${API}/metals/unique`, { params });
+    return res.data;
   }
 };
 

@@ -1,7 +1,7 @@
 # app/services/docket/docket_list.py
 
 from sqlalchemy.orm import Session
-from app.models.docketModels import Docket
+from app.models.docketModels import Docket, DocketItem # CHANGED: Added DocketItem import
 
 def get_all_dockets_calculated(db: Session):
     dockets = db.query(Docket).all()
@@ -106,6 +106,66 @@ def get_unique_customers(db: Session, search: str = None):
             break
             
     return results
+
+def get_unique_metals(db: Session, search: str = None, customer_name: str = None):
+    """
+    Returns unique metals matching the search.
+    If 'customer_name' is provided, the price returned is the latest price 
+    for that specific customer. If that customer hasn't used the metal, 
+    price is returned as None/0.
+    """
+    # Base query: Join Item & Docket
+    query = db.query(DocketItem.metal, DocketItem.price, Docket.customer_name)\
+        .join(Docket)\
+        .order_by(Docket.id.desc()) # Latest first
+    
+    if search:
+        query = query.filter(DocketItem.metal.ilike(f"%{search}%"))
+    
+    # We fetch a larger batch to process in python, as complex deduplication 
+    # with conditional pricing in SQL can be heavy.
+    items = query.limit(500).all()
+    
+    seen_metals = {}
+    results = []
+    
+    for metal, price, dkt_customer in items:
+        if not metal or not metal.strip():
+            continue
+            
+        key = metal.strip().lower()
+        
+        # Logic: 
+        # 1. We want a list of unique metals.
+        # 2. If we already have this metal in 'results', we might need to update its price
+        #    if we found a "better" match (i.e., belonging to the specific customer).
+        
+        is_target_customer = (customer_name and dkt_customer and 
+                              dkt_customer.lower() == customer_name.lower())
+
+        if key not in seen_metals:
+            # First time seeing this metal
+            seen_metals[key] = {
+                "value": metal,
+                "label": metal,
+                # Only set price if it matches the customer (or if no customer logic is needed)
+                # But per requirement: "only load metal price based on name"
+                "price": price if is_target_customer else 0,
+                "found_for_customer": is_target_customer
+            }
+            results.append(seen_metals[key])
+        else:
+            # We have seen this metal. 
+            # If the current entry IS for the target customer, and the previous one WAS NOT,
+            # we update the entry to use this specific price.
+            existing = seen_metals[key]
+            if is_target_customer and not existing["found_for_customer"]:
+                existing["price"] = price
+                existing["found_for_customer"] = True
+                # We essentially "upgraded" this metal entry to be customer-specific
+    
+    # Return top 20
+    return results[:20]
 
 def delete_docket(db: Session, docket_id: int):
     docket = db.query(Docket).filter(Docket.id == docket_id).first()
