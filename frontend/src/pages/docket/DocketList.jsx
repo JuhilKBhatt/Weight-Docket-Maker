@@ -1,8 +1,8 @@
 // src/pages/docket/DocketList.jsx
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react'; // CHANGED: Added useRef
 import { Link } from 'react-router-dom';
-import { Input, Table, Button, Typography, Popconfirm, Tag, message, DatePicker, Row, Col, Space, Tooltip } from 'antd';
+import { Input, Table, Button, Typography, Popconfirm, Tag, message, Row, Col, Space, Tooltip, App } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { audFormatterFixed } from '../../scripts/utilities/AUDformatters';
@@ -12,75 +12,83 @@ import {
   deleteDocketById
 } from '../../services/docketListService';
 
-const { RangePicker } = DatePicker;
-
 export default function DocketList() {
+  // Use App hook for messages if configured in App.jsx, otherwise fallback to static message
+  // const { message } = App.useApp(); 
+  
   const [loading, setLoading] = useState(false);
   const [dockets, setDockets] = useState([]);
   
+  // Pagination State
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
+
   const [searchText, setSearchText] = useState('');
-  const [dateRange, setDateRange] = useState(null);
+  
+  // Ref for debounce timer
+  const searchDebounce = useRef(null);
 
-  // Load Dockets
-  const fetchDockets = async (isBackground = false) => {
+  // Load Dockets (Server Side)
+  const fetchDockets = async (page = 1, pageSize = 10, search = '') => {
     try {
-      if (!isBackground) setLoading(true);
-      const data = await getAllDockets();
+      setLoading(true);
+      const response = await getAllDockets(page, pageSize, search);
       
-      const sortedData = data.sort((a, b) => {
-        const dateA = a.docket_date ? dayjs(a.docket_date).valueOf() : 0;
-        const dateB = b.docket_date ? dayjs(b.docket_date).valueOf() : 0;
-        if (dateA !== dateB) return dateB - dateA; // Newest date first
-        return b.id - a.id; // Newest ID first
+      setDockets(response.data);
+      setPagination({
+        current: page,
+        pageSize: pageSize,
+        total: response.total
       });
-
-      setDockets(sortedData);
     } catch (err) {
       console.error(err);
-      if (!isBackground) message.error('Failed to load dockets');
+      message.error('Failed to load dockets');
     } finally {
-      if (!isBackground) setLoading(false);
+      setLoading(false);
     }
   };
 
+  // Initial Load
   useEffect(() => {
-    fetchDockets();
-    const intervalId = setInterval(() => {
-      fetchDockets(true);
-    }, 5000); // Polling every 5s
-    return () => clearInterval(intervalId);
+    fetchDockets(1, 10, '');
   }, []);
 
-  const getFilteredDockets = () => {
-    return dockets.filter((docket) => {
-      const text = searchText.toLowerCase();
-      const matchText = 
-        (docket.scrdkt_number || '').toLowerCase().includes(text) || 
-        (docket.customer_name || '').toLowerCase().includes(text);
+  // --- CHANGED: Handle Search on Type with Debounce ---
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchText(value);
 
-      let matchDate = true;
-      if (dateRange && dateRange[0] && dateRange[1]) {
-        if (!docket.docket_date) {
-          matchDate = false;
-        } else {
-          const dktDate = dayjs(docket.docket_date);
-          const start = dateRange[0].startOf('day');
-          const end = dateRange[1].endOf('day');
-          matchDate = (dktDate.isSame(start) || dktDate.isAfter(start)) && 
-                      (dktDate.isSame(end) || dktDate.isBefore(end));
-        }
-      }
-      return matchText && matchDate;
-    });
+    // Clear existing timer
+    if (searchDebounce.current) {
+        clearTimeout(searchDebounce.current);
+    }
+
+    // Set new timer (500ms delay)
+    searchDebounce.current = setTimeout(() => {
+        fetchDockets(1, pagination.pageSize, value);
+    }, 500);
   };
 
-  const filteredDockets = getFilteredDockets();
+  // Keep manual search for Enter key or Button click (Immediate)
+  const onSearchManual = (value) => {
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    fetchDockets(1, pagination.pageSize, value);
+  };
+
+  // Handle Table Change (Page Change)
+  const handleTableChange = (newPagination) => {
+    fetchDockets(newPagination.current, newPagination.pageSize, searchText);
+  };
 
   const handleDelete = async (id) => {
     try {
       await deleteDocketById(id);
       message.success('Docket deleted');
-      fetchDockets();
+      // Refresh current page
+      fetchDockets(pagination.current, pagination.pageSize, searchText);
     } catch (err) {
       console.error(err);
       message.error('Could not delete docket');
@@ -92,15 +100,13 @@ export default function DocketList() {
         title: 'DOCKET ID#',
         dataIndex: 'scrdkt_number',
         key: 'scrdkt_number',
-        sorter: (a, b) => a.scrdkt_number.localeCompare(b.scrdkt_number),
-        width: 180,
+        width: 150,
       },
       {
         title: 'Date',
         dataIndex: 'docket_date',
         key: 'docket_date',
         render: (date) => date ? dayjs(date).format('DD/MM/YYYY') : '',
-        sorter: (a, b) => dayjs(a.docket_date).unix() - dayjs(b.docket_date).unix(),
         width: 120,
       },
       {
@@ -108,25 +114,18 @@ export default function DocketList() {
         dataIndex: 'docket_type',
         key: 'docket_type',
         render: (type) => <Tag color={type === 'Customer' ? 'blue' : 'purple'}>{type}</Tag>,
-        filters: [
-            { text: 'Customer', value: 'Customer' },
-            { text: 'Weight', value: 'Weight' },
-        ],
-        onFilter: (value, record) => record.docket_type === value,
         width: 100,
       },
       {
         title: 'Customer / Company',
         dataIndex: 'customer_name',
         key: 'customer_name',
-        sorter: (a, b) => (a.customer_name || '').localeCompare(b.customer_name || ''),
       },
       {
         title: 'Total Value',
         dataIndex: 'total_amount',
         key: 'total_amount',
         render: (val) => `AUD$${audFormatterFixed(val)}`,
-        sorter: (a, b) => a.total_amount - b.total_amount,
         width: 150,
         align: 'right',
       },
@@ -138,7 +137,6 @@ export default function DocketList() {
         render: (_, record) => (
           <Space>
               <Tooltip title="Edit Docket">
-                {/* Ensure you have a route set up for /edit-docket/:id */}
                 <Link to={`/edit-docket/${record.id}`}>
                   <Button type="primary" shape="circle" icon={<EditOutlined />} />
                 </Link>
@@ -167,25 +165,23 @@ export default function DocketList() {
 
       <Row justify="center" gutter={[16, 16]} style={{ marginBottom: 20 }}>
         <Col>
-          <Input 
+          <Input.Search
             placeholder="Search Docket# or Name" 
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={handleSearchChange} // Trigger on typing
+            onSearch={onSearchManual}     // Trigger on Enter/Click
             allowClear
             style={{ width: 350 }}
+            enterButton
           />
         </Col>
         <Col>
-          <RangePicker 
-            value={dateRange}
-            onChange={(dates) => setDateRange(dates)}
-            format="DD/MM/YYYY"
-            style={{ width: 300 }}
-          />
-        </Col>
-        <Col>
-            <Button onClick={() => { setSearchText(''); setDateRange(null); }}>
-                Clear
+            <Button onClick={() => { 
+                setSearchText(''); 
+                if(searchDebounce.current) clearTimeout(searchDebounce.current);
+                fetchDockets(1, 10, ''); 
+            }}>
+                Reset Filters
             </Button>
         </Col>
       </Row>
@@ -193,9 +189,15 @@ export default function DocketList() {
       <Table
         rowKey="id"
         loading={loading}
-        dataSource={filteredDockets}
+        dataSource={dockets}
         columns={columns}
         bordered
+        pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100']
+        }}
+        onChange={handleTableChange}
       />
     </div>
   );

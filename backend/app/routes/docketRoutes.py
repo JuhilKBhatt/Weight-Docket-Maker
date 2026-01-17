@@ -26,8 +26,8 @@ def save_docket(data: DocketCreate, db: Session = Depends(get_db)):
 
 # --- READ / LIST ---
 @router.get("/list")
-def get_dockets(db: Session = Depends(get_db)):
-    return docket_list.get_all_dockets_calculated(db)
+def get_dockets( page: int = 1, limit: int = 10, search: Optional[str] = None, db: Session = Depends(get_db)):
+    return docket_list.get_dockets_paginated(db, page, limit, search)
 
 @router.get("/{docket_id}")
 def get_docket(docket_id: int, db: Session = Depends(get_db)):

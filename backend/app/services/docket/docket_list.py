@@ -1,23 +1,46 @@
 # app/services/docket/docket_list.py
 
-from sqlalchemy.orm import Session
-from app.models.docketModels import Docket, DocketItem # CHANGED: Added DocketItem import
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import or_
+from app.models.docketModels import Docket, DocketItem
 
-def get_all_dockets_calculated(db: Session):
-    dockets = db.query(Docket).all()
+def get_dockets_paginated(db: Session, page: int = 1, limit: int = 10, search: str = None):
+    # Calculate offset
+    skip = (page - 1) * limit
+
+    # Base Query
+    query = db.query(Docket)
+
+    # 1. Apply Search Filter (if exists)
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            or_(
+                Docket.scrdkt_number.ilike(search_term),
+                Docket.customer_name.ilike(search_term),
+                Docket.company_name.ilike(search_term)
+            )
+        )
+
+    # 2. Get Total Count (for frontend pagination)
+    total = query.count()
+
+    # 3. Apply Sorting, Pagination & Optimization
+    # joinedload prevents N+1 problem by fetching items in the same query
+    dockets = query.order_by(Docket.id.desc())\
+                   .options(joinedload(Docket.items), joinedload(Docket.deductions))\
+                   .offset(skip)\
+                   .limit(limit)\
+                   .all()
+
     results = []
 
+    # 4. Process only the fetched page (e.g., 10 items)
     for dkt in dockets:
-        # Filter out empty/invalid dockets if necessary
-        if not dkt.scrdkt_number:
-            continue
+        # Filter out invalid drafts if needed (optional)
+        if not dkt.scrdkt_number: continue
 
-        # Filter out unsaved dockets
-        if not dkt.is_saved:
-            continue
-
-        # --- Calculate Totals Dynamically ---
-        # 1. Items Total
+        # --- Calculate Totals ---
         items_total = 0
         for item in dkt.items:
             gross = item.gross or 0
@@ -26,11 +49,9 @@ def get_all_dockets_calculated(db: Session):
             net = max(0, gross - tare)
             items_total += (net * price)
 
-        # 2. Deductions
         pre_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "pre"])
         post_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "post"])
 
-        # 3. Final Calculation
         gross_total = max(0, items_total - pre_deductions)
         
         gst_amount = 0
@@ -40,7 +61,6 @@ def get_all_dockets_calculated(db: Session):
 
         final_total = max(0, gross_total + gst_amount - post_deductions)
 
-        # --- Determine "Name" to show (Company or Customer) ---
         display_name = dkt.company_name if dkt.docket_type == "Weight" else dkt.customer_name
 
         results.append({
@@ -48,14 +68,20 @@ def get_all_dockets_calculated(db: Session):
             "scrdkt_number": dkt.scrdkt_number,
             "docket_date": dkt.docket_date,
             "docket_time": dkt.docket_time,
-            "customer_name": display_name, # Generic field for the table
+            "customer_name": display_name,
             "docket_type": dkt.docket_type,
             "total_amount": round(final_total, 2),
             "status": dkt.status,
             "notes": dkt.notes,
         })
 
-    return results
+    # Return structure for Table
+    return {
+        "data": results,
+        "total": total,
+        "page": page,
+        "limit": limit
+    }
 
 def get_unique_customers(db: Session, search: str = None):
     """
