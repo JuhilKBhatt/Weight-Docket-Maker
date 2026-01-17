@@ -1,4 +1,4 @@
-# ./backend/app/utilities/create_tables.py
+# ./backend/app/utilities/reset_tables.py
 from app.database import engine, Base
 
 from app.models.invoiceModels import Invoice, InvoiceItem, TransportItem, Deduction
