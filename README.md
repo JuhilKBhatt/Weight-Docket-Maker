@@ -1,9 +1,9 @@
+docker system prune -a --volumes -f
+
 docker compose up --build -d
 
 docker compose exec backend alembic stamp head
 
-
-docker system prune -a --volumes -f
 
 **Printer**
 
