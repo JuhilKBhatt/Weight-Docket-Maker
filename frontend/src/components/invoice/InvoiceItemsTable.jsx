@@ -101,7 +101,7 @@ export default function InvoiceItemsTable({
           value={record.total}
           formatter={audFormatterFixed}
           precision={2}
-          disabled
+          readOnly
         />
       ),
     },

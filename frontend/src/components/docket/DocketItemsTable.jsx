@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { Table, Input, InputNumber, Typography, Button, Row, Col, AutoComplete, Form } from 'antd'; 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import docketService from '../../services/docketService'; 
-import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDFormatters';
+import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
 
 const { Text } = Typography;
 

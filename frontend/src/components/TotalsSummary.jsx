@@ -75,7 +75,7 @@ export default function TotalsSummary({
         <Col flex="auto">
           <InputNumber
             addonBefore={symbolLabel}
-            disabled
+            readOnly
             style={{ width: '100%' }}
             value={includeGST ? calculatedTotals.grossTotal : calculatedTotals.finalTotal}
             formatter={audFormatterFixed}
@@ -108,7 +108,7 @@ export default function TotalsSummary({
              {/* Calculated Amount */}
             <InputNumber
               addonBefore={symbolLabel}
-              disabled
+              readOnly
               style={{ flex: 1 }}
               value={calculatedTotals.gstAmount}
               formatter={audFormatterFixed}
@@ -173,7 +173,7 @@ export default function TotalsSummary({
             <Col flex="auto">
               <InputNumber
                 addonBefore={symbolLabel}
-                disabled
+                readOnly
                 style={{ width: '100%', fontWeight: 'bold' }}
                 value={calculatedTotals.finalTotal}
                 formatter={audFormatterFixed}

@@ -167,7 +167,7 @@ export default function BillingInfo({
         </Typography.Title>
 
         <Form.Item label="TAX INVOICE ID:">
-          <InputNumber disabled value={scrinvID} style={{ width: '100%' }} />
+          <InputNumber readOnly value={scrinvID} style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item label="Date" name="date">
