@@ -6,36 +6,32 @@ import subprocess
 import logging
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
-from app.database import SessionLocal # Assuming you want to read configs, but we will use Env vars
 
 # Setup Logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # --- CONFIGURATION ---
-# We read these from the environment variables passed to Docker
-DB_HOST = "db" # The service name in docker-compose
+DB_HOST = "db"
 DB_USER = os.getenv("POSTGRES_USER", "user")
 DB_NAME = os.getenv("POSTGRES_DB", "weight_docket_db")
-# PGPASSWORD is handled automatically if passed in env, or we can set it explicitly:
 os.environ["PGPASSWORD"] = os.getenv("POSTGRES_PASSWORD", "password")
 
-# CRITICAL: This path must match the VOLUME mount in docker-compose (see Step 3)
+# MATCHES DOCKER VOLUME
 BACKUP_ROOT = "/backups"
 
 def create_backup():
     logger.info("⏳ Starting scheduled backup...")
     
+    # datetime.now() will use the Container's Timezone (set in docker-compose)
     today = datetime.now()
     timestamp = today.strftime("%Y-%m-%d_%H%M%S")
     filename = f"invoice_backup_{timestamp}.sql"
     
-    # Define Folders
     daily_dir = os.path.join(BACKUP_ROOT, "daily")
     weekly_dir = os.path.join(BACKUP_ROOT, "weekly")
     monthly_dir = os.path.join(BACKUP_ROOT, "monthly")
 
-    # Ensure directories exist
     for folder in [daily_dir, weekly_dir, monthly_dir]:
         os.makedirs(folder, exist_ok=True)
 
@@ -43,7 +39,6 @@ def create_backup():
 
     # 1. RUN PG_DUMP
     try:
-        # We run pg_dump connecting to the 'db' container
         command = [
             "pg_dump",
             "-h", DB_HOST,
@@ -57,27 +52,26 @@ def create_backup():
         logger.error(f"❌ Backup Failed: {e}")
         return
 
-    # 2. ROTATION LOGIC (GFS)
-    
-    # Weekly (Father): If today is Sunday (weekday() == 6)
+    # 2. ROTATION LOGIC
+    # Sunday = 6
     if today.weekday() == 6:
         shutil.copy2(target_file, os.path.join(weekly_dir, filename))
         logger.info(f"📅 Sunday: Copied to Weekly")
 
-    # Monthly (Grandfather): If today is the 1st
+    # 1st of Month
     if today.day == 1:
         shutil.copy2(target_file, os.path.join(monthly_dir, filename))
         logger.info(f"📅 1st of Month: Copied to Monthly")
 
-    # 3. CLEANUP (Retention Policy)
+    # 3. CLEANUP
     cleanup_old_files(daily_dir, days=7)
     cleanup_old_files(weekly_dir, days=30)
     cleanup_old_files(monthly_dir, days=365)
 
 def cleanup_old_files(directory, days):
-    """Deletes files in a directory older than X days."""
     cutoff_time = datetime.now() - timedelta(days=days)
-    
+    if not os.path.exists(directory): return
+
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
         if os.path.isfile(file_path) and filename.endswith(".sql"):
@@ -89,7 +83,10 @@ def cleanup_old_files(directory, days):
 # --- SCHEDULER START ---
 def start_backup_scheduler():
     scheduler = BackgroundScheduler()
-    # Schedule to run every day at 23:30 (11:30 PM)
-    scheduler.add_job(create_backup, 'cron', hour=23, minute=30)
+    
+    # CHANGED: Set to 11:00 AM
+    # Because we set TZ in docker-compose, this is 11:00 AM Local Time
+    scheduler.add_job(create_backup, 'cron', hour=11, minute=0)
+    
     scheduler.start()
-    logger.info("🚀 Backup Scheduler Initialized (Runs daily at 23:30)")
+    logger.info("🚀 Backup Scheduler Initialized (Runs daily at 11:00 AM Local Time)")

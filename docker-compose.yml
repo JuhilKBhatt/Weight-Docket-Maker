@@ -31,6 +31,7 @@ services:
       - db
     environment:
       WATCHFILES_FORCE_POLLING: "true"
+      TZ: "Australia/Sydney"
 
   # 3. Frontend (Vite React)
   frontend:

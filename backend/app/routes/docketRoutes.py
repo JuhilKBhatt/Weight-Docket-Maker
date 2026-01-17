@@ -8,6 +8,7 @@ from datetime import date
 from app.database import get_db
 from app.schema.docketSchema import DocketCreate
 from app.services.docket import docket_crud, docket_list, docket_pdf, inventory_service, docket_printer
+from app.utilities.backup_manager import create_backup
 
 router = APIRouter(
     prefix="/api/dockets",
@@ -86,3 +87,9 @@ def check_print_status(filename: str):
 @router.delete("/{docket_id}")
 def delete_docket(docket_id: int, db: Session = Depends(get_db)):
     return docket_list.delete_docket(db, docket_id)
+
+# --- FORCE RUN BACKUP ---
+@router.post("/force-backup")
+def force_run_backup(db: Session = Depends(get_db)):
+    create_backup()
+    return {"message": "Backup process triggered"}
