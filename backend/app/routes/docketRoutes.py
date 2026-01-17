@@ -33,6 +33,10 @@ def get_dockets(db: Session = Depends(get_db)):
 def get_docket(docket_id: int, db: Session = Depends(get_db)):
     return docket_crud.get_docket_by_id(db, docket_id)
 
+@router.get("/customers/unique")
+def get_unique_customers_route(q: Optional[str] = None, db: Session = Depends(get_db)):
+    return docket_list.get_unique_customers(db, search=q)
+
 # --- INVENTORY REPORT ---
 @router.get("/inventory-report")
 def get_inventory_report(

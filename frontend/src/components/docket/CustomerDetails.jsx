@@ -1,17 +1,79 @@
 // ./frontend/src/components/docket/CustomerDetails.jsx
 
-import React from 'react';
-import { Card, Row, Col, Form, Input, DatePicker, Select } from 'antd';
-import {SearchOutlined} from '@ant-design/icons';
+import React, { useState, useRef } from 'react'; // Removed useEffect
+import { Card, Row, Col, Form, Input, DatePicker, AutoComplete, App } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
+import docketService from '../../services/docketService';
 
 export default function CustomerDetails() {
+    const form = Form.useFormInstance(); 
+    const [options, setOptions] = useState([]);
+    const { message } = App.useApp();
+    
+    // Ref for debounce timer
+    const searchTimeout = useRef(null);
+
     const dateFormat = ['DD/MM/YYYY', 'D/M/YYYY'];
+
+    // Updated Search Handler with Debounce
+    const handleSearch = (value) => {
+        // Clear existing timeout
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
+        }
+
+        // Only search if value exists
+        if (!value) {
+            setOptions([]);
+            return;
+        }
+
+        // Set new timeout (300ms delay)
+        searchTimeout.current = setTimeout(async () => {
+            try {
+                const data = await docketService.getUniqueCustomers(value);
+                setOptions(data);
+            } catch (error) {
+                message.error("Failed to load customers");
+                console.error("Failed to load customers", error);
+            }
+        }, 300);
+    };
+
+    // Auto-fill fields on selection
+    const handleSelect = (value, option) => {
+        const details = option.customer_details;
+        
+        form.setFieldsValue({
+            name: details.name,
+            licenseNo: details.licenseNo,
+            regoNo: details.regoNo,
+            dob: details.dob ? dayjs(details.dob) : null,
+            payId: details.payId,
+            phone: details.phone,
+            bsb: details.bsb,
+            accNo: details.accNo,
+            abn: details.abn,
+            address: details.address,
+        });
+        
+        message.success("Customer details autofilled");
+    };
+
     return (
         <Card title="Customer Details" size="large" style={{ marginBottom: 20 }}>
             <Row gutter={16}>
                 <Col span={12}>
                     <Form.Item label="Name" name="name">
-                        <Input placeholder="Full Name" addonAfter={<SearchOutlined />} />
+                        <AutoComplete
+                            options={options}
+                            onSearch={handleSearch}
+                            onSelect={handleSelect}
+                            placeholder="Type to search..."
+                        >
+                            <Input suffix={<SearchOutlined />} />
+                        </AutoComplete>
                     </Form.Item>
                 </Col>
                 <Col span={6}>
