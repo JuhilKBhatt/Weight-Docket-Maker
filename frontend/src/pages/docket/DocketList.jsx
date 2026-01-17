@@ -13,7 +13,7 @@ import {
 } from '../../services/docketListService';
 
 export default function DocketList() {
-  // const { message } = App.useApp(); 
+  const { message } = App.useApp(); 
   
   const [loading, setLoading] = useState(false);
   const [dockets, setDockets] = useState([]);
