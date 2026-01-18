@@ -35,7 +35,7 @@ export const SaveDocket = async ({
   let formattedTime = null;
   if(values.time){
       if(dayjs.isDayjs(values.time) && values.time.isValid()){
-          formattedTime = values.time.format('HH:mm a');
+          formattedTime = values.time.format('hh:mm a');
       } else if (typeof values.time === 'string'){
           formattedTime = values.time;
       }
