@@ -10,12 +10,12 @@ from weasyprint import HTML
 
 from app.models.docketModels import Docket
 
-# --- Helper to load images ---
-def get_image_base64(image_path):
-    if not os.path.exists(image_path):
+# --- Helper to load images/files ---
+def get_file_base64(file_path):
+    if not os.path.exists(file_path):
         return ""
-    with open(image_path, "rb") as img_file:
-        return base64.b64encode(img_file.read()).decode('utf-8')
+    with open(file_path, "rb") as f:
+        return base64.b64encode(f.read()).decode('utf-8')
 
 def render_docket_html(db: Session, docket_id: int):
     # 1. Fetch Data
@@ -65,7 +65,6 @@ def render_docket_html(db: Session, docket_id: int):
     final_total = max(0, gross_total + gst_amount - post_deductions_amount)
 
     # 4. Use Stored Currency Symbol
-    # We rely on the DB, which got it from Frontend configuration
     currency_code = dkt.currency or 'AUD'
     sym = dkt.currency_symbol or '$'
     
@@ -77,16 +76,29 @@ def render_docket_html(db: Session, docket_id: int):
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template("docket_template.html")
     
-    # Read CSS
+    # --- FONT EMBEDDING ---
+    font_path = os.path.join(template_dir, "Lexend-VariableFont_wght.ttf")
+    font_b64 = get_file_base64(font_path)
+    
+    font_face_css = f"""
+    @font-face {{
+        font-family: 'Lexend';
+        src: url(data:font/ttf;base64,{font_b64}) format('truetype');
+        font-weight: 100 900;
+        font-style: normal;
+    }}
+    """
+
+    # Read CSS and prepend font
     css_path = os.path.join(template_dir, "docket_template_styles.css")
     css_content = ""
     if os.path.exists(css_path):
         with open(css_path, 'r') as f:
-            css_content = f.read()
+            css_content = font_face_css + f.read()
 
     # --- Load Icon ---
     icon_path = os.path.join(template_dir, "Recycling_Icon.png")
-    recycling_icon_b64 = get_image_base64(icon_path)
+    recycling_icon_b64 = get_file_base64(icon_path)
 
     formatted_date = dkt.docket_date.strftime("%d/%m/%Y") if dkt.docket_date else "N/A"
 
