@@ -1,4 +1,4 @@
-// frontend/src/pages/InvoiceList.jsx
+// frontend/src/pages/invoice/InvoiceList.jsx
 
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
@@ -35,9 +35,10 @@ export default function InvoiceList() {
   const searchDebounce = useRef(null);
 
   // --- FETCH DATA ---
-  const fetchInvoices = async (page = 1, pageSize = 10, search = '', dates = null) => {
+  // Added isBackground flag to suppress spinner during auto-refresh
+  const fetchInvoices = async (page = 1, pageSize = 10, search = '', dates = null, isBackground = false) => {
     try {
-      setLoading(true);
+      if (!isBackground) setLoading(true);
       
       let start = null;
       let end = null;
@@ -56,16 +57,25 @@ export default function InvoiceList() {
       });
     } catch (err) {
       console.error(err);
-      message.error('Failed to load invoices');
+      if (!isBackground) message.error('Failed to load invoices');
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   };
 
-  // Initial Load
+  // --- AUTO REFRESH / INITIAL LOAD ---
   useEffect(() => {
-    fetchInvoices(1, 10, '', null);
-  }, []);
+    // 1. Initial Load
+    fetchInvoices(pagination.current, pagination.pageSize, searchText, dateRange);
+
+    // 2. Setup Interval
+    const intervalId = setInterval(() => {
+      fetchInvoices(pagination.current, pagination.pageSize, searchText, dateRange, true); // true = background
+    }, 5000); // Refresh every 5 seconds
+
+    // 3. Cleanup on unmount or when dependencies change
+    return () => clearInterval(intervalId);
+  }, [pagination.current, pagination.pageSize, searchText, dateRange]); 
 
   // --- HANDLERS ---
 
@@ -94,7 +104,8 @@ export default function InvoiceList() {
   };
 
   const handleTableChange = (newPagination) => {
-    fetchInvoices(newPagination.current, newPagination.pageSize, searchText, dateRange);
+    // Update state creates a re-render which triggers the useEffect to fetch
+    setPagination(prev => ({ ...prev, current: newPagination.current, pageSize: newPagination.pageSize }));
   };
 
   const refreshCurrentPage = () => {
@@ -117,7 +128,7 @@ export default function InvoiceList() {
       await updateInvoiceStatus(id, statusType);
       const statusLabel = statusType.charAt(0).toUpperCase() + statusType.slice(1);
       message.success(`Invoice marked as ${statusLabel}`);
-      refreshCurrentPage();
+      refreshCurrentPage(); // Instant update
     } catch (err) {
       console.error(err);
       message.error(`Could not mark invoice as ${statusType}`);
@@ -280,7 +291,8 @@ export default function InvoiceList() {
             <Button onClick={() => { 
                 setSearchText(''); 
                 setDateRange(null); 
-                fetchInvoices(1, 10, '', null);
+                // Manual reset
+                setPagination(prev => ({...prev, current: 1}));
             }}>
                 Reset Filters
             </Button>

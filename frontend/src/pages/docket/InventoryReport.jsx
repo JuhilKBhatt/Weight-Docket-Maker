@@ -26,13 +26,15 @@ export default function InventoryReport() {
     // Debounce Ref
     const searchDebounce = useRef(null);
 
-    const fetchReport = async (dates, search) => {
+    // Added isBackground flag
+    const fetchReport = async (dates, search, isBackground = false) => {
         // If dates are cleared, return early
         if (!dates || !dates[0] || !dates[1]) {
             return;
         }
 
-        setLoading(true);
+        if (!isBackground) setLoading(true);
+        
         try {
             const startDate = dates[0].format('YYYY-MM-DD');
             const endDate = dates[1].format('YYYY-MM-DD');
@@ -43,33 +45,38 @@ export default function InventoryReport() {
             setGrandTotal(response.grandTotal);
         } catch (error) {
             console.error(error);
-            if (error.response && error.response.data && error.response.data.detail) {
-                const details = JSON.stringify(error.response.data.detail);
-                message.error(`Server Validation Error: ${details}`);
-            } else {
-                message.error("Failed to load inventory report.");
+            if (!isBackground) {
+                if (error.response && error.response.data && error.response.data.detail) {
+                    const details = JSON.stringify(error.response.data.detail);
+                    message.error(`Server Validation Error: ${details}`);
+                } else {
+                    message.error("Failed to load inventory report.");
+                }
             }
         } finally {
-            setLoading(false);
+            if (!isBackground) setLoading(false);
         }
     };
 
-    // Initial Load & Date Change
+    // Initial Load, Date Change & Polling
     useEffect(() => {
+        // 1. Fetch immediately
         fetchReport(dateRange, metalSearch);
+
+        // 2. Poll every 5 seconds
+        const intervalId = setInterval(() => {
+            fetchReport(dateRange, metalSearch, true); // true = background
+        }, 5000);
+
+        return () => clearInterval(intervalId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dateRange]); 
+    }, [dateRange, metalSearch]); 
 
     // Handle Search with Debounce
     const handleSearchChange = (e) => {
         const val = e.target.value;
         setMetalSearch(val);
-
-        if (searchDebounce.current) clearTimeout(searchDebounce.current);
-
-        searchDebounce.current = setTimeout(() => {
-            fetchReport(dateRange, val);
-        }, 500);
+        // useEffect handles the fetch because metalSearch is a dependency
     };
 
     const columns = [

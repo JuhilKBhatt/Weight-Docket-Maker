@@ -26,12 +26,13 @@ export default function DocketList() {
   });
 
   const [searchText, setSearchText] = useState('');
-  
   const searchDebounce = useRef(null);
 
-  const fetchDockets = async (page = 1, pageSize = 10, search = '') => {
+  // --- FETCH DOCKETS ---
+  const fetchDockets = async (page = 1, pageSize = 10, search = '', isBackground = false) => {
     try {
-      setLoading(true);
+      if (!isBackground) setLoading(true);
+      
       const response = await getAllDockets(page, pageSize, search);
       
       setDockets(response.data);
@@ -42,15 +43,24 @@ export default function DocketList() {
       });
     } catch (err) {
       console.error(err);
-      message.error('Failed to load dockets');
+      if (!isBackground) message.error('Failed to load dockets');
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   };
 
+  // --- POLLING / EFFECT ---
   useEffect(() => {
-    fetchDockets(1, 10, '');
-  }, []);
+    // 1. Initial
+    fetchDockets(pagination.current, pagination.pageSize, searchText);
+
+    // 2. Poll every 5s
+    const intervalId = setInterval(() => {
+        fetchDockets(pagination.current, pagination.pageSize, searchText, true); // True = Background
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [pagination.current, pagination.pageSize, searchText]);
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -61,23 +71,25 @@ export default function DocketList() {
     }
 
     searchDebounce.current = setTimeout(() => {
-        fetchDockets(1, pagination.pageSize, value);
+        // Reset page on search
+        setPagination(prev => ({...prev, current: 1}));
     }, 500);
   };
 
   const onSearchManual = (value) => {
     if (searchDebounce.current) clearTimeout(searchDebounce.current);
-    fetchDockets(1, pagination.pageSize, value);
+    setPagination(prev => ({...prev, current: 1}));
   };
 
   const handleTableChange = (newPagination) => {
-    fetchDockets(newPagination.current, newPagination.pageSize, searchText);
+    setPagination(prev => ({ ...prev, current: newPagination.current, pageSize: newPagination.pageSize }));
   };
 
   const handleDelete = async (id) => {
     try {
       await deleteDocketById(id);
       message.success('Docket deleted');
+      // Refresh immediately
       fetchDockets(pagination.current, pagination.pageSize, searchText);
     } catch (err) {
       console.error(err);
@@ -111,7 +123,6 @@ export default function DocketList() {
         dataIndex: 'customer_name',
         key: 'customer_name',
       },
-      // --- ADDED STATUS COLUMN HERE ---
       {
         title: 'Status',
         dataIndex: 'status',
@@ -190,7 +201,7 @@ export default function DocketList() {
             <Button onClick={() => { 
                 setSearchText(''); 
                 if(searchDebounce.current) clearTimeout(searchDebounce.current);
-                fetchDockets(1, 10, ''); 
+                setPagination(prev => ({...prev, current: 1}));
             }}>
                 Reset Filters
             </Button>
