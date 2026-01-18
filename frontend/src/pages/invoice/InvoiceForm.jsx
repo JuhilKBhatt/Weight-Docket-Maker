@@ -186,20 +186,20 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
 
           const invID = savedInvoice.scrinv_number || 'DRAFT';
 
+          // Get PDF Blob
           const pdfResponse = await axios.get(`http://localhost:8000/api/invoices/${savedInvoice.id}/download`, {
               responseType: 'blob',
           });
           const pdfUrl = window.URL.createObjectURL(new Blob([pdfResponse.data], { type: 'application/pdf' }));
           setPdfPreviewUrl(pdfUrl);
 
-          // Get Defaults
+          // Get Defaults & Form Values
           const defaults = await getDefaults();
+          const formValues = form.getFieldsValue();
           
+          // Template Replacements
           let subject = defaults.email_default_subject || `Invoice {{number}}`;
           let body = defaults.email_default_body || `Please find attached Invoice {{number}}.`;
-          
-          // Get current values from the form to fill placeholders
-          const formValues = form.getFieldsValue();
           
           const replacements = {
               '{{number}}': invID,
@@ -210,17 +210,23 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
               '{{company_email}}': formValues.fromCompanyEmail || '',
           };
 
-          // Apply replacements
           Object.entries(replacements).forEach(([key, val]) => {
-             // Create regex to replace all instances of the key
              const regex = new RegExp(key, 'g');
              subject = subject.replace(regex, val);
              body = body.replace(regex, val);
           });
 
-          const recipient = form.getFieldValue('toCompanyEmail') || '';
+          // --- SPLIT EMAILS FOR TO / CC ---
+          const rawEmails = form.getFieldValue('toCompanyEmail') || '';
+          // Split by comma, trim spaces, remove empty strings
+          const emailList = rawEmails.split(',').map(e => e.trim()).filter(e => e);
+          
+          const primaryRecipient = emailList.length > 0 ? emailList[0] : '';
+          const ccRecipients = emailList.length > 1 ? emailList.slice(1).join(', ') : '';
+
           emailForm.setFieldsValue({
-              recipient: recipient,
+              recipient: primaryRecipient,
+              cc: ccRecipients,
               subject: subject,
               body: body
           });
@@ -266,7 +272,6 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       }
   };
 
-  // Cleanup PDF URL
   useEffect(() => {
       return () => {
           if (pdfPreviewUrl) window.URL.revokeObjectURL(pdfPreviewUrl);
@@ -400,8 +405,12 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
               {/* LEFT: EMAIL FORM */}
               <Col span={10}>
                   <Form form={emailForm} layout="vertical">
-                      <Form.Item name="recipient" label="Recipient Email" rules={[{required: true, type: 'email', message: 'Please enter a valid email'}]}>
+                      <Form.Item name="recipient" label="Recipient (To)" rules={[{required: true, type: 'email', message: 'Please enter a valid email'}]}>
                           <Input placeholder="client@example.com" />
+                      </Form.Item>
+                      {/* ADDED CC FIELD */}
+                      <Form.Item name="cc" label="CC">
+                          <Input placeholder="boss@example.com, accounts@example.com" />
                       </Form.Item>
                       <Form.Item name="subject" label="Subject" rules={[{required: true, message: 'Subject is required'}]}>
                           <Input />

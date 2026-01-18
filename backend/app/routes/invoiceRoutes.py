@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse, HTMLResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
+from typing import Optional, List
 from app.schema.invoiceSchema import InvoiceCreate
 from pydantic import BaseModel
 
@@ -74,6 +75,7 @@ def update_private_notes_route(invoice_id: int, note_data: NoteUpdate, db: Sessi
 
 class EmailRequest(BaseModel):
     recipient: str
+    cc: Optional[str] = None
     subject: str
     body: str
 
@@ -84,14 +86,13 @@ def send_invoice_email_route(invoice_id: int, email_data: EmailRequest, db: Sess
         invoice_id, 
         email_data.recipient, 
         email_data.subject, 
-        email_data.body
+        email_data.body,
+        cc=email_data.cc
     )
     
     if "error" in result:
-        # We return 200 with error message to handle it gracefully in frontend
         return {"success": False, "message": result["error"]}
         
-    # Update status to Sent
     invoice_status.update_status(db, invoice_id, "sent")
     
-    return {"success": True, "message": "Email sent successfully"}
+    return {"success": True, "message": result.get("message", "Sent")}
