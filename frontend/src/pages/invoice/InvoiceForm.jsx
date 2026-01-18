@@ -1,9 +1,10 @@
 // src/pages/invoice/InvoiceForm.jsx
 
 import React, { useEffect, useState } from 'react';
-import { Form, Button, Typography, Checkbox, Row, Col, Input, App, Modal, Spin } from 'antd';
+import { Form, Button, Typography, Checkbox, Row, Col, Input, App, Modal, Spin, Tooltip } from 'antd'; // Added Tooltip
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { FullscreenOutlined } from '@ant-design/icons'; // Import Icon
 import '../../styles/Form.css';
 
 // Hooks
@@ -72,7 +73,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
           if (defaults.default_gst_percentage) invoice.setGstPercentage(Number(defaults.default_gst_percentage));
           if (defaults.default_invoice_type) invoice.setInvoiceType(defaults.default_invoice_type);
           
-          // Apply Default Entities (Bill From / Account)
+          // Apply Default Entities
           const defaultBillFromId = Number(defaults.default_bill_from);
           const defaultAccountId = Number(defaults.default_account);
 
@@ -107,11 +108,11 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
         console.error("Failed to load settings", err);
       }
     }
-    // Only run when selectors are ready so we can match companies
+    
     if (savedCompaniesFrom.length > 0 || mode === 'new') { 
         loadSettings();
     }
-  }, [mode, savedCompaniesFrom, savedAccounts]);
+  }, [mode, savedCompaniesFrom, savedAccounts]); 
 
   // 2. Handle Auto-Fill for Edit Mode
   useInvoiceAutoFill({
@@ -123,7 +124,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
     savedAccounts
   });
 
-  // --- SAVE HANDLER (Refactored to return the saved object) ---
+  // --- SAVE HANDLER ---
   const handleSaveDraftSubmit = async () => {
     try {
       const values = await form.validateFields();
@@ -137,7 +138,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       message.success('Invoice saved successfully!');
       
       sessionStorage.removeItem("scrinvID");
-      return saved; // Return for chaining
+      return saved; 
     } catch (error) {
       console.error('Error saving invoice:', error);
       message.error('Failed to save invoice. Please try again.');
@@ -180,33 +181,25 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
           
           await form.validateFields();
           
-          // 1. Save Invoice
           const savedInvoice = await handleSaveDraftSubmit();
           if (!savedInvoice || !savedInvoice.id) throw new Error("Save failed");
 
-          // 2. Use the ID returned from backend
-          const invID = savedInvoice.scrinv_number || invoice.scrinvID || 'DRAFT';
+          const invID = savedInvoice.scrinv_number || 'DRAFT';
 
-          // 3. Fetch PDF Blob for Preview
-          // Note: using direct axios here to get blob without downloading
           const pdfResponse = await axios.get(`http://localhost:8000/api/invoices/${savedInvoice.id}/download`, {
               responseType: 'blob',
           });
           const pdfUrl = window.URL.createObjectURL(new Blob([pdfResponse.data], { type: 'application/pdf' }));
           setPdfPreviewUrl(pdfUrl);
 
-          // 4. Fetch Defaults for Template
           const defaults = await getDefaults();
           
-          // 5. Interpolate Template
           let subject = defaults.email_default_subject || `Invoice {{number}}`;
           let body = defaults.email_default_body || `Please find attached Invoice {{number}}.`;
           
-          // Simple replacement
           subject = subject.replace(/{{number}}/g, invID);
           body = body.replace(/{{number}}/g, invID);
 
-          // 6. Pre-fill Modal
           const recipient = form.getFieldValue('toCompanyEmail') || '';
           emailForm.setFieldsValue({
               recipient: recipient,
@@ -228,16 +221,14 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
           setEmailLoading(true);
           const emailValues = await emailForm.validateFields();
           
-          // Let's re-save to be absolutely sure we send the latest data in the PDF
           const savedInvoice = await handleSaveDraftSubmit();
 
-          // Send Email Request
           const result = await invoiceService.sendInvoiceEmail(savedInvoice.id, emailValues);
           
           if (result.success) {
               message.success(result.message);
               setIsEmailModalOpen(false);
-              setPdfPreviewUrl(null); // Cleanup
+              setPdfPreviewUrl(null); 
               if (mode === 'new') {
                   invoice.resetInvoice();
                   form.resetFields();
@@ -276,7 +267,6 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
           layout="vertical"
           initialValues={getInitialValues(existingInvoice)}
         >
-          {/* Section 1: Billing Details */}
           <BillingInfo
             form={form}
             savedCompaniesFrom={savedCompaniesFrom}
@@ -287,7 +277,6 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
             scrinvID={invoice.scrinvID}
           />
 
-          {/* Section 2: Items Table */}
           <InvoiceItemsTable
             invoiceType={invoice.invoiceType}
             items={calculatedTotals.itemsWithTotals}
@@ -296,12 +285,10 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
             removeRow={invoice.removeRow}
             currency={currency}
             setCurrency={setCurrency}
-            // Pass options
             currencyOptions={currencyOptions}
             unitOptions={unitOptions}
           />
 
-          {/* Section 3: Transport */}
           <div style={{ marginTop: 20 }}>
             <Checkbox
               checked={invoice.showTransport}
@@ -320,7 +307,6 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
             />
           )}
 
-          {/* Section 4: Totals & Deductions */}
           <Row gutter={24} style={{ marginTop: 20 }}>
             <Col span={12}>
               <Form.Item label="Notes" name="notes">
@@ -343,13 +329,11 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
             />
           </Row>
 
-          {/* Section 5: Pay To */}
           <PayAccountSection
             form={form}
             savedAccounts={savedAccounts}
           />
 
-          {/* Actions */}
           <Row justify="end" style={{ marginTop: 30, gap: '50px' }}>
             <Button
               type="dashed"
@@ -392,7 +376,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
         onOk={handleSendEmail}
         confirmLoading={emailLoading}
         okText={emailLoading ? "Sending..." : "Send Email"}
-        width={1000} // Wider for split view
+        width={1000}
       >
           <Row gutter={24}>
               {/* LEFT: EMAIL FORM */}
@@ -412,8 +396,23 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
 
               {/* RIGHT: PDF PREVIEW */}
               <Col span={14}>
-                  <Typography.Text strong>PDF Preview:</Typography.Text>
-                  <div style={{ border: '1px solid #ccc', height: '450px', marginTop: '8px', background: '#f0f0f0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <Typography.Text strong>PDF Preview:</Typography.Text>
+                      {pdfPreviewUrl && (
+                          <Tooltip title="Open in new tab for full screen view">
+                              <Button 
+                                  type="link" 
+                                  size="small" 
+                                  icon={<FullscreenOutlined />}
+                                  onClick={() => window.open(pdfPreviewUrl, '_blank')}
+                              >
+                                  Full View
+                              </Button>
+                          </Tooltip>
+                      )}
+                  </div>
+                  
+                  <div style={{ border: '1px solid #ccc', height: '450px', background: '#f0f0f0' }}>
                       {pdfPreviewUrl ? (
                           <iframe 
                               src={pdfPreviewUrl} 
