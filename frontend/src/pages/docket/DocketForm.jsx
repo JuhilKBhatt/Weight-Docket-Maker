@@ -53,6 +53,14 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const [preGstDeductions, setPreGstDeductions] = useState([]);
     const [postGstDeductions, setPostGstDeductions] = useState([]);
 
+    // --- 1. NEW: Form Values Ref (To survive unmount) ---
+    const formValuesRef = useRef({});
+
+    // Update the ref whenever the form changes
+    const handleValuesChange = (_, allValues) => {
+        formValuesRef.current = allValues;
+    };
+
     // --- INIT ROWS HELPER ---
     const generateInitialRows = (count, unit = 'kg') => {
         return Array.from({ length: count }, (_, index) => ({
@@ -64,6 +72,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     useEffect(() => {
         if (scrdktID) {
             form.setFieldsValue({ docketNumber: scrdktID });
+            // Update ref immediately
+            formValuesRef.current = { ...form.getFieldsValue(), docketNumber: scrdktID };
         }
     }, [scrdktID, form]);
 
@@ -107,6 +117,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
                     // Init Table with Default Unit
                     setDataSource(generateInitialRows(20, defUnit));
+                    // Initial sync to ref
+                    formValuesRef.current = form.getFieldsValue();
                 }
             } catch (err) {
                 console.error("Error loading settings", err);
@@ -141,7 +153,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             setPreGstDeductions(existingDocket.deductions?.filter(d => d.type === 'pre') || []);
             setPostGstDeductions(existingDocket.deductions?.filter(d => d.type === 'post') || []);
 
-            form.setFieldsValue({
+            const initialValues = {
                 docketType: existingDocket.docket_type,
                 companyDetails: existingDocket.company_name,
                 companyAddress: existingDocket.company_address,
@@ -163,7 +175,10 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 paperNotes: existingDocket.notes,
                 saveDocket: existingDocket.is_saved,
                 printQty: existingDocket.print_qty || 2
-            });
+            };
+            
+            form.setFieldsValue(initialValues);
+            formValuesRef.current = initialValues; // Sync Ref
         }
     }, [mode, existingDocket, form]);
 
@@ -192,7 +207,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             // If no ID, nothing to save
             if (!state.scrdktID) return;
 
-            const values = form.getFieldsValue();
+            // USE REF VALUES INSTEAD OF form.getFieldsValue() to ensure access on unmount
+            const values = formValuesRef.current || {};
             
             // Helpers
             const safe = (val) => val ?? "";
@@ -222,6 +238,9 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 docket_type: safe(values.docketType) || "Customer",
                 currency: safe(state.currency) || "AUD",
                 
+                // Add Symbol (required by new backend)
+                currency_symbol: "$", 
+
                 company_name: safe(values.companyDetails),
                 company_address: safe(values.companyAddress),
                 company_phone: safe(values.companyPhone),
@@ -324,7 +343,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 currency
             });
             message.success('Docket saved successfully!');
-            if (mode === 'new') { resetDocket(); form.resetFields(); setDataSource(generateInitialRows(20, defaultUnit)); }
+            if (mode === 'new') { resetDocket(); form.resetFields(); setDataSource(generateInitialRows(20, defaultUnit)); formValuesRef.current = {}; }
             else { navigate('/view-docket'); }
         } catch (error) { console.error(error); message.error('Failed to save docket.'); }
     };
@@ -404,6 +423,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                        resetDocket();
                        form.resetFields(); 
                        setCurrency('AUD');
+                       formValuesRef.current = {};
                     } else {
                        navigate('/view-docket');
                     }
@@ -425,7 +445,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     return (
         <div style={{ padding: '20px', maxWidth: '1600px', margin: '0 auto', position: 'relative' }}>
             <NetWeightSummary items={itemsWithTotals} />
-            <Form form={form} layout="vertical">
+            {/* ADDED onValuesChange to keep ref sync'd for auto-save */}
+            <Form form={form} layout="vertical" onValuesChange={handleValuesChange}>
                 <DocketHeader />
                 <CustomerDetails />
                 <DocketItemsTable 
@@ -511,6 +532,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                             form.resetFields();
                             setCurrency('AUD');
                             setDataSource(generateInitialRows(20, defaultUnit));
+                            formValuesRef.current = {};
                         })
                     }>
                         Reset Form
