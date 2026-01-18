@@ -4,11 +4,9 @@ docker compose up --build -d
 
 docker compose exec backend alembic stamp head
 
-**Printer**
+**Printer - Mac/Linux**
 
-chmod +x run_printer.sh
-
-./run_printer.sh
+Add Printer via settings
 
 lpstat -p
 
@@ -16,7 +14,17 @@ lpoptions -d <Your_Printer_Name>
 
 lpstat -p
 
-Add Printer via settings
+chmod +x backend/run_printer.sh
+
+backend/run_printer.sh
+
+VISUAL=nano crontab -e
+
+@reboot {Full System Path}/backend/run_printer.sh
+
+Esc then :w
+
+:wq
 
 Add Company In Bill Form Invoice
 
