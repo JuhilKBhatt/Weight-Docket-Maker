@@ -16,7 +16,6 @@ export default function EmailConfigTab({ form, emailProvider, setEmailProvider, 
                         <Form.Item label="Email Provider" name="email_provider">
                             <Select onChange={(val) => setEmailProvider(val)}>
                                 <Option value="SMTP">SMTP (VentraIP / Gmail / Outlook)</Option>
-                                <Option value="Axigen">Axigen Mail Server (REST API)</Option>
                             </Select>
                         </Form.Item>
                     </Col>
@@ -57,30 +56,6 @@ export default function EmailConfigTab({ form, emailProvider, setEmailProvider, 
                             </Col>
                             <Col span={12}>
                                 <Form.Item label="Password" name="smtp_password" rules={[{ required: true }]}>
-                                    <Input.Password />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </div>
-                )}
-
-                {/* --- AXIGEN API SECTION --- */}
-                {emailProvider === 'Axigen' && (
-                    <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 20, marginTop: 10 }}>
-                        <Tag color="blue" style={{ marginBottom: 15 }}>Axigen API Configuration</Tag>
-                        <Row gutter={24}>
-                            <Col span={24}>
-                                <Form.Item label="API URL" name="axigen_api_url" rules={[{ required: true }]}>
-                                    <Input placeholder="https://ventraip.email" />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item label="Username" name="axigen_user" rules={[{ required: true }]}>
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item label="Password" name="axigen_password" rules={[{ required: true }]}>
                                     <Input.Password />
                                 </Form.Item>
                             </Col>
