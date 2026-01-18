@@ -16,7 +16,6 @@ export default function EmailConfigTab({ form, emailProvider, setEmailProvider, 
                         <Form.Item label="Email Provider" name="email_provider">
                             <Select onChange={(val) => setEmailProvider(val)}>
                                 <Option value="SMTP">SMTP (VentraIP / Gmail / Outlook)</Option>
-                                <Option value="Axigen">Axigen Mail Server (REST API)</Option>
                             </Select>
                         </Form.Item>
                     </Col>
