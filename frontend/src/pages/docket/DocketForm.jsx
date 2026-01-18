@@ -43,7 +43,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const [defaultUnit, setDefaultUnit] = useState('kg');
 
     // Data State
-    const [dataSource, setDataSource] = useState([]); // Init empty, set in useEffect
+    const [dataSource, setDataSource] = useState([]); 
     
     // Financial Settings
     const [gstEnabled, setGstEnabled] = useState(false);
@@ -60,6 +60,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         }));
     };
 
+    // --- SYNC ID TO FORM ---
     useEffect(() => {
         if (scrdktID) {
             form.setFieldsValue({ docketNumber: scrdktID });
@@ -114,7 +115,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
         // Trigger load
         loadSettings();
-    }, [mode, savedCompaniesFrom]); // Re-run if companies load
+    }, [mode, savedCompaniesFrom]); 
 
     // --- INIT EDIT MODE ---
     useEffect(() => {
@@ -175,9 +176,114 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         gstPercentage
     });
 
-    // ... [AutoSave Hook (Same as before)] ...
+    // --- AUTOSAVE LOGIC START ---
+    
+    // 1. Keep state ref updated
     const stateRef = useRef({ scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency });
-    useEffect(() => { stateRef.current = { scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency }; }, [scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency]);
+    
+    useEffect(() => { 
+        stateRef.current = { scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency }; 
+    }, [scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency]);
+
+    // 2. The Auto-Save Effect
+    useEffect(() => {
+        const performAutoSave = () => {
+            const state = stateRef.current;
+            // If no ID, nothing to save
+            if (!state.scrdktID) return;
+
+            const values = form.getFieldsValue();
+            
+            // Helpers
+            const safe = (val) => val ?? "";
+            const num = (val) => Number(val ?? 0);
+
+            // Date Formatting
+            let dateStr = null;
+            if (values.date) {
+                 if (dayjs.isDayjs(values.date)) dateStr = values.date.format('YYYY-MM-DD');
+                 else if (typeof values.date === 'string') dateStr = values.date.substring(0, 10);
+            }
+            
+            let timeStr = null;
+            if (values.time && dayjs.isDayjs(values.time)) timeStr = values.time.format('HH:mm a');
+
+            let dobStr = null;
+            if (values.dob && dayjs.isDayjs(values.dob)) dobStr = values.dob.format('YYYY-MM-DD');
+
+            // Construct Payload
+            const payload = {
+                scrdkt_number: state.scrdktID,
+                docket_date: dateStr,
+                docket_time: timeStr,
+                status: "Draft", 
+                is_saved: values.saveDocket ?? true,
+                print_qty: num(values.printQty),
+                docket_type: safe(values.docketType) || "Customer",
+                currency: safe(state.currency) || "AUD",
+                
+                company_name: safe(values.companyDetails),
+                company_address: safe(values.companyAddress),
+                company_phone: safe(values.companyPhone),
+                company_email: safe(values.companyEmail),
+                company_abn: safe(values.companyABN),
+
+                include_gst: state.gstEnabled,
+                gst_percentage: num(state.gstPercentage),
+
+                customer_name: safe(values.name),
+                customer_address: safe(values.address),
+                customer_phone: safe(values.phone),
+                customer_abn: safe(values.abn),
+                customer_license_no: safe(values.licenseNo),
+                customer_rego_no: safe(values.regoNo),
+                customer_dob: dobStr,
+                customer_pay_id: safe(values.payId),
+                
+                bank_bsb: safe(values.bsb),
+                bank_account_number: safe(values.accNo),
+                
+                notes: safe(values.paperNotes),
+
+                items: state.itemsWithTotals
+                    .filter(i => i.gross > 0 || (i.metal && i.metal.trim() !== ""))
+                    .map(i => ({
+                        metal: safe(i.metal),
+                        notes: safe(i.notes),
+                        gross: num(i.gross),
+                        tare: num(i.tare),
+                        price: num(i.price),
+                        unit: safe(i.unit) || 'kg'
+                    })),
+
+                deductions: [
+                    ...state.preGstDeductions.map(d => ({ type: "pre", label: safe(d.label), amount: num(d.amount) })),
+                    ...state.postGstDeductions.map(d => ({ type: "post", label: safe(d.label), amount: num(d.amount) })),
+                ]
+            };
+
+            // Send Beacon / Fetch with keepalive
+            const API_URL = 'http://localhost:8000/api/dockets/saveDocket';
+            
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+                keepalive: true 
+            }).catch(err => console.error("Auto-save failed", err));
+        };
+
+        // Attach to Window Close
+        window.addEventListener('beforeunload', performAutoSave);
+
+        // Attach to Component Unmount (Back Button / Navigation)
+        return () => {
+            window.removeEventListener('beforeunload', performAutoSave);
+            performAutoSave(); // Trigger on unmount
+        };
+    }, []); 
+
+    // --- AUTOSAVE END ---
     
     // --- Handlers ---
     const addRow = (count = 1) => {
@@ -403,6 +509,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                         () => confirmReset(() => {
                             resetDocket();
                             form.resetFields();
+                            setCurrency('AUD');
+                            setDataSource(generateInitialRows(20, defaultUnit));
                         })
                     }>
                         Reset Form
