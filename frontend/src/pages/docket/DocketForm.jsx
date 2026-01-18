@@ -16,7 +16,7 @@ import NetWeightSummary from '../../components/docket/NetWeightSummary';
 import useDocketCalculations from '../../hooks/docket/useDocketCalculations';
 import useDocketForm from '../../hooks/docket/useDocketForm';
 import { useConfirmReset } from '../../scripts/utilities/confirmReset';
-import useInvoiceSelectors from '../../hooks/invoice/useInvoiceSelectors'; // Reusing this hook for Company data
+import useInvoiceSelectors from '../../hooks/invoice/useInvoiceSelectors';
 
 // Utilities
 import { SaveDocket, DownloadPDFDocket, PrintDocket, CheckPrintStatus } from '../../scripts/utilities/docketUtils';
@@ -59,6 +59,12 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             key: Date.now() + index, metal: '', notes: '', gross: null, tare: null, net: 0, price: null, total: 0, unit
         }));
     };
+
+    useEffect(() => {
+        if (scrdktID) {
+            form.setFieldsValue({ docketNumber: scrdktID });
+        }
+    }, [scrdktID, form]);
 
     // --- FETCH SETTINGS & DEFAULTS ---
     useEffect(() => {
@@ -217,9 +223,98 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         } catch (error) { console.error(error); message.error('Failed to save docket.'); }
     };
 
-    // ... [Print/Download Handlers (Same as before but pass currency)] ...
-    const handleDownload = async () => { /* ... existing code ... */ };
-    const handlePrint = async () => { /* ... existing code ... */ };
+    const handleDownload = async () => {
+        try {
+            const values = await form.validateFields();
+            const result = await SaveDocket({
+                scrdktID,
+                status: "Downloaded", 
+                values,
+                items: itemsWithTotals.filter(item => item.gross > 0 || item.metal),
+                totals: { grossTotal, gstAmount, finalTotal },
+                deductions: { pre: preGstDeductions, post: postGstDeductions },
+                includeGST: gstEnabled,
+                gstPercentage,
+                currency
+            });
+
+            await DownloadPDFDocket(result.id, scrdktID);
+            message.success('Download initiated!');
+        } catch (error) {
+            console.error(error);
+            message.error('Failed to download docket.');
+        }
+    };
+
+    // --- PRINT HANDLER ---
+    const handlePrint = async () => {
+        setPrinting(true); 
+        try {
+            message.info('Preparing docket for printing...');
+            const values = await form.validateFields();
+            const qty = values.printQty || 1;
+
+            // 1. Save
+            const result = await SaveDocket({
+                scrdktID,
+                status: "Printed", 
+                values,
+                items: itemsWithTotals.filter(item => item.gross > 0 || item.metal),
+                totals: { grossTotal, gstAmount, finalTotal },
+                deductions: { pre: preGstDeductions, post: postGstDeductions },
+                includeGST: gstEnabled,
+                gstPercentage,
+                currency
+            });
+
+            // 2. Send Print Request
+            const printResponse = await PrintDocket(result.id, qty);
+            const filename = printResponse.filename;
+
+            if (!filename) {
+                // Fallback if no filename returned
+                message.success(`Sent to printer (${qty} copies)`);
+                setPrinting(false);
+                return;
+            }
+
+            // 3. Start Polling Loop (Wait for watcher to delete file)
+            const maxRetries = 10; // Wait max 20 seconds (20 * 1s)
+            let attempts = 0;
+            
+            message.info('Sending to printer, please wait...');
+            const pollInterval = setInterval(async () => {
+                attempts++;
+                const status = await CheckPrintStatus(filename);
+
+                if (status === 'completed') {
+                    // Success: File is gone!
+                    clearInterval(pollInterval);
+                    setPrinting(false);
+                    message.success(`Printing Started (${qty} copies)`);
+                    
+                    // Navigate or Reset
+                    if (mode === 'new') {
+                       resetDocket();
+                       form.resetFields(); 
+                       setCurrency('AUD');
+                    } else {
+                       navigate('/view-docket');
+                    }
+                } else if (attempts >= maxRetries) {
+                    // Timeout: Watcher didn't pick it up
+                    clearInterval(pollInterval);
+                    setPrinting(false);
+                    message.warning("Sent to queue, but printer script seems slow or offline.");
+                }
+            }, 1000); // Check every 1 second
+
+        } catch (error) {
+            console.error(error);
+            message.error('Failed to print docket.');
+            setPrinting(false);
+        }
+    };
 
     return (
         <div style={{ padding: '20px', maxWidth: '1600px', margin: '0 auto', position: 'relative' }}>
@@ -303,7 +398,13 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     <Button onClick={handleDownload}>
                         Download Docket
                     </Button>
-                    <Button type="dashed" onClick={() => confirmReset(() => window.location.reload())}>
+                    <Button type="dashed"
+                    onClick={
+                        () => confirmReset(() => {
+                            resetDocket();
+                            form.resetFields();
+                        })
+                    }>
                         Reset Form
                     </Button>
                 </div>
