@@ -71,7 +71,7 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
         invoice.include_gst = data.include_gst
         invoice.gst_percentage = data.gst_percentage
         invoice.show_transport = data.show_transport
-        invoice.docket_date = data.invoice_date
+        invoice.invoice_date = data.invoice_date
         invoice.notes = data.notes
         
         # Update Billing & Bank
@@ -106,7 +106,7 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
             include_gst=data.include_gst,
             gst_percentage=data.gst_percentage,
             show_transport=data.show_transport,
-            docket_date=data.invoice_date,
+            invoice_date=data.invoice_date,
             notes=data.notes,
             bill_from_name=data.bill_from_name,
             bill_from_phone=data.bill_from_phone,
@@ -144,7 +144,12 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
     
 
     db.commit()
-    return {"message": "invoice saved", "id": invoice.id, "scrinv_number": invoice.scrinv_number}
+    # Return invoice number for frontend
+    return {
+        "message": "invoice saved", 
+        "id": invoice.id,
+        "scrinv_number": invoice.scrinv_number 
+    }
 
 def update_private_notes(db: Session, invoice_id: int, notes: str):
     invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
