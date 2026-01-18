@@ -26,7 +26,11 @@ Esc then :w
 
 :wq
 
-Add Company In Bill Form Invoice
+**Printer - Windows**
+
+Task Scheduler
+
+Create Task (not "Create Basic Task")
 
 **To Update DB Models**
 
@@ -39,3 +43,5 @@ docker compose exec backend python app/utilities/import_data.py "file"
 **To Import console.log Data**
 
 docker compose exec backend python app/utilities/import_console_log.py "file"
+
+Add Company In Bill Form Invoice
