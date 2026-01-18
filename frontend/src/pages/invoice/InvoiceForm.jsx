@@ -1,10 +1,10 @@
 // src/pages/invoice/InvoiceForm.jsx
 
 import React, { useEffect, useState } from 'react';
-import { Form, Button, Typography, Checkbox, Row, Col, Input, App, Modal, Spin, Tooltip } from 'antd'; // Added Tooltip
+import { Form, Button, Typography, Checkbox, Row, Col, Input, App, Modal, Spin, Tooltip } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FullscreenOutlined } from '@ant-design/icons'; // Import Icon
+import { FullscreenOutlined } from '@ant-design/icons';
 import '../../styles/Form.css';
 
 // Hooks
@@ -192,13 +192,31 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
           const pdfUrl = window.URL.createObjectURL(new Blob([pdfResponse.data], { type: 'application/pdf' }));
           setPdfPreviewUrl(pdfUrl);
 
+          // Get Defaults
           const defaults = await getDefaults();
           
           let subject = defaults.email_default_subject || `Invoice {{number}}`;
           let body = defaults.email_default_body || `Please find attached Invoice {{number}}.`;
           
-          subject = subject.replace(/{{number}}/g, invID);
-          body = body.replace(/{{number}}/g, invID);
+          // Get current values from the form to fill placeholders
+          const formValues = form.getFieldsValue();
+          
+          const replacements = {
+              '{{number}}': invID,
+              '{{company_name}}': formValues.fromCompanyName || '',
+              '{{company_address}}': formValues.fromCompanyAddress || '',
+              '{{company_abn}}': formValues.fromCompanyABN || '',
+              '{{company_phone}}': formValues.fromCompanyPhone || '',
+              '{{company_email}}': formValues.fromCompanyEmail || '',
+          };
+
+          // Apply replacements
+          Object.entries(replacements).forEach(([key, val]) => {
+             // Create regex to replace all instances of the key
+             const regex = new RegExp(key, 'g');
+             subject = subject.replace(regex, val);
+             body = body.replace(regex, val);
+          });
 
           const recipient = form.getFieldValue('toCompanyEmail') || '';
           emailForm.setFieldsValue({

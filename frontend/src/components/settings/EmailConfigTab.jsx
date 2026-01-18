@@ -5,7 +5,7 @@ import { Form, Select, Input, Row, Col, Card, Tag, Button, Typography, Divider }
 import { SaveOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
-const { Paragraph } = Typography;
+const { Paragraph, Text } = Typography;
 
 export default function EmailConfigTab({ form, emailProvider, setEmailProvider, onSave }) {
     return (
@@ -16,6 +16,7 @@ export default function EmailConfigTab({ form, emailProvider, setEmailProvider, 
                         <Form.Item label="Email Provider" name="email_provider">
                             <Select onChange={(val) => setEmailProvider(val)}>
                                 <Option value="SMTP">SMTP (VentraIP / Gmail / Outlook)</Option>
+                                <Option value="Axigen">Axigen Mail Server (REST API)</Option>
                             </Select>
                         </Form.Item>
                     </Col>
@@ -90,16 +91,24 @@ export default function EmailConfigTab({ form, emailProvider, setEmailProvider, 
                 <Divider />
                 
                 <Tag color="cyan" style={{ marginBottom: 15 }}>Default Email Template</Tag>
-                <Paragraph type="secondary" style={{ fontSize: '12px', marginBottom: 15 }}>
-                    Use <strong>{'{{number}}'}</strong> to automatically insert the Invoice ID.
-                </Paragraph>
+                <div style={{ marginBottom: 15, padding: '10px', background: '#f9f9f9', borderRadius: '4px' }}>
+                    <Text strong style={{ fontSize: '12px' }}>Available Placeholders:</Text>
+                    <div style={{ fontSize: '12px', marginTop: '5px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
+                        <Text code>{'{{number}}'}</Text> <Text type="secondary">- Invoice ID</Text>
+                        <Text code>{'{{company_name}}'}</Text> <Text type="secondary">- Your Company Name</Text>
+                        <Text code>{'{{company_address}}'}</Text> <Text type="secondary">- Your Address</Text>
+                        <Text code>{'{{company_abn}}'}</Text> <Text type="secondary">- Your ABN</Text>
+                        <Text code>{'{{company_phone}}'}</Text> <Text type="secondary">- Your Phone</Text>
+                        <Text code>{'{{company_email}}'}</Text> <Text type="secondary">- Your Email</Text>
+                    </div>
+                </div>
                 
                 <Form.Item label="Default Subject" name="email_default_subject">
-                    <Input placeholder="Invoice {{number}} from Safari Copper Recycling" />
+                    <Input placeholder="Invoice {{number}} from {{company_name}}" />
                 </Form.Item>
                 
                 <Form.Item label="Default Body" name="email_default_body">
-                    <Input.TextArea rows={6} placeholder="Hi, Please find attached invoice {{number}}. Regards, Safari Copper." />
+                    <Input.TextArea rows={6} placeholder="Hi,&#10;&#10;Please find attached invoice {{number}}.&#10;&#10;Regards,&#10;{{company_name}}&#10;{{company_address}}" />
                 </Form.Item>
 
                 <div style={{ textAlign: 'right', marginTop: 20 }}>
