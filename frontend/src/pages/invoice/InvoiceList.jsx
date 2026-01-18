@@ -1,6 +1,6 @@
 // frontend/src/pages/InvoiceList.jsx
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Input, Table, Button, Typography, Popconfirm, Tag, message, DatePicker, Row, Col, Space, Tooltip } from 'antd';
 import { EditOutlined, DeleteOutlined, CheckCircleOutlined, CloseCircleOutlined, SendOutlined, FileTextOutlined } from '@ant-design/icons';
@@ -21,75 +21,91 @@ export default function InvoiceList() {
   const [loading, setLoading] = useState(false);
   const [invoices, setInvoices] = useState([]);
   
+  // Pagination State
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
+
   const [searchText, setSearchText] = useState('');
   const [dateRange, setDateRange] = useState(null);
+  
+  // Debounce Ref
+  const searchDebounce = useRef(null);
 
-  // Load Invoices
-  const fetchInvoices = async (isBackground = false) => {
+  // --- FETCH DATA ---
+  const fetchInvoices = async (page = 1, pageSize = 10, search = '', dates = null) => {
     try {
-      if (!isBackground) setLoading(true);
-      const data = await getAllInvoices();
+      setLoading(true);
       
-      const sortedData = data.sort((a, b) => {
-        const isPaidA = a.status === 'Paid';
-        const isPaidB = b.status === 'Paid';
-        if (isPaidA && !isPaidB) return 1;
-        if (!isPaidA && isPaidB) return -1;
+      let start = null;
+      let end = null;
+      if (dates && dates[0] && dates[1]) {
+          start = dates[0].format('YYYY-MM-DD');
+          end = dates[1].format('YYYY-MM-DD');
+      }
 
-        const dateA = a.invoice_date ? dayjs(a.invoice_date).valueOf() : 0;
-        const dateB = b.invoice_date ? dayjs(b.invoice_date).valueOf() : 0;
-        if (dateA !== dateB) return dateB - dateA;
-
-        return b.id - a.id;
+      const response = await getAllInvoices(page, pageSize, search, start, end);
+      
+      setInvoices(response.data);
+      setPagination({
+        current: page,
+        pageSize: pageSize,
+        total: response.total
       });
-
-      setInvoices(sortedData);
     } catch (err) {
       console.error(err);
-      if (!isBackground) message.error('Failed to load invoices');
+      message.error('Failed to load invoices');
     } finally {
-      if (!isBackground) setLoading(false);
+      setLoading(false);
     }
   };
 
+  // Initial Load
   useEffect(() => {
-    fetchInvoices();
-    const intervalId = setInterval(() => {
-      fetchInvoices(true); // true = background update
-    }, 2000);
-    return () => clearInterval(intervalId);
+    fetchInvoices(1, 10, '', null);
   }, []);
 
-  const getFilteredInvoices = () => {
-    return invoices.filter((invoice) => {
-      const text = searchText.toLowerCase();
-      const matchText = 
-        (invoice.scrinv_number || '').toLowerCase().includes(text) || 
-        (invoice.bill_to_name || '').toLowerCase().includes(text);
+  // --- HANDLERS ---
 
-      let matchDate = true;
-      if (dateRange && dateRange[0] && dateRange[1]) {
-        if (!invoice.invoice_date) {
-          matchDate = false;
-        } else {
-          const invDate = dayjs(invoice.invoice_date);
-          const start = dateRange[0].startOf('day');
-          const end = dateRange[1].endOf('day');
-          matchDate = (invDate.isSame(start) || invDate.isAfter(start)) && 
-                      (invDate.isSame(end) || invDate.isBefore(end));
-        }
-      }
-      return matchText && matchDate;
-    });
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchText(value);
+
+    if (searchDebounce.current) {
+        clearTimeout(searchDebounce.current);
+    }
+
+    searchDebounce.current = setTimeout(() => {
+        // Reset to page 1 on new search
+        fetchInvoices(1, pagination.pageSize, value, dateRange);
+    }, 500);
   };
 
-  const filteredInvoices = getFilteredInvoices();
+  const onSearchManual = (value) => {
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    fetchInvoices(1, pagination.pageSize, value, dateRange);
+  };
+
+  const handleDateChange = (dates) => {
+      setDateRange(dates);
+      fetchInvoices(1, pagination.pageSize, searchText, dates);
+  };
+
+  const handleTableChange = (newPagination) => {
+    fetchInvoices(newPagination.current, newPagination.pageSize, searchText, dateRange);
+  };
+
+  const refreshCurrentPage = () => {
+      fetchInvoices(pagination.current, pagination.pageSize, searchText, dateRange);
+  };
 
   const handleDelete = async (id) => {
     try {
       await deleteInvoiceById(id);
       message.success('Invoice deleted');
-      fetchInvoices();
+      refreshCurrentPage();
     } catch (err) {
       console.error(err);
       message.error('Could not delete invoice');
@@ -101,7 +117,7 @@ export default function InvoiceList() {
       await updateInvoiceStatus(id, statusType);
       const statusLabel = statusType.charAt(0).toUpperCase() + statusType.slice(1);
       message.success(`Invoice marked as ${statusLabel}`);
-      fetchInvoices();
+      refreshCurrentPage();
     } catch (err) {
       console.error(err);
       message.error(`Could not mark invoice as ${statusType}`);
@@ -123,34 +139,32 @@ export default function InvoiceList() {
         title: 'TAX INVOICE ID#',
         dataIndex: 'scrinv_number',
         key: 'scrinv_number',
-        sorter: (a, b) => a.scrinv_number.localeCompare(b.scrinv_number),
       },
       {
         title: 'Invoice Date',
         dataIndex: 'invoice_date',
         key: 'invoice_date',
         render: (date) => date ? dayjs(date).format('DD/MM/YYYY') : '',
-        sorter: (a, b) => dayjs(a.invoice_date).unix() - dayjs(b.invoice_date).unix(),
       },
       {
         title: 'Company To',
         dataIndex: 'bill_to_name',
         key: 'bill_to_name',
-        sorter: (a, b) => (a.bill_to_name || '').localeCompare(b.bill_to_name || ''),
       },
       {
         title: 'Total Amount',
         dataIndex: 'total_amount',
         key: 'total_amount',
+        align: 'right',
         render: (val, record) => {
           return `${getCurrencyLabel(record.currency)}${audFormatterFixed(val)}`;
         },
-        sorter: (a, b) => a.total_amount - b.total_amount,
       },
       {
         title: 'Status',
         dataIndex: 'status',
         key: 'status',
+        align: 'center',
         render: (status) => {
           let color = 'default';
           if (status === 'Paid') color = 'green';
@@ -161,24 +175,15 @@ export default function InvoiceList() {
 
           return <Tag color={color}>{status || 'Unknown'}</Tag>;
         },
-        filters: [
-          { text: 'Draft', value: 'Draft' },
-          { text: 'Downloaded', value: 'Downloaded' },
-          { text: 'Sent', value: 'Sent' },
-          { text: 'Unpaid', value: 'Unpaid' },
-          { text: 'Paid', value: 'Paid' },
-        ],
-        onFilter: (value, record) => record.status === value,
-        sorter: (a, b) => (a.status || '').localeCompare(b.status || ''),
       },
       {
         title: 'Private Notes',
         dataIndex: 'private_notes',
         key: 'private_notes',
-        width: 275,
+        width: 250,
         render: (text, record) => (
           <Input.TextArea 
-            rows={3}
+            rows={2}
             defaultValue={text}
             onBlur={(e) => handleNoteSave(record.id, e.target.value)}
             placeholder="Add note..."
@@ -253,25 +258,31 @@ export default function InvoiceList() {
 
       <Row justify="center" gutter={[16, 16]} style={{ marginBottom: 20 }}>
         <Col>
-          <Input 
+          <Input.Search 
             placeholder="Search SCRINV# or Company" 
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={handleSearchChange}
+            onSearch={onSearchManual}
             allowClear
             style={{ width: 350 }}
+            enterButton
           />
         </Col>
         <Col>
           <RangePicker 
             value={dateRange}
-            onChange={(dates) => setDateRange(dates)}
+            onChange={handleDateChange}
             format="DD/MM/YYYY"
             style={{ width: 300 }}
           />
         </Col>
         <Col>
-            <Button onClick={() => { setSearchText(''); setDateRange(null); }}>
-                Clear
+            <Button onClick={() => { 
+                setSearchText(''); 
+                setDateRange(null); 
+                fetchInvoices(1, 10, '', null);
+            }}>
+                Reset Filters
             </Button>
         </Col>
       </Row>
@@ -279,9 +290,15 @@ export default function InvoiceList() {
       <Table
         rowKey="id"
         loading={loading}
-        dataSource={filteredInvoices}
+        dataSource={invoices}
         columns={columns}
         bordered
+        pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100']
+        }}
+        onChange={handleTableChange}
       />
     </div>
   );

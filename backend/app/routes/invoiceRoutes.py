@@ -5,6 +5,7 @@ from fastapi.responses import StreamingResponse, HTMLResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from typing import Optional, List
+from datetime import date
 from app.schema.invoiceSchema import InvoiceCreate
 from pydantic import BaseModel
 
@@ -44,8 +45,15 @@ def download_invoice_pdf(invoice_id: int, db: Session = Depends(get_db)):
 
 # --- READ / LIST ---
 @router.get("/list")
-def get_invoices(db: Session = Depends(get_db)):
-    return invoice_list.get_all_invoices_calculated(db)
+def get_invoices(
+    page: int = 1,
+    limit: int = 10,
+    search: Optional[str] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    db: Session = Depends(get_db)
+):
+    return invoice_list.get_invoices_paginated(db, page, limit, search, start_date, end_date)
 
 @router.get("/selectorsData")
 def get_selectors_data(db: Session = Depends(get_db)):

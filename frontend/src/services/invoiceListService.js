@@ -5,8 +5,16 @@ import axios from 'axios';
 const API_URL = 'http://localhost:8000/api/invoices';
 
 // Get all invoices
-export const getAllInvoices = async () => {
-  const response = await axios.get(`${API_URL}/list?_t=${new Date().getTime()}`);
+export const getAllInvoices = async (page = 1, limit = 10, search = '', startDate = null, endDate = null) => {
+  const params = {
+    page,
+    limit,
+    search,
+    start_date: startDate,
+    end_date: endDate,
+    _t: new Date().getTime()
+  };
+  const response = await axios.get(`${API_URL}/list`, { params });
   return response.data;
 };
 
