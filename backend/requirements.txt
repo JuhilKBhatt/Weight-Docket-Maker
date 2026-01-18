@@ -5,6 +5,7 @@ psycopg2-binary
 fastapi
 alembic
 uvicorn
+requests
 sqlalchemy
 pydantic
 weasyprint

@@ -9,6 +9,12 @@ const invoiceNewSCRIDService = {
     const res = await axios.post(`${API}/new`);
     return res.data.scrinv_id;
   },
+
+  sendInvoiceEmail: async (id, payload) => {
+    // payload: { recipient, subject, body }
+    const res = await axios.post(`${API}/${id}/email`, payload);
+    return res.data;
+  }
 };
 
 export default invoiceNewSCRIDService;

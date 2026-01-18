@@ -1,7 +1,6 @@
 // frontend/src/pages/Settings.jsx
 import React, { useEffect, useState } from 'react';
 import { Tabs, Typography, message, Card, Form } from 'antd';
-import { MailOutlined } from '@ant-design/icons';
 
 // Data Logic
 import { selectorData } from '../scripts/utilities/invoiceUtils';
@@ -57,8 +56,8 @@ export default function Settings() {
       setDefaults(defData);
       setCurrencies(curData);
       setUnits(unitData);
-      
-      const provider = defData.email_provider || 'Axigen';
+
+      const provider = defData.email_provider || 'SMTP'; // Default to SMTP now
       setEmailProvider(provider);
 
       // Init Form Defaults
@@ -68,9 +67,24 @@ export default function Settings() {
           default_gst_percentage: Number(defData.default_gst_percentage) || 10,
           default_bill_from: defData.default_bill_from ? Number(defData.default_bill_from) : null,
           default_account: defData.default_account ? Number(defData.default_account) : null,
+          
+          // Email
           email_provider: provider,
-      });
+          
+          // SMTP Defaults
+          smtp_host: defData.smtp_host || 'ventraip.email',
+          smtp_port: defData.smtp_port || '465',
+          smtp_user: defData.smtp_user || '',
+          smtp_password: defData.smtp_password || '',
 
+          // Axigen
+          axigen_api_url: defData.axigen_api_url || '',
+          
+          // Templates
+          email_default_subject: defData.email_default_subject || 'Invoice {{number}}',
+          email_default_body: defData.email_default_body || 'Please find attached invoice {{number}}.',
+      });
+      
     } catch (err) {
       console.error(err);
       messageApi.error("Failed to load settings data");
@@ -94,8 +108,7 @@ export default function Settings() {
           messageApi.success("Settings saved successfully");
           fetchData(); 
       } catch (err) {
-            console.error(err);
-            messageApi.error("Failed to save settings");
+          messageApi.error("Failed to save settings");
       }
   };
 
@@ -105,8 +118,7 @@ export default function Settings() {
       messageApi.success("Item removed");
       fetchData();
     } catch (err) {
-        console.error(err);
-        messageApi.error("Failed to delete item");
+      messageApi.error("Failed to delete item");
     }
   };
 
@@ -117,8 +129,7 @@ export default function Settings() {
           messageApi.success("Option deleted");
           fetchData();
       } catch (err) {
-            console.error(err);
-            messageApi.error("Failed to delete option");
+          messageApi.error("Failed to delete option");
       }
   };
 
@@ -128,8 +139,7 @@ export default function Settings() {
           await forceBackup();
           setTimeout(() => messageApi.success("Backup trigger sent to server"), 1000);
       } catch (err) {
-            console.error(err);
-            messageApi.error("Backup failed");
+          messageApi.error("Backup failed");
       }
   };
 

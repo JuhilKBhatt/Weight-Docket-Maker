@@ -1,8 +1,9 @@
-// ./frontend/src/pages/InvoiceForm.jsx
+// src/pages/invoice/InvoiceForm.jsx
 
 import React, { useEffect, useState } from 'react';
-import { Form, Button, Typography, Checkbox, Row, Col, Input, App } from 'antd';
+import { Form, Button, Typography, Checkbox, Row, Col, Input, App, Modal, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../../styles/Form.css';
 
 // Hooks
@@ -18,6 +19,7 @@ import { getInitialValues } from '../../scripts/utilities/invoiceFormHelpers';
 
 // Services
 import { getDefaults, getCurrencies, getUnits } from '../../services/settingsService';
+import invoiceService from '../../services/invoiceService';
 
 // Components
 import BillingInfo from '../../components/invoice/BillingInfo';
@@ -42,6 +44,12 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
   const [currencyOptions, setCurrencyOptions] = useState([]);
   const [unitOptions, setUnitOptions] = useState([]);
 
+  // --- EMAIL MODAL STATE ---
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailForm] = Form.useForm();
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
+
   // --- FETCH SETTINGS & DEFAULTS ---
   useEffect(() => {
     async function loadSettings() {
@@ -65,16 +73,14 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
           if (defaults.default_invoice_type) invoice.setInvoiceType(defaults.default_invoice_type);
           
           // Apply Default Entities (Bill From / Account)
-          // We need to match the ID from defaults to the actual list from selectors
           const defaultBillFromId = Number(defaults.default_bill_from);
           const defaultAccountId = Number(defaults.default_account);
 
-          // We check savedCompaniesFrom (which comes from useInvoiceSelectors hook)
           if (defaultBillFromId && savedCompaniesFrom.length > 0) {
               const match = savedCompaniesFrom.find(c => c.id === defaultBillFromId);
               if (match) {
                   form.setFieldsValue({
-                      fromSavedCompany: savedCompaniesFrom.indexOf(match), // Select uses index in BillingInfo
+                      fromSavedCompany: savedCompaniesFrom.indexOf(match),
                       fromCompanyName: match.name,
                       fromCompanyPhone: match.phone,
                       fromCompanyEmail: match.email,
@@ -105,7 +111,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
     if (savedCompaniesFrom.length > 0 || mode === 'new') { 
         loadSettings();
     }
-  }, [mode, savedCompaniesFrom, savedAccounts]); // Dependencies ensure we run after selectors load
+  }, [mode, savedCompaniesFrom, savedAccounts]);
 
   // 2. Handle Auto-Fill for Edit Mode
   useInvoiceAutoFill({
@@ -117,6 +123,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
     savedAccounts
   });
 
+  // --- SAVE HANDLER (Refactored to return the saved object) ---
   const handleSaveDraftSubmit = async () => {
     try {
       const values = await form.validateFields();
@@ -126,21 +133,15 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
         values,
       };
       
-      await saveDraftInvoice(payload);
+      const saved = await saveDraftInvoice(payload);
       message.success('Invoice saved successfully!');
       
       sessionStorage.removeItem("scrinvID");
-
-      if (mode === 'new'){
-        invoice.resetInvoice();
-        form.resetFields();
-        Navigate('/InvoiceHome');
-      }else if (mode === 'edit') {
-        Navigate('/view-invoice');
-      }
+      return saved; // Return for chaining
     } catch (error) {
       console.error('Error saving invoice:', error);
       message.error('Failed to save invoice. Please try again.');
+      throw error;
     }
   };
 
@@ -171,6 +172,97 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
       message.error('Failed to save invoice. Please try again.');
     }
   };
+
+  // --- EMAIL HANDLERS ---
+  const openEmailModal = async () => {
+      try {
+          message.loading({ content: 'Preparing email preview...', key: 'emailPrep' });
+          
+          await form.validateFields();
+          
+          // 1. Save Invoice
+          const savedInvoice = await handleSaveDraftSubmit();
+          if (!savedInvoice || !savedInvoice.id) throw new Error("Save failed");
+
+          // 2. Use the ID returned from backend
+          const invID = savedInvoice.scrinv_number || invoice.scrinvID || 'DRAFT';
+
+          // 3. Fetch PDF Blob for Preview
+          // Note: using direct axios here to get blob without downloading
+          const pdfResponse = await axios.get(`http://localhost:8000/api/invoices/${savedInvoice.id}/download`, {
+              responseType: 'blob',
+          });
+          const pdfUrl = window.URL.createObjectURL(new Blob([pdfResponse.data], { type: 'application/pdf' }));
+          setPdfPreviewUrl(pdfUrl);
+
+          // 4. Fetch Defaults for Template
+          const defaults = await getDefaults();
+          
+          // 5. Interpolate Template
+          let subject = defaults.email_default_subject || `Invoice {{number}}`;
+          let body = defaults.email_default_body || `Please find attached Invoice {{number}}.`;
+          
+          // Simple replacement
+          subject = subject.replace(/{{number}}/g, invID);
+          body = body.replace(/{{number}}/g, invID);
+
+          // 6. Pre-fill Modal
+          const recipient = form.getFieldValue('toCompanyEmail') || '';
+          emailForm.setFieldsValue({
+              recipient: recipient,
+              subject: subject,
+              body: body
+          });
+          
+          message.success({ content: 'Ready!', key: 'emailPrep', duration: 1 });
+          setIsEmailModalOpen(true);
+
+      } catch (err) {
+          console.error(err);
+          message.error({ content: "Failed to prepare email.", key: 'emailPrep' });
+      }
+  };
+
+  const handleSendEmail = async () => {
+      try {
+          setEmailLoading(true);
+          const emailValues = await emailForm.validateFields();
+          
+          // Let's re-save to be absolutely sure we send the latest data in the PDF
+          const savedInvoice = await handleSaveDraftSubmit();
+
+          // Send Email Request
+          const result = await invoiceService.sendInvoiceEmail(savedInvoice.id, emailValues);
+          
+          if (result.success) {
+              message.success(result.message);
+              setIsEmailModalOpen(false);
+              setPdfPreviewUrl(null); // Cleanup
+              if (mode === 'new') {
+                  invoice.resetInvoice();
+                  form.resetFields();
+                  Navigate('/InvoiceHome');
+              } else {
+                  Navigate('/view-invoice');
+              }
+          } else {
+              message.error(`Email Failed: ${result.message}`);
+          }
+
+      } catch (err) {
+          console.error("Email Process Failed", err);
+          message.error("Failed to process email request.");
+      } finally {
+          setEmailLoading(false);
+      }
+  };
+
+  // Cleanup PDF URL
+  useEffect(() => {
+      return () => {
+          if (pdfPreviewUrl) window.URL.revokeObjectURL(pdfPreviewUrl);
+      };
+  }, [pdfPreviewUrl]);
 
   return (
     <div className="home-container">
@@ -270,18 +362,75 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
             >
               Reset Invoice
             </Button>
-            <Button size='large' onClick={handleSaveDraftSubmit}>
+            <Button size='large' onClick={async () => {
+                await handleSaveDraftSubmit();
+                if (mode === 'new') {
+                    invoice.resetInvoice();
+                    form.resetFields();
+                    Navigate('/InvoiceHome');
+                } else {
+                    Navigate('/view-invoice');
+                }
+            }}>
               Save Draft
             </Button>
             <Button type="primary" size='large' onClick={handleSaveDownloadSubmit}>
               Download Invoice
             </Button>
-            <Button type='primary' size='large' disabled >
+            <Button type='primary' size='large' onClick={openEmailModal}>
               Email Invoice
             </Button>
           </Row>
         </Form>
       </div>
+
+      {/* --- EMAIL MODAL --- */}
+      <Modal
+        title="Email Invoice"
+        open={isEmailModalOpen}
+        onCancel={() => setIsEmailModalOpen(false)}
+        onOk={handleSendEmail}
+        confirmLoading={emailLoading}
+        okText={emailLoading ? "Sending..." : "Send Email"}
+        width={1000} // Wider for split view
+      >
+          <Row gutter={24}>
+              {/* LEFT: EMAIL FORM */}
+              <Col span={10}>
+                  <Form form={emailForm} layout="vertical">
+                      <Form.Item name="recipient" label="Recipient Email" rules={[{required: true, type: 'email', message: 'Please enter a valid email'}]}>
+                          <Input placeholder="client@example.com" />
+                      </Form.Item>
+                      <Form.Item name="subject" label="Subject" rules={[{required: true, message: 'Subject is required'}]}>
+                          <Input />
+                      </Form.Item>
+                      <Form.Item name="body" label="Message Body">
+                          <Input.TextArea rows={12} />
+                      </Form.Item>
+                  </Form>
+              </Col>
+
+              {/* RIGHT: PDF PREVIEW */}
+              <Col span={14}>
+                  <Typography.Text strong>PDF Preview:</Typography.Text>
+                  <div style={{ border: '1px solid #ccc', height: '450px', marginTop: '8px', background: '#f0f0f0' }}>
+                      {pdfPreviewUrl ? (
+                          <iframe 
+                              src={pdfPreviewUrl} 
+                              width="100%" 
+                              height="100%" 
+                              style={{ border: 'none' }}
+                              title="Invoice Preview"
+                          />
+                      ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                              <Spin tip="Generating PDF..." />
+                          </div>
+                      )}
+                  </div>
+              </Col>
+          </Row>
+      </Modal>
     </div>
   );
 }

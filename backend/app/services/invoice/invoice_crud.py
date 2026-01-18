@@ -144,7 +144,7 @@ def upsert_invoice(db: Session, data: InvoiceCreate):
     
 
     db.commit()
-    return {"message": "invoice saved", "id": invoice.id}
+    return {"message": "invoice saved", "id": invoice.id, "scrinv_number": invoice.scrinv_number}
 
 def update_private_notes(db: Session, invoice_id: int, notes: str):
     invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()

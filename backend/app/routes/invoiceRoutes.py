@@ -8,6 +8,7 @@ from app.schema.invoiceSchema import InvoiceCreate
 from pydantic import BaseModel
 
 from app.services.invoice import invoice_crud, invoice_list, invoice_status, invoice_pdf, selector_service
+from app.services import email_service
 class NoteUpdate(BaseModel):
     private_notes: str
 
@@ -70,3 +71,27 @@ def update_invoice_status(invoice_id: int, status_type: str, db: Session = Depen
 @router.patch("/{invoice_id}/private-notes")
 def update_private_notes_route(invoice_id: int, note_data: NoteUpdate, db: Session = Depends(get_db)):
     return invoice_crud.update_private_notes(db, invoice_id, note_data.private_notes)
+
+class EmailRequest(BaseModel):
+    recipient: str
+    subject: str
+    body: str
+
+@router.post("/{invoice_id}/email")
+def send_invoice_email_route(invoice_id: int, email_data: EmailRequest, db: Session = Depends(get_db)):
+    result = email_service.send_invoice_email(
+        db, 
+        invoice_id, 
+        email_data.recipient, 
+        email_data.subject, 
+        email_data.body
+    )
+    
+    if "error" in result:
+        # We return 200 with error message to handle it gracefully in frontend
+        return {"success": False, "message": result["error"]}
+        
+    # Update status to Sent
+    invoice_status.update_status(db, invoice_id, "sent")
+    
+    return {"success": True, "message": "Email sent successfully"}

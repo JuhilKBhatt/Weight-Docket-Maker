@@ -91,3 +91,8 @@ def update_account(db: Session, id: int, data: AccountCreate):
             setattr(acc, k, v)
         db.commit()
     return acc
+
+def get_all_settings_dict(db: Session):
+    """Helper to get settings as a simple dict for internal use"""
+    settings = db.query(GlobalSetting).all()
+    return {s.key: s.value for s in settings}

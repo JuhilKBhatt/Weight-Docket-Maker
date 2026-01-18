@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML, CSS
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from app.services.invoice import invoice_crud
 
@@ -30,17 +30,26 @@ def render_invoice_html(db: Session, invoice_id: int):
     # 1. Get Data
     inv_dict = invoice_crud.get_invoice_by_id(db, invoice_id)
     
-    # 2. Logic: Date Formatting (YYYY-MM-DD -> DD/MM/YYYY)
-    formatted_date = ""
-    formatted_due_date = ""
+    # 2. Logic: Date Formatting (Fix for 500 Error)
+    # Default to Today if invoice_date is None
+    date_obj = datetime.now() 
+    
     if inv_dict.get('invoice_date'):
         try:
-            date_obj = inv_dict['invoice_date']
-            formatted_date = date_obj.strftime("%d/%m/%Y")
-        except AttributeError:
-            date_obj = datetime.strptime(str(inv_dict['invoice_date']), "%Y-%m-%d")
-            formatted_date = date_obj.strftime("%d/%m/%Y")
+            if isinstance(inv_dict['invoice_date'], (datetime, date)):
+                date_obj = inv_dict['invoice_date']
+            else:
+                date_obj = datetime.strptime(str(inv_dict['invoice_date']), "%Y-%m-%d")
+        except Exception:
+            date_obj = datetime.now()
 
+    formatted_date = date_obj.strftime("%d/%m/%Y")
+    
+    # Safely calculate due date
+    # Ensure date_obj is a datetime/date object before math
+    if not isinstance(date_obj, (datetime, date)):
+         date_obj = datetime.now()
+         
     due_date_obj = date_obj + timedelta(days=2)
     formatted_due_date = due_date_obj.strftime("%d/%m/%Y")
 
@@ -71,15 +80,18 @@ def render_invoice_html(db: Session, invoice_id: int):
     template = env.get_template("invoice_template.html")
     
     css_path = os.path.join(template_dir, "invoice_template_styles.css")
-    with open(css_path, 'r') as css_file:
-        css_content = css_file.read()
+    css_content = ""
+    if os.path.exists(css_path):
+        with open(css_path, 'r') as css_file:
+            css_content = css_file.read()
+            
     header_img_path = os.path.join(template_dir, "invoice_header_logo.png")
     footer_img_path = os.path.join(template_dir, "invoice_footer_logo.png")
 
     header_b64 = get_image_base64(header_img_path)
     footer_b64 = get_image_base64(footer_img_path)
 
-    # 6. Render with new variables (formatted_date, symbol)
+    # 6. Render
     return template.render(
         invoice=inv_dict, 
         totals=totals, 
@@ -92,22 +104,13 @@ def render_invoice_html(db: Session, invoice_id: int):
     )
 
 def generate_invoice_pdf(db: Session, invoice_id: int):
-    """
-    Uses WeasyPrint to generate PDF from HTML string.
-    """
     try:
-        # Get the HTML string
         html_content = render_invoice_html(db, invoice_id)
-
-        # Create PDF buffer
         pdf_buffer = BytesIO()
-        
-        # Generate PDF using WeasyPrint
         HTML(string=html_content).write_pdf(pdf_buffer)
-        
         pdf_buffer.seek(0)
         return pdf_buffer
-
     except Exception as e:
         print(f"PDF Generation Error: {e}")
+        # Return detail so frontend can see what happened
         raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
