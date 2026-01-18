@@ -3,7 +3,8 @@
 import React, {useState} from 'react';
 import { Table, Input, InputNumber, Button, Popconfirm, Typography, Select } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
-import { CURRENCY_OPTIONS, UNIT_OPTIONS, getCurrencyLabel } from '../../scripts/utilities/invoiceConstants';
+// We assume CURRENCY_OPTIONS/UNIT_OPTIONS are passed as props now, but keep imports as fallback if needed
+import { CURRENCY_OPTIONS as DEFAULT_CURRENCIES, UNIT_OPTIONS as DEFAULT_UNITS, getCurrencyLabel } from '../../scripts/utilities/invoiceConstants';
 
 const { Option } = Select;
 
@@ -15,13 +16,21 @@ export default function InvoiceItemsTable({
   handleItemChange,
   addRow,
   removeRow,
+  // New Props
+  currencyOptions = [],
+  unitOptions = []
 }) {
 
   const [selectedRowKey, setSelectedRowKey] = useState(null);
-  // Helper: Get symbol (e.g. "AUD$")
-  const currentSymbolLabel = getCurrencyLabel(currency);
 
-  // 1. Optimized Unit Selector (Searchable & Mapped)
+  // Fallback to constants if API failed or empty
+  const activeCurrencies = currencyOptions.length > 0 ? currencyOptions : DEFAULT_CURRENCIES;
+  const activeUnits = unitOptions.length > 0 ? unitOptions : DEFAULT_UNITS;
+
+  // Helper: Find label for current currency
+  const currentSymbolLabel = activeCurrencies.find(c => c.code === currency)?.label || `${currency}$`;
+
+  // 1. Optimized Unit Selector
   const renderUnitSelector = (record) => (
     <Select
       value={record.unit || 't'}
@@ -30,13 +39,13 @@ export default function InvoiceItemsTable({
       optionFilterProp="children"
       onChange={(val) => handleItemChange(record.key, 'unit', val)}
     >
-      {UNIT_OPTIONS.map(unit => (
+      {activeUnits.map(unit => (
         <Option key={unit.value} value={unit.value}>{unit.label}</Option>
       ))}
     </Select>
   );
 
-  // 2. Optimized Currency Selector (Searchable & Mapped)
+  // 2. Optimized Currency Selector
   const renderCurrencySelector = () => (
     <Select
       value={currency} 
@@ -45,7 +54,7 @@ export default function InvoiceItemsTable({
       optionFilterProp="children"
       onChange={(val) => setCurrency(val)}
     >
-      {CURRENCY_OPTIONS.map(curr => (
+      {activeCurrencies.map(curr => (
         <Option key={curr.code} value={curr.code}>{curr.label}</Option>
       ))}
     </Select>
@@ -166,11 +175,9 @@ export default function InvoiceItemsTable({
     <>
       <Typography.Title level={5}>Invoice Items</Typography.Title>
       <Table
-      // Conditionally apply class if key matches state
       rowClassName={(record) => 
           record.key === selectedRowKey ? 'docket-table-row selected-row' : 'docket-table-row'
       }
-      // Handle row click
       onRow={(record) => ({
           onClick: () => {
               setSelectedRowKey(record.key);

@@ -9,8 +9,11 @@ const uid = (() => {
 })();
 
 export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
+  // NEW: State for the default unit (e.g. 't', 'kg')
+  const [defaultUnit, setDefaultUnit] = useState('t');
+
   const defaultItems = [
-    { key: uid(), seal: '', containerNumber: '', metal: '', description: '', quantity: 0, price: 0, unit: 't' },
+    { key: uid(), seal: '', containerNumber: '', metal: '', description: '', quantity: 0, price: 0, unit: defaultUnit },
   ];
 
   // SCRINV ID
@@ -46,6 +49,8 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
         unit: i.unit || 't',
       }));
     }
+    // Note: This initial state might use the hardcoded 't' until settings load, 
+    // but we update defaultUnit via useEffect in the Form.
     return defaultItems;
   });
 
@@ -93,7 +98,10 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
 
   // GENERIC HANDLERS
   const handleItemChange = (key, field, value) => setItems(prev => prev.map(item => item.key === key ? { ...item, [field]: value } : item));
-  const addRow = () => setItems(prev => [...prev, { key: uid(), description: '', quantity: 0, price: 0, containerNumber: '', seal: '', metal: '' }]);
+  
+  // UPDATED: Use defaultUnit state for new rows
+  const addRow = () => setItems(prev => [...prev, { key: uid(), description: '', quantity: 0, price: 0, containerNumber: '', seal: '', metal: '', unit: defaultUnit }]);
+  
   const removeRow = key => setItems(prev => prev.filter(item => item.key !== key));
 
   const handleTransportChange = (key, field, value) => setTransportItems(prev => prev.map(item => item.key === key ? { ...item, [field]: value } : item));
@@ -121,7 +129,7 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
   };
 
   const resetInvoice = () => {
-    setItems(defaultItems);
+    setItems([{ key: uid(), seal: '', containerNumber: '', metal: '', description: '', quantity: 0, price: 0, unit: defaultUnit }]); // Use dynamic default
     setTransportItems([]);
     setPreGstDeductions([]);
     setPostGstDeductions([]);
@@ -158,5 +166,6 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
     addDeduction,
     removeDeduction,
     resetInvoice,
+    setDefaultUnit, // Export this so the Form can update it
   };
 }

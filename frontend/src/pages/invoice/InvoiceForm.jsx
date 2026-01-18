@@ -1,6 +1,6 @@
 // ./frontend/src/pages/InvoiceForm.jsx
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Button, Typography, Checkbox, Row, Col, Input, App } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/Form.css';
@@ -15,6 +15,9 @@ import { useConfirmReset } from '../../scripts/utilities/confirmReset';
 // Utilities
 import { saveDraftInvoice, DownloadPDFInvoice } from '../../scripts/utilities/invoiceUtils';
 import { getInitialValues } from '../../scripts/utilities/invoiceFormHelpers';
+
+// Services
+import { getDefaults, getCurrencies, getUnits } from '../../services/settingsService';
 
 // Components
 import BillingInfo from '../../components/invoice/BillingInfo';
@@ -31,9 +34,78 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
   const confirmReset = useConfirmReset();
   
   // 1. Initialize State & Selectors
-  const { currency, setCurrency, ...invoice} = useInvoiceForm(mode, existingInvoice);
+  const { currency, setCurrency, setDefaultUnit, ...invoice} = useInvoiceForm(mode, existingInvoice);
   const calculatedTotals = useInvoiceCalculations(invoice);
   const { savedCompaniesFrom, savedCompaniesTo, savedAccounts } = useInvoiceSelectors();
+
+  // Local state for options
+  const [currencyOptions, setCurrencyOptions] = useState([]);
+  const [unitOptions, setUnitOptions] = useState([]);
+
+  // --- FETCH SETTINGS & DEFAULTS ---
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const [defaults, curs, units] = await Promise.all([
+          getDefaults(),
+          getCurrencies(),
+          getUnits()
+        ]);
+        
+        setCurrencyOptions(curs);
+        setUnitOptions(units);
+
+        // Apply Defaults ONLY if New Mode
+        if (mode === 'new') {
+          if (defaults.default_currency) setCurrency(defaults.default_currency);
+          if (defaults.default_unit) setDefaultUnit(defaults.default_unit);
+          
+          if (defaults.default_gst_enabled) invoice.setIncludeGST(defaults.default_gst_enabled === 'true');
+          if (defaults.default_gst_percentage) invoice.setGstPercentage(Number(defaults.default_gst_percentage));
+          if (defaults.default_invoice_type) invoice.setInvoiceType(defaults.default_invoice_type);
+          
+          // Apply Default Entities (Bill From / Account)
+          // We need to match the ID from defaults to the actual list from selectors
+          const defaultBillFromId = Number(defaults.default_bill_from);
+          const defaultAccountId = Number(defaults.default_account);
+
+          // We check savedCompaniesFrom (which comes from useInvoiceSelectors hook)
+          if (defaultBillFromId && savedCompaniesFrom.length > 0) {
+              const match = savedCompaniesFrom.find(c => c.id === defaultBillFromId);
+              if (match) {
+                  form.setFieldsValue({
+                      fromSavedCompany: savedCompaniesFrom.indexOf(match), // Select uses index in BillingInfo
+                      fromCompanyName: match.name,
+                      fromCompanyPhone: match.phone,
+                      fromCompanyEmail: match.email,
+                      fromCompanyABN: match.abn,
+                      fromCompanyAddress: match.address,
+                  });
+              }
+          }
+
+          if (defaultAccountId && savedAccounts.length > 0) {
+              const match = savedAccounts.find(a => a.id === defaultAccountId);
+              if (match) {
+                  form.setFieldsValue({
+                    savedAccount: savedAccounts.indexOf(match),
+                    accName: match.account_name,
+                    bankName: match.bank_name,
+                    bsb: match.bsb,
+                    accountNumber: match.account_number,
+                  });
+              }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load settings", err);
+      }
+    }
+    // Only run when selectors are ready so we can match companies
+    if (savedCompaniesFrom.length > 0 || mode === 'new') { 
+        loadSettings();
+    }
+  }, [mode, savedCompaniesFrom, savedAccounts]); // Dependencies ensure we run after selectors load
 
   // 2. Handle Auto-Fill for Edit Mode
   useInvoiceAutoFill({
@@ -49,7 +121,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
     try {
       const values = await form.validateFields();
       const payload = {
-        ...invoice, // Spread hooks state (scrinvID, items, transportItems, etc.)
+        ...invoice, 
         currency,
         values,
       };
@@ -76,7 +148,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
     try {
       const values = await form.validateFields();
       const payload = {
-        ...invoice, // Spread hooks state (scrinvID, items, transportItems, etc.)
+        ...invoice, 
         currency,
         values,
         status: 'Downloaded',
@@ -132,6 +204,9 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
             removeRow={invoice.removeRow}
             currency={currency}
             setCurrency={setCurrency}
+            // Pass options
+            currencyOptions={currencyOptions}
+            unitOptions={unitOptions}
           />
 
           {/* Section 3: Transport */}
@@ -150,7 +225,6 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
               transportItems={invoice.transportItems}
               handleTransportChange={invoice.handleTransportChange}
               currency={currency}
-              setCurrency={setCurrency}
             />
           )}
 
