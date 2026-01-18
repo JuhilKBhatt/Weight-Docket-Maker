@@ -1,7 +1,7 @@
 # app/services/docket/docket_list.py
 
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from app.models.docketModels import Docket, DocketItem
 
 def get_dockets_paginated(db: Session, page: int = 1, limit: int = 10, search: str = None):
@@ -10,6 +10,16 @@ def get_dockets_paginated(db: Session, page: int = 1, limit: int = 10, search: s
 
     # Base Query
     query = db.query(Docket)
+
+    # --- FILTER EMPTY DOCKETS ---
+    # Only show dockets that have a Name OR have Items
+    query = query.filter(
+        or_(
+            and_(Docket.customer_name.isnot(None), Docket.customer_name != ""),
+            and_(Docket.company_name.isnot(None), Docket.company_name != ""),
+            Docket.items.any() # Also show if it has items, even if unnamed
+        )
+    )
 
     # 1. Apply Search Filter (if exists)
     if search:
