@@ -444,7 +444,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
     return (
         <div style={{ padding: '20px', maxWidth: '1600px', margin: '0 auto', position: 'relative' }}>
-            <NetWeightSummary items={itemsWithTotals} />
+            <NetWeightSummary items={itemsWithTotals} form={form} />
             {/* ADDED onValuesChange to keep ref sync'd for auto-save */}
             <Form form={form} layout="vertical" onValuesChange={handleValuesChange}>
                 <DocketHeader />
