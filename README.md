@@ -28,6 +28,8 @@ Esc then :w
 
 **Printer - Windows**
 
+Add Default Printer Via Settings and Change Printing Settings
+
 Task Scheduler
 
 Create Task (not "Create Basic Task")

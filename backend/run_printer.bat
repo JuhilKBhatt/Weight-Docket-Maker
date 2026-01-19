@@ -10,6 +10,10 @@ echo --------------------------------------------------
 echo   Async Printer Watcher (Windows)
 echo   1. Monitoring: %SPOOL_DIR%
 echo   2. Processing: %PROC_DIR%
+echo.
+echo   [IMPORTANT] To print in DRAFT mode on Windows:
+echo   Please set your Default Printer Preferences 
+echo   Quality to 'Draft' or 'EconoMode' manually.
 echo --------------------------------------------------
 
 :loop
