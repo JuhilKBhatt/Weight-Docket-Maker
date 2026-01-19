@@ -37,7 +37,7 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
             } catch (err) {
                 console.error("Failed to fetch metals", err);
             }
-        }, 200); // 300ms debounce
+        }, 200); // 200ms debounce
     };
 
     const handleSelect = (val, option) => {
@@ -78,13 +78,14 @@ export default function DocketItemsTable({
     // Helper: Get symbol (e.g. "AUD$")
     const currentSymbolLabel = activeCurrencies.find(c => c.code === currency)?.label || `${currency}$`;
 
-    const weightFormatter = (value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    const weightParser = (value) => value.replace(/,/g, '');
+    const weightFormatter = (value) => `${value}`.replaceAll(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const weightParser = (value) => value.replaceAll(/,/g, '');
 
     const renderUnitSelector = (record) => (
       <Select
         value={record.unit || 'kg'}
-        style={{ width: 70, margin: '-5px 0' }}
+        style={{ width: 80, margin: '-5px 0' }} // Compact width
+        popupMatchSelectWidth={false} // Allow dropdown to be wider than the button
         showSearch
         optionFilterProp="children"
         onChange={(val) => onItemChange(record.key, 'unit', val)}
@@ -98,7 +99,8 @@ export default function DocketItemsTable({
     const renderCurrencySelector = () => (
       <Select
         value={currency} 
-        style={{ width: 98, margin: '-5px 0' }}
+        style={{ width: 100, margin: '-5px 0' }} // Compact width
+        popupMatchSelectWidth={false} // Allow dropdown to be wider than the button
         showSearch
         optionFilterProp="children"
         onChange={(val) => setCurrency(val)}
@@ -111,16 +113,16 @@ export default function DocketItemsTable({
 
     const columns = [
         { 
-            title: 'Serial #', 
+            title: '#', 
             key: 'serial', 
-            width: '2%', 
+            width: 10,
             align: 'center', 
             render: (_, __, index) => <Text strong style={{ fontSize: '18px' }}>{index + 1}</Text> 
         },
         { 
             title: 'Metal', 
             dataIndex: 'metal', 
-            width: '13%', 
+            width: '12%', // Increased width for better visibility
             render: (_, record) => (
                 <MetalCell 
                     value={record.metal}
@@ -132,7 +134,7 @@ export default function DocketItemsTable({
         { 
             title: 'Notes', 
             dataIndex: 'notes', 
-            width: '12%', 
+            width: '12%', // Increased width
             render: (_, record) => (
                 <Input 
                     value={record.notes} 
@@ -143,7 +145,7 @@ export default function DocketItemsTable({
         { 
             title: 'Gross', 
             dataIndex: 'gross', 
-            width: 130, 
+            width: 80, // Compact
             render: (_, record) => (
                 <InputNumber 
                     style={{ width: '100%' }} 
@@ -157,7 +159,7 @@ export default function DocketItemsTable({
         { 
             title: 'Tare', 
             dataIndex: 'tare', 
-            width: 130, 
+            width: 80, // Compact
             render: (_, record) => (
                 <InputNumber 
                     style={{ width: '100%' }} 
@@ -171,7 +173,7 @@ export default function DocketItemsTable({
         {
             title: 'Net Weight',
             dataIndex: 'net',
-            width: 150,
+            width: 100, // Compact
             render: (text, record) => {
                 const val = Number(text);
                 const isNegative = !isNaN(val) && val < 0;
@@ -188,7 +190,7 @@ export default function DocketItemsTable({
         {
             title: 'Price / unit',
             dataIndex: 'price',
-            width: 140,
+            width: 100, // Compact
             render: (_, record) => (
                 <InputNumber 
                     addonBefore={renderCurrencySelector()}
@@ -202,15 +204,15 @@ export default function DocketItemsTable({
         {
             title: 'Total',
             dataIndex: 'total',
-            width: 140,
+            width: 125, // Compact
             render: (text) => (
                 <Input prefix={currentSymbolLabel} value={audFormatterFixed(text)} readOnly style={{ textAlign: 'right' }} />
             )
         },
         {
             key: 'action',
-            width: 50,
-            render: (_, record) => <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeRow(record.key)} />
+            width: 1,
+            render: (_, record) => <Button type="text" style={{ width: 10, marginRight:-10}} danger icon={<DeleteOutlined />} onClick={() => removeRow(record.key)} />
         }
     ];
 
@@ -234,7 +236,7 @@ export default function DocketItemsTable({
             />
             <Row gutter={8} style={{ marginTop: 8 }}>
                 <Col flex="auto"><Button type="dashed" onClick={() => addRow(rowsToAdd)} style={{ width: '100%' }} icon={<PlusOutlined />}>Add Rows</Button></Col>
-                <Col><InputNumber min={1} max={50} value={rowsToAdd} onChange={setRowsToAdd} style={{ width: 70 }} /></Col>
+                <Col><InputNumber min={1} max={50} value={rowsToAdd} onChange={setRowsToAdd} style={{ width: 80 }} /></Col>
             </Row>
         </div>
     );
