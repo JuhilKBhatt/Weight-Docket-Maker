@@ -1,10 +1,11 @@
 // ./frontend/src/components/docket/DocketItemsTable.jsx
 
-import React, { useState } from 'react';
-import { Table, Input, InputNumber, Typography, Button, Row, Col, Select } from 'antd'; 
+import React, { useState, useRef } from 'react';
+import { Table, Input, InputNumber, Typography, Button, Row, Col, Select, AutoComplete, Form } from 'antd'; 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
 import { UNIT_OPTIONS as DEFAULT_UNITS, CURRENCY_OPTIONS as DEFAULT_CURRENCIES } from '../../scripts/utilities/invoiceConstants';
+import docketService from '../../services/docketService';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -14,6 +15,7 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
     const [options, setOptions] = useState([]);
     const timeoutRef = useRef(null);
     
+    // Access the parent form to get the current Customer Name
     const form = Form.useFormInstance();
 
     const handleSearch = (val) => {
@@ -24,20 +26,23 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
             return;
         }
 
+        // Get the customer name so the backend can find specific pricing history
         const customerName = form.getFieldValue('name') || '';
 
         timeoutRef.current = setTimeout(async () => {
             try {
                 const data = await docketService.getUniqueMetals(val, customerName);
+                // Ensure data is mapped correctly for AutoComplete options
                 setOptions(data);
             } catch (err) {
                 console.error("Failed to fetch metals", err);
             }
-        }, 300);
+        }, 200); // 300ms debounce
     };
 
     const handleSelect = (val, option) => {
         onChange(val);
+        // If the backend returned a price (based on history), update it
         if (option.price !== undefined && option.price !== null) {
             onPriceUpdate(option.price);
         }
@@ -52,7 +57,9 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
             onChange={onChange}
             placeholder="Metal"
             style={{ width: '100%' }}
-        />
+        >
+            <Input />
+        </AutoComplete>
     );
 };
 
@@ -103,11 +110,64 @@ export default function DocketItemsTable({
     );
 
     const columns = [
-        { title: 'Serial #', key: 'serial', width: '2%', align: 'center', render: (_, __, index) => <Text strong style={{ fontSize: '18px' }}>{index + 1}</Text> },
-        { title: 'Metal', dataIndex: 'metal', width: '15%', render: (_, record) => <Input value={record.metal} onChange={(val) => onItemChange(record.key, 'metal', val.target.value)} /> }, // Simplified Metal for brevity, use MetalCell in real code
-        { title: 'Notes', dataIndex: 'notes', width: '12%', render: (_, record) => <Input value={record.notes} onChange={(e) => onItemChange(record.key, 'notes', e.target.value)} /> },
-        { title: 'Gross', dataIndex: 'gross', width: 130, render: (_, record) => <InputNumber style={{ width: '100%' }} value={record.gross} onChange={(val) => onItemChange(record.key, 'gross', val)} formatter={weightFormatter} parser={weightParser} /> },
-        { title: 'Tare', dataIndex: 'tare', width: 130, render: (_, record) => <InputNumber style={{ width: '100%' }} value={record.tare} onChange={(val) => onItemChange(record.key, 'tare', val)} formatter={weightFormatter} parser={weightParser} /> },
+        { 
+            title: 'Serial #', 
+            key: 'serial', 
+            width: '2%', 
+            align: 'center', 
+            render: (_, __, index) => <Text strong style={{ fontSize: '18px' }}>{index + 1}</Text> 
+        },
+        { 
+            title: 'Metal', 
+            dataIndex: 'metal', 
+            width: '13%', 
+            render: (_, record) => (
+                <MetalCell 
+                    value={record.metal}
+                    onChange={(val) => onItemChange(record.key, 'metal', val)}
+                    onPriceUpdate={(newPrice) => onItemChange(record.key, 'price', newPrice)}
+                />
+            )
+        }, 
+        { 
+            title: 'Notes', 
+            dataIndex: 'notes', 
+            width: '12%', 
+            render: (_, record) => (
+                <Input 
+                    value={record.notes} 
+                    onChange={(e) => onItemChange(record.key, 'notes', e.target.value)} 
+                />
+            ) 
+        },
+        { 
+            title: 'Gross', 
+            dataIndex: 'gross', 
+            width: 130, 
+            render: (_, record) => (
+                <InputNumber 
+                    style={{ width: '100%' }} 
+                    value={record.gross} 
+                    onChange={(val) => onItemChange(record.key, 'gross', val)} 
+                    formatter={weightFormatter} 
+                    parser={weightParser} 
+                />
+            ) 
+        },
+        { 
+            title: 'Tare', 
+            dataIndex: 'tare', 
+            width: 130, 
+            render: (_, record) => (
+                <InputNumber 
+                    style={{ width: '100%' }} 
+                    value={record.tare} 
+                    onChange={(val) => onItemChange(record.key, 'tare', val)} 
+                    formatter={weightFormatter} 
+                    parser={weightParser} 
+                />
+            ) 
+        },
         {
             title: 'Net Weight',
             dataIndex: 'net',
@@ -157,6 +217,14 @@ export default function DocketItemsTable({
     return (
         <div style={{ marginBottom: 30 }}>
             <Table
+                rowClassName={(record) => 
+                    record.key === selectedRowKey ? 'docket-table-row selected-row' : 'docket-table-row'
+                }
+                onRow={(record) => ({
+                    onClick: () => {
+                        setSelectedRowKey(record.key);
+                    },
+                })}
                 dataSource={items}
                 columns={columns}
                 pagination={false}
