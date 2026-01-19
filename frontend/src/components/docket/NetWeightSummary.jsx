@@ -1,8 +1,8 @@
 // src/components/docket/NetWeightSummary.jsx
 
 import React, { useState, useMemo } from 'react';
-import { Button, Modal, Table, App } from 'antd';
-import { UnorderedListOutlined, DollarOutlined } from '@ant-design/icons';
+import { Button, Modal, Table, App, Input } from 'antd';
+import { UnorderedListOutlined, DollarOutlined, SearchOutlined } from '@ant-design/icons';
 import docketService from '../../services/docketService';
 
 export default function NetWeightSummary({ items, form }) {
@@ -14,6 +14,9 @@ export default function NetWeightSummary({ items, form }) {
     const [loading, setLoading] = useState(false);
     const [priceList, setPriceList] = useState([]);
     const [currentCustomer, setCurrentCustomer] = useState('');
+    
+    // Search State
+    const [searchText, setSearchText] = useState('');
 
     // Calculate Net Weights Summary (Existing Logic)
     const weightSummaryData = useMemo(() => {
@@ -33,6 +36,15 @@ export default function NetWeightSummary({ items, form }) {
         }));
     }, [items]);
 
+    // --- FILTER PRICES LIST ---
+    const filteredPriceList = useMemo(() => {
+        if (!searchText) return priceList;
+        const lowerSearch = searchText.toLowerCase();
+        return priceList.filter(item => 
+            (item.label || '').toLowerCase().includes(lowerSearch)
+        );
+    }, [priceList, searchText]);
+
     // --- HANDLE SHOW PRICES ---
     const handleShowPrices = async () => {
         if (!form) return;
@@ -48,6 +60,7 @@ export default function NetWeightSummary({ items, form }) {
         setCurrentCustomer(name);
         setPricesOpen(true);
         setLoading(true);
+        setSearchText(''); // Reset search on open
 
         try {
             // Fetch metals specifically for this customer
@@ -154,11 +167,20 @@ export default function NetWeightSummary({ items, form }) {
                 onCancel={() => setPricesOpen(false)}
                 footer={[<Button key="close" onClick={() => setPricesOpen(false)}>Close</Button>]}
             >
+                <Input 
+                    placeholder="Search metal..." 
+                    prefix={<SearchOutlined />} 
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    style={{ marginBottom: 16 }}
+                    allowClear
+                />
                 <Table 
                     loading={loading}
-                    dataSource={priceList}
+                    dataSource={filteredPriceList}
                     rowKey="value"
                     pagination={false}
+                    scroll={{ y: 400 }} // Added scroll for long lists
                     columns={[
                         { title: 'Metal', dataIndex: 'label', key: 'label' },
                         { 
