@@ -46,4 +46,8 @@ docker compose exec backend python app/utilities/import_data.py "file"
 
 docker compose exec backend python app/utilities/import_console_log.py "file"
 
+**To Import List Data**
+
+docker compose exec backend python app/utilities/seed_lists.py
+
 Add Company In Bill Form Invoice
