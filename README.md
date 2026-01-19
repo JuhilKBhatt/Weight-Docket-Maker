@@ -4,6 +4,8 @@ docker compose up --build -d
 
 docker compose exec backend alembic stamp head
 
+Update Google Drive path in .env file
+
 **Printer - Mac/Linux**
 
 Add Printer via settings
@@ -49,5 +51,9 @@ docker compose exec backend python app/utilities/import_console_log.py "file"
 **To Import List Data**
 
 docker compose exec backend python app/utilities/seed_lists.py
+
+**To Add Email Support**
+
+Go to Settings -> Email Config
 
 Add Company In Bill Form Invoice
