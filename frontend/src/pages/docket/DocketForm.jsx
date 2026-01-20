@@ -132,6 +132,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     // --- INIT EDIT MODE ---
     useEffect(() => {
         if (mode === 'edit' && existingDocket) {
+            message.info('Loading existing docket data...');
             setCurrency(existingDocket.currency || 'AUD');
             setGstEnabled(existingDocket.include_gst);
             setGstPercentage(existingDocket.gst_percentage);
@@ -203,6 +204,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     // 2. The Auto-Save Effect
     useEffect(() => {
         const performAutoSave = () => {
+            message.info('Auto-saving docket...');
             const state = stateRef.current;
             // If no ID, nothing to save
             if (!state.scrdktID) return;
