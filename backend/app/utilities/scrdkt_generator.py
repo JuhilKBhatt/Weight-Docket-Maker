@@ -27,8 +27,8 @@ def generate_next_scrdkt(db: Session) -> str:
             raise ValueError("SCRDKT range exhausted (Limit 9Z9999 reached)")
 
         # --- FORMATTING ---
-        # Format: SCRDKT + 1 + A + 0001
-        candidate_scrdkt = f"SCRDKT{leading_digit}{letter_part}{digits_part:04d}"
+        # Format: SCR + 1 + A + 0001
+        candidate_scrdkt = f"SCR{leading_digit}{letter_part}{digits_part:04d}"
 
         # --- COLLISION CHECK ---
         exists = db.query(Docket).filter(Docket.scrdkt_number == candidate_scrdkt).first()
