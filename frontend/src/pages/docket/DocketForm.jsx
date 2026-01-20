@@ -132,7 +132,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     // --- INIT EDIT MODE ---
     useEffect(() => {
         if (mode === 'edit' && existingDocket) {
-            message.info('Loading existing docket data...');
+            message.info('Docket loaded for editing.', 0.8);
             setCurrency(existingDocket.currency || 'AUD');
             setGstEnabled(existingDocket.include_gst);
             setGstPercentage(existingDocket.gst_percentage);
@@ -204,7 +204,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     // 2. The Auto-Save Effect
     useEffect(() => {
         const performAutoSave = () => {
-            message.info('Auto-saving docket...');
+            message.info('Auto-saving docket...', 0.5);
             const state = stateRef.current;
             // If no ID, nothing to save
             if (!state.scrdktID) return;
@@ -291,7 +291,10 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
                 keepalive: true 
-            }).catch(err => console.error("Auto-save failed", err));
+            }).catch((error) => {
+                message.error('Auto-save failed.');
+                console.error('Auto-save failed:', error);
+            });
         };
 
         // Attach to Window Close
