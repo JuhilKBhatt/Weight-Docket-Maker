@@ -24,10 +24,20 @@ const { Header, Content } = Layout
 export default function App() {
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Content>
-        <Header style={{ display: 'flex', alignItems: 'center', padding: '0 20px', background: 'transparent' }}>
+      <Content style={{ position: 'relative' }}>
+        <Header style={{ 
+          position: 'absolute', 
+          top: 0, 
+          width: '100%', 
+          zIndex: 10, 
+          display: 'flex', 
+          alignItems: 'center', 
+          padding: '0 20px', 
+          background: 'transparent' 
+        }}>
           <PageHeader />
         </Header>
+        
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="*" element={<Home />} /> {/* Fallback route */}
