@@ -448,7 +448,10 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1600px', margin: '0 auto', position: 'relative' }}>
+        <div style={{ padding: '20px'}}>
+            <Typography.Title style={{textAlign: 'center', marginTop: 20}} level={1}>
+                {mode === 'new' ? 'Create New Docket' : mode === 'edit' ? 'Edit Docket' : 'View Invoice'}
+            </Typography.Title>
             <NetWeightSummary items={itemsWithTotals} form={form} />
             {/* ADDED onValuesChange to keep ref sync'd for auto-save */}
             <Form form={form} layout="vertical" onValuesChange={handleValuesChange}>
