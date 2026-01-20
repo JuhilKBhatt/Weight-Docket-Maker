@@ -2,12 +2,14 @@
 
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { App } from 'antd';
 import axios from 'axios';
 import InvoiceForm from './InvoiceForm';
 
 const API = 'http://localhost:8000/api/invoices';
 
 export default function EditInvoice() {
+  const { message } = App.useApp();
   const { id } = useParams();
   const [invoice, setInvoice] = useState(null);
 
@@ -56,7 +58,7 @@ export default function EditInvoice() {
       console.log('Normalized Invoice:', normalized);
       setInvoice(normalized);
     }
-
+    message.info('Invoice loaded for editing.');
     loadInvoice();
   }, [id]);
 

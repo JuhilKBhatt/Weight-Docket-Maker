@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Input, Table, Button, Typography, Popconfirm, Tag, message, DatePicker, Row, Col, Space, Tooltip } from 'antd';
+import { Input, Table, Button, Typography, Popconfirm, Tag, DatePicker, Row, Col, Space, Tooltip, App } from 'antd';
 import { EditOutlined, DeleteOutlined, CheckCircleOutlined, CloseCircleOutlined, SendOutlined, FileTextOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { audFormatterFixed } from '../../scripts/utilities/AUDformatters';
@@ -18,6 +18,7 @@ import {
 const { RangePicker } = DatePicker;
 
 export default function InvoiceList() {
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const [invoices, setInvoices] = useState([]);
   
