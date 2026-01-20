@@ -56,7 +56,6 @@ export default function DefaultsTab({ form, currencies, units, selectors, onSave
                         </Form.Item>
                         <Form.Item label="Default Invoice Type" name="default_invoice_type">
                             <Select>
-                                <Option value="Customer">Customer</Option>
                                 <Option value="Weight">Weight</Option>
                                 <Option value="Container">Container</Option>
                             </Select>
