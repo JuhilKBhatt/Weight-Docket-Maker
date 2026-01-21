@@ -56,4 +56,8 @@ docker compose exec backend python app/utilities/seed_lists.py
 
 Go to Settings -> Email Config
 
+---
+
+Open Docker Application at Login/Restart
+
 Add Company In Bill Form Invoice
