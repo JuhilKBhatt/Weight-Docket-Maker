@@ -14,7 +14,7 @@ export default function Home() {
       </Typography.Paragraph>
       <div className="home-buttons">
         <Link to="/DocketHome">
-          <Button type="primary" >Create Docket</Button>
+          <Button type="primary" style={{backgroundColor: '#324AB2'}} >Create Docket</Button>
         </Link>
         <Link to="/InvoiceHome">
           <Button type="primary">Create Invoice</Button>

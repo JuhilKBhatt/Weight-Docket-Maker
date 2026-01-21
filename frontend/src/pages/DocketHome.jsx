@@ -14,13 +14,13 @@ export default function DocketHome() {
       </Typography.Paragraph>
       <div className="home-buttons">
         <Link to="/new-docket">
-          <Button type="primary">New Docket</Button>
+          <Button type="primary" style={{backgroundColor: '#324AB2'}} >New Docket</Button>
         </Link>
         <Link to="/view-docket">
-          <Button type="primary">View Saved Docket</Button>
+          <Button type="primary" style={{backgroundColor: '#324AB2'}} >View Saved Docket</Button>
         </Link>
         <Link to='/inventory-report'>
-          <Button type="primary">View Inventory</Button>
+          <Button type="primary" style={{backgroundColor: '#324AB2'}} >View Inventory</Button>
         </Link>
       </div>
     </div>
