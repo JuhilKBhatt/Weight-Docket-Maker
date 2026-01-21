@@ -21,6 +21,7 @@ import useInvoiceSelectors from '../../hooks/invoice/useInvoiceSelectors';
 // Utilities
 import { SaveDocket, DownloadPDFDocket, PrintDocket, CheckPrintStatus } from '../../scripts/utilities/docketUtils';
 import { getDefaults, getCurrencies, getUnits } from '../../services/settingsService';
+import docketService from '../../services/docketService'; // Ensure this is imported
 import '../../styles/Form.css'; 
 
 const { Text } = Typography;
@@ -31,21 +32,17 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const navigate = useNavigate();
     const confirmReset = useConfirmReset();
     
-    // Fetch Company List for Defaults
     const { savedCompaniesFrom } = useInvoiceSelectors();
 
     const [printing, setPrinting] = useState(false);
     const { scrdktID, resetDocket } = useDocketForm(mode, existingDocket);
 
-    // Options State
     const [currencyOptions, setCurrencyOptions] = useState([]);
     const [unitOptions, setUnitOptions] = useState([]);
     const [defaultUnit, setDefaultUnit] = useState('kg');
 
-    // Data State
     const [dataSource, setDataSource] = useState([]); 
     
-    // Financial Settings
     const [gstEnabled, setGstEnabled] = useState(false);
     const [gstPercentage, setGstPercentage] = useState(10);
     const [currency, setCurrency] = useState('AUD');
@@ -53,31 +50,69 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const [preGstDeductions, setPreGstDeductions] = useState([]);
     const [postGstDeductions, setPostGstDeductions] = useState([]);
 
-    // --- 1. NEW: Form Values Ref (To survive unmount) ---
     const formValuesRef = useRef({});
 
-    // Update the ref whenever the form changes
     const handleValuesChange = (_, allValues) => {
         formValuesRef.current = allValues;
     };
 
-    // --- INIT ROWS HELPER ---
     const generateInitialRows = (count, unit = 'kg') => {
         return Array.from({ length: count }, (_, index) => ({
             key: Date.now() + index, metal: '', notes: '', gross: null, tare: null, net: 0, price: null, total: 0, unit
         }));
     };
 
-    // --- SYNC ID TO FORM ---
+    // --- PRICE AUTOFILL LOGIC (New) ---
+    const handleCustomerSelect = async (customerName) => {
+        if (!customerName) return;
+        
+        // Only target rows that have a metal selected BUT NO price (null or 0)
+        // This preserves manually entered prices.
+        const rowsToUpdate = dataSource.filter(item => item.metal && (!item.price || item.price === 0));
+        
+        if (rowsToUpdate.length === 0) return;
+
+        message.loading({ content: "Fetching prices...", key: "pricing" });
+
+        // Fetch prices for these items
+        const updatedRows = await Promise.all(rowsToUpdate.map(async (row) => {
+            try {
+                // Fetch metals for this specific customer context
+                const results = await docketService.getUniqueMetals(row.metal, customerName);
+                // Look for strict match
+                const match = results.find(r => r.value.toLowerCase() === row.metal.toLowerCase());
+                
+                // Only update if we found a price > 0
+                if (match && match.price > 0) {
+                    return { ...row, price: match.price };
+                }
+            } catch (error) {
+                console.error("Error autofilling price for", row.metal, error);
+            }
+            return row;
+        }));
+
+        // Update State
+        setDataSource(prev => prev.map(prevRow => {
+            const updated = updatedRows.find(u => u.key === prevRow.key);
+            return updated || prevRow;
+        }));
+        
+        const count = updatedRows.filter(r => r.price > 0 && r.price !== 0).length;
+        if (count > 0) {
+            message.success({ content: `Autofilled prices for ${count} items.`, key: "pricing" });
+        } else {
+            message.info({ content: "No price history found for these items.", key: "pricing" });
+        }
+    };
+
     useEffect(() => {
         if (scrdktID) {
             form.setFieldsValue({ docketNumber: scrdktID });
-            // Update ref immediately
             formValuesRef.current = { ...form.getFieldsValue(), docketNumber: scrdktID };
         }
     }, [scrdktID, form]);
 
-    // --- FETCH SETTINGS & DEFAULTS ---
     useEffect(() => {
         async function loadSettings() {
             try {
@@ -90,7 +125,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 setCurrencyOptions(curs);
                 setUnitOptions(units);
 
-                // --- APPLY DEFAULTS (Only in New Mode) ---
                 if (mode === 'new') {
                     if (defaults.default_currency) setCurrency(defaults.default_currency);
                     
@@ -100,7 +134,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     if (defaults.default_gst_enabled) setGstEnabled(defaults.default_gst_enabled === 'true');
                     if (defaults.default_gst_percentage) setGstPercentage(Number(defaults.default_gst_percentage));
                     
-                    // Default Bill From Company
                     const defaultCompId = Number(defaults.default_bill_from);
                     if (defaultCompId && savedCompaniesFrom.length > 0) {
                         const match = savedCompaniesFrom.find(c => c.id === defaultCompId);
@@ -115,21 +148,16 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                         }
                     }
 
-                    // Init Table with Default Unit
                     setDataSource(generateInitialRows(20, defUnit));
-                    // Initial sync to ref
                     formValuesRef.current = form.getFieldsValue();
                 }
             } catch (err) {
                 console.error("Error loading settings", err);
             }
         }
-
-        // Trigger load
         loadSettings();
     }, [mode, savedCompaniesFrom]); 
 
-    // --- INIT EDIT MODE ---
     useEffect(() => {
         if (mode === 'edit' && existingDocket) {
             message.info('Docket loaded for editing.', 0.8);
@@ -137,7 +165,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             setGstEnabled(existingDocket.include_gst);
             setGstPercentage(existingDocket.gst_percentage);
             
-            // Map Items
             const items = existingDocket.items.map(i => ({
                 key: i.key || i.id,
                 metal: i.metal || '',
@@ -179,11 +206,10 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             };
             
             form.setFieldsValue(initialValues);
-            formValuesRef.current = initialValues; // Sync Ref
+            formValuesRef.current = initialValues;
         }
     }, [mode, existingDocket, form]);
 
-    // 3. Calculation Logic
     const { itemsWithTotals, grossTotal, gstAmount, finalTotal } = useDocketCalculations({
         items: dataSource,
         preGstDeductions,
@@ -192,31 +218,23 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         gstPercentage
     });
 
-    // --- AUTOSAVE LOGIC START ---
-    
-    // 1. Keep state ref updated
+    // --- AUTOSAVE LOGIC ---
     const stateRef = useRef({ scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency });
     
     useEffect(() => { 
         stateRef.current = { scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency }; 
     }, [scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency]);
 
-    // 2. The Auto-Save Effect
     useEffect(() => {
         const performAutoSave = () => {
             message.info('Auto-saving docket...', 0.5);
             const state = stateRef.current;
-            // If no ID, nothing to save
             if (!state.scrdktID) return;
 
-            // USE REF VALUES INSTEAD OF form.getFieldsValue() to ensure access on unmount
             const values = formValuesRef.current || {};
-            
-            // Helpers
             const safe = (val) => val ?? "";
             const num = (val) => Number(val ?? 0);
 
-            // Date Formatting
             let dateStr = null;
             if (values.date) {
                  if (dayjs.isDayjs(values.date)) dateStr = values.date.format('YYYY-MM-DD');
@@ -229,7 +247,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             let dobStr = null;
             if (values.dob && dayjs.isDayjs(values.dob)) dobStr = values.dob.format('YYYY-MM-DD');
 
-            // Construct Payload
             const payload = {
                 scrdkt_number: state.scrdktID,
                 docket_date: dateStr,
@@ -239,8 +256,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 print_qty: num(values.printQty),
                 docket_type: safe(values.docketType) || "Customer",
                 currency: safe(state.currency) || "AUD",
-                
-                // Add Symbol (required by new backend)
                 currency_symbol: "$", 
 
                 company_name: safe(values.companyDetails),
@@ -283,9 +298,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 ]
             };
 
-            // Send Beacon / Fetch with keepalive
             const API_URL = 'http://localhost:8000/api/dockets/saveDocket';
-            
             fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -297,19 +310,13 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             });
         };
 
-        // Attach to Window Close
         window.addEventListener('beforeunload', performAutoSave);
-
-        // Attach to Component Unmount (Back Button / Navigation)
         return () => {
             window.removeEventListener('beforeunload', performAutoSave);
-            performAutoSave(); // Trigger on unmount
+            performAutoSave();
         };
     }, []); 
 
-    // --- AUTOSAVE END ---
-    
-    // --- Handlers ---
     const addRow = (count = 1) => {
         const timestamp = Date.now(); 
         const newRows = Array.from({ length: count }, (_, index) => ({
@@ -376,7 +383,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         }
     };
 
-    // --- PRINT HANDLER ---
     const handlePrint = async () => {
         setPrinting(true); 
         try {
@@ -384,7 +390,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             const values = await form.validateFields();
             const qty = values.printQty || 1;
 
-            // 1. Save
             const result = await SaveDocket({
                 scrdktID,
                 status: "Printed", 
@@ -397,19 +402,16 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 currency
             });
 
-            // 2. Send Print Request
             const printResponse = await PrintDocket(result.id, qty);
             const filename = printResponse.filename;
 
             if (!filename) {
-                // Fallback if no filename returned
                 message.success(`Sent to printer (${qty} copies)`);
                 setPrinting(false);
                 return;
             }
 
-            // 3. Start Polling Loop (Wait for watcher to delete file)
-            const maxRetries = 10; // Wait max 20 seconds (20 * 1s)
+            const maxRetries = 10; 
             let attempts = 0;
             
             message.info('Sending to printer, please wait...');
@@ -418,27 +420,25 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 const status = await CheckPrintStatus(filename);
 
                 if (status === 'completed') {
-                    // Success: File is gone!
                     clearInterval(pollInterval);
                     setPrinting(false);
                     message.success(`Printing Started (${qty} copies)`);
                     
-                    // Navigate or Reset
                     if (mode === 'new') {
                        resetDocket();
                        form.resetFields(); 
                        setCurrency('AUD');
+                       setDataSource(generateInitialRows(20, defaultUnit));
                        formValuesRef.current = {};
                     } else {
                        navigate('/view-docket');
                     }
                 } else if (attempts >= maxRetries) {
-                    // Timeout: Watcher didn't pick it up
                     clearInterval(pollInterval);
                     setPrinting(false);
                     message.warning("Sent to queue, but printer script seems slow or offline.");
                 }
-            }, 1000); // Check every 1 second
+            }, 1000); 
 
         } catch (error) {
             console.error(error);
@@ -453,10 +453,9 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 {mode === 'new' ? 'Create New Docket' : mode === 'edit' ? 'Edit Docket' : 'View Invoice'}
             </Typography.Title>
             <NetWeightSummary items={itemsWithTotals} form={form} />
-            {/* ADDED onValuesChange to keep ref sync'd for auto-save */}
             <Form form={form} layout="vertical" onValuesChange={handleValuesChange}>
                 <DocketHeader />
-                <CustomerDetails />
+                <CustomerDetails onCustomerSelect={handleCustomerSelect} />
                 <DocketItemsTable 
                     items={itemsWithTotals} 
                     onItemChange={handleItemsChange} 
@@ -464,7 +463,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     removeRow={removeRow} 
                     currency={currency}
                     setCurrency={setCurrency}
-                    // Pass Options
                     currencyOptions={currencyOptions}
                     unitOptions={unitOptions}
                 />
@@ -491,10 +489,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 </Row>
                 <Divider />
                 
-                {/* --- ACTION BUTTONS (FOOTER) --- */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 0', gap: '30px' }}>
-                    
-                    {/* TOP: Save Checkbox */}
                     <Space>
                         <Form.Item name="saveDocket" valuePropName="checked" noStyle initialValue={true}>
                             <Checkbox style={{ fontSize: '24px', transform: 'scale(1.5)' }}>Save Docket?</Checkbox>
@@ -503,7 +498,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
                     <div style={{ width: '400px', borderBottom: '2px solid #f0f0f0' }}></div>
 
-                    {/* BOTTOM: Print Section */}
                     <Space size="large" align="center">
                         <Space size="small">
                             <Text style={{ fontSize: '24px' }}>Printing:</Text>
@@ -518,8 +512,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                             size="large" 
                             style={{ minWidth: 220, height: 70, fontSize: '28px', marginLeft: '20px' }}
                             onClick={handlePrint}
-                            loading={printing}  // AntD loading spinner
-                            disabled={printing} // Explicit disable
+                            loading={printing}  
+                            disabled={printing} 
                         >
                             {printing ? "Printing..." : "Print"}
                         </Button>

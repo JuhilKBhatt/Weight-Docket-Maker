@@ -1,12 +1,12 @@
 // ./frontend/src/components/docket/CustomerDetails.jsx
 
-import React, { useState, useRef } from 'react'; // Removed useEffect
+import React, { useState, useRef } from 'react';
 import { Card, Row, Col, Form, Input, DatePicker, AutoComplete, App } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import docketService from '../../services/docketService';
 
-export default function CustomerDetails() {
+export default function CustomerDetails({ onCustomerSelect }) {
     const form = Form.useFormInstance(); 
     const [options, setOptions] = useState([]);
     const { message } = App.useApp();
@@ -18,18 +18,15 @@ export default function CustomerDetails() {
 
     // Updated Search Handler with Debounce
     const handleSearch = (value) => {
-        // Clear existing timeout
         if (searchTimeout.current) {
             clearTimeout(searchTimeout.current);
         }
 
-        // Only search if value exists
         if (!value) {
             setOptions([]);
             return;
         }
 
-        // Set new timeout (300ms delay)
         searchTimeout.current = setTimeout(async () => {
             try {
                 const data = await docketService.getUniqueCustomers(value);
@@ -59,6 +56,11 @@ export default function CustomerDetails() {
         });
         
         message.success("Customer details autofilled");
+
+        // Trigger Autofill for Prices in Parent
+        if (onCustomerSelect) {
+            onCustomerSelect(details.name);
+        }
     };
 
     return (

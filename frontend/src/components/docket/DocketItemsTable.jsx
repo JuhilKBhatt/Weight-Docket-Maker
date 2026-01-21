@@ -42,9 +42,39 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
 
     const handleSelect = (val, option) => {
         onChange(val);
-        // If the backend returned a price (based on history), update it
-        if (option.price !== undefined && option.price !== null) {
+        // If the backend returned a price > 0, update it.
+        // If 0 or null, set it to null (blank) so it doesn't default to 0.00
+        if (option.price && option.price > 0) {
             onPriceUpdate(option.price);
+        } else {
+            onPriceUpdate(null);
+        }
+    };
+
+    // New: Handle Blur to autofill price when typing manually (not selecting from dropdown)
+    const handleBlur = async () => {
+        // If empty, do nothing
+        if (!value || !value.trim()) return;
+
+        const customerName = form.getFieldValue('name') || '';
+
+        try {
+            // Fetch exact matches or close matches for the typed text
+            const data = await docketService.getUniqueMetals(value, customerName);
+            
+            // Find a match (case-insensitive) to the typed text
+            const match = data.find(item => item.value.toLowerCase() === value.trim().toLowerCase());
+
+            if (match) {
+                // Apply the same logic as handleSelect
+                if (match.price && match.price > 0) {
+                    onPriceUpdate(match.price);
+                } else {
+                    onPriceUpdate(null);
+                }
+            }
+        } catch (err) {
+            console.error("Failed to autofill price on blur", err);
         }
     };
 
@@ -54,9 +84,11 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
             options={options}
             onSearch={handleSearch}
             onSelect={handleSelect}
+            onBlur={handleBlur}
             onChange={onChange}
             placeholder="Metal"
             style={{ width: '100%' }}
+            placement="topLeft"
         >
             <Input />
         </AutoComplete>
