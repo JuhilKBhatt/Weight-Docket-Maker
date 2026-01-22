@@ -44,15 +44,17 @@ export default function PayAccountSection({
           </Form.Item>
 
           <Form.Item
-            label="Account Name"
-            name="accName"
+            label="Bank Name"
+            name="bankName"
+            rules={[{ required: true }]}
           >
             <Input maxLength={254}/>
           </Form.Item>
 
           <Form.Item
-            label="Bank Name"
-            name="bankName"
+            label="Account Name"
+            name="accName"
+            rules={[{ required: true }]}
           >
             <Input maxLength={254}/>
           </Form.Item>
@@ -61,10 +63,11 @@ export default function PayAccountSection({
             label="BSB"
             name="bsb"
             rules={[
+              { required: true },
               { len: 6, message: 'BSB must be 6 digits' } 
             ]}
             // This function runs on every keystroke, removing non-digits
-            getValueFromEvent={(e) => e.target.value.replace(/\D/g, '')}
+            getValueFromEvent={(e) => e.target.value.replaceAll(/\D/g, '')}
           >
             <Input
               style={{ width: '100%' }}
@@ -76,6 +79,7 @@ export default function PayAccountSection({
           <Form.Item
             label="Account Number"
             name="accountNumber"
+            rules={[{ required: true }]}
           >
             <Input
               style={{ width: '100%' }}

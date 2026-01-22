@@ -41,19 +41,36 @@ export default function SettingsModal({ open, onOk, onCancel, modalType, editing
                 {(modalType === 'companyFrom' || modalType === 'companyTo') && (
                     <>
                         <Form.Item name="name" label="Company Name" rules={[{ required: true }]}>
-                            <Input />
+                            <Input
+                                maxLength={254}
+                            />
                         </Form.Item>
-                        <Form.Item name="abn" label="ABN">
-                            <Input />
+                        <Form.Item
+                            name="abn"
+                            label="ABN"
+                            rules={[
+                                { len: 11, message: 'ABN must be 11 digits' } 
+                            ]}
+                            // This function runs on every keystroke, removing non-digits
+                            getValueFromEvent={(e) => e.target.value.replace(/\D/g, '')}>
+                            <Input
+                                maxLength={11}
+                            />
                         </Form.Item>
                         <Form.Item name="address" label="Address">
-                            <Input />
+                            <Input
+                                maxLength={254}
+                            />
                         </Form.Item>
                         <Form.Item name="phone" label="Phone">
-                            <Input />
+                            <Input
+                                maxLength={49}
+                            />
                         </Form.Item>
                         <Form.Item name="email" label="Email">
-                            <Input />
+                            <Input
+                                maxLength={199}
+                            />
                         </Form.Item>
                     </>
                 )}
@@ -61,16 +78,25 @@ export default function SettingsModal({ open, onOk, onCancel, modalType, editing
                 {modalType === 'account' && (
                     <>
                         <Form.Item name="bank_name" label="Bank Name" rules={[{ required: true }]}>
-                            <Input />
+                            <Input maxLength={254} />
                         </Form.Item>
                         <Form.Item name="account_name" label="Account Name" rules={[{ required: true }]}>
-                            <Input />
+                            <Input maxLength={254} />
                         </Form.Item>
-                        <Form.Item name="bsb" label="BSB" rules={[{ required: true }]}>
-                            <Input />
+                        <Form.Item
+                            name="bsb"
+                            label="BSB"
+                            rules={[
+                                { required: true },
+                                { len: 6, message: 'BSB must be 6 digits' } 
+                            ]}
+                            // This function runs on every keystroke, removing non-digits
+                            getValueFromEvent={(e) => e.target.value.replaceAll(/\D/g, '')}
+                        >
+                            <Input maxLength={6} controls={false}/>
                         </Form.Item>
                         <Form.Item name="account_number" label="Account Number" rules={[{ required: true }]}>
-                            <Input />
+                            <Input maxLength={49} controls={false} />
                         </Form.Item>
                     </>
                 )}
