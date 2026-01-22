@@ -69,7 +69,11 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
           if (defaults.default_currency) setCurrency(defaults.default_currency);
           if (defaults.default_unit) setDefaultUnit(defaults.default_unit);
           
-          if (defaults.default_gst_enabled) invoice.setIncludeGST(defaults.default_gst_enabled === 'true');
+          // USE INVOICE-SPECIFIC GST SETTING
+          if (defaults.default_invoice_gst_enabled) {
+              invoice.setIncludeGST(defaults.default_invoice_gst_enabled === 'true');
+          }
+          
           if (defaults.default_gst_percentage) invoice.setGstPercentage(Number(defaults.default_gst_percentage));
           if (defaults.default_invoice_type) invoice.setInvoiceType(defaults.default_invoice_type);
           

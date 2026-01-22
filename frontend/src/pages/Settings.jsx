@@ -63,7 +63,11 @@ export default function Settings() {
       // Init Form Defaults
       form.setFieldsValue({
           ...defData,
-          default_gst_enabled: defData.default_gst_enabled === 'true',
+          
+          // SPLIT GST DEFAULTS
+          default_docket_gst_enabled: defData.default_docket_gst_enabled === 'true',
+          default_invoice_gst_enabled: defData.default_invoice_gst_enabled === 'true',
+          
           default_gst_percentage: Number(defData.default_gst_percentage) || 10,
           default_bill_from: defData.default_bill_from ? Number(defData.default_bill_from) : null,
           default_account: defData.default_account ? Number(defData.default_account) : null,
@@ -108,6 +112,7 @@ export default function Settings() {
           messageApi.success("Settings saved successfully");
           fetchData(); 
       } catch (err) {
+        console.error(err);
           messageApi.error("Failed to save settings");
       }
   };
@@ -118,6 +123,7 @@ export default function Settings() {
       messageApi.success("Item removed");
       fetchData();
     } catch (err) {
+      console.error(err);
       messageApi.error("Failed to delete item");
     }
   };
@@ -129,6 +135,7 @@ export default function Settings() {
           messageApi.success("Option deleted");
           fetchData();
       } catch (err) {
+          console.error(err);
           messageApi.error("Failed to delete option");
       }
   };
@@ -139,6 +146,7 @@ export default function Settings() {
           await forceBackup();
           setTimeout(() => messageApi.success("Backup trigger sent to server"), 1000);
       } catch (err) {
+          console.error(err);
           messageApi.error("Backup failed");
       }
   };

@@ -131,7 +131,10 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     const defUnit = defaults.default_unit || 'kg';
                     setDefaultUnit(defUnit);
 
-                    if (defaults.default_gst_enabled) setGstEnabled(defaults.default_gst_enabled === 'true');
+                    // USE DOCKET-SPECIFIC GST SETTING
+                    if (defaults.default_docket_gst_enabled) {
+                        setGstEnabled(defaults.default_docket_gst_enabled === 'true');
+                    }
                     if (defaults.default_gst_percentage) setGstPercentage(Number(defaults.default_gst_percentage));
                     
                     const defaultCompId = Number(defaults.default_bill_from);

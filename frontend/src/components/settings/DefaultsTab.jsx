@@ -24,15 +24,24 @@ export default function DefaultsTab({ form, currencies, units, selectors, onSave
                                 <Option value="kg">kg (Fallback)</Option>
                             </Select>
                         </Form.Item>
+                        
+                        {/* GST SETTINGS SPLIT */}
                         <Row gutter={16}>
                             <Col span={12}>
-                                <Form.Item label="Default GST Enabled" name="default_gst_enabled" valuePropName="checked">
+                                <Form.Item label="Default GST %" name="default_gst_percentage">
+                                    <InputNumber min={0} max={100} addonAfter="%" style={{ width: '100%' }} />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item label="Default Docket GST Enabled" name="default_docket_gst_enabled" valuePropName="checked">
                                     <Switch />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
-                                <Form.Item label="Default GST %" name="default_gst_percentage">
-                                    <InputNumber min={0} max={100} addonAfter="%" />
+                                <Form.Item label="Default Invoice GST Enabled" name="default_invoice_gst_enabled" valuePropName="checked">
+                                    <Switch />
                                 </Form.Item>
                             </Col>
                         </Row>
