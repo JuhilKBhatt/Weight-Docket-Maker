@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { Row, Col, Typography, Button, List, Popconfirm } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
-export default function ListsManagementTab({ currencies, units, onAdd, onDelete }) {
+export default function ListsManagementTab({ currencies, units, onAdd, onEdit, onDelete }) {
     
     const renderOptionsList = (data, type) => (
         <List
@@ -15,6 +15,7 @@ export default function ListsManagementTab({ currencies, units, onAdd, onDelete 
             renderItem={item => (
                 <List.Item
                     actions={[
+                        <Button key="edit" size="small" icon={<EditOutlined />} onClick={() => onEdit(type, item)} />,
                         <Popconfirm key="del" title="Delete?" onConfirm={() => onDelete(type, item.id)}>
                             <Button danger size="small" icon={<DeleteOutlined />} />
                         </Popconfirm>

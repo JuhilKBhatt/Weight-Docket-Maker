@@ -29,6 +29,15 @@ def add_currency(db: Session, data: CurrencyCreate):
     db.commit()
     return curr
 
+def update_currency(db: Session, id: int, data: CurrencyCreate):
+    curr = db.query(CurrencyOption).filter(CurrencyOption.id == id).first()
+    if curr:
+        curr.code = data.code
+        curr.symbol = data.symbol
+        curr.label = data.label
+        db.commit()
+    return curr
+
 def delete_currency(db: Session, id: int):
     db.query(CurrencyOption).filter(CurrencyOption.id == id).delete()
     db.commit()
@@ -41,6 +50,14 @@ def add_unit(db: Session, data: UnitCreate):
     unit = UnitOption(value=data.value, label=data.label)
     db.add(unit)
     db.commit()
+    return unit
+
+def update_unit(db: Session, id: int, data: UnitCreate):
+    unit = db.query(UnitOption).filter(UnitOption.id == id).first()
+    if unit:
+        unit.value = data.value
+        unit.label = data.label
+        db.commit()
     return unit
 
 def delete_unit(db: Session, id: int):

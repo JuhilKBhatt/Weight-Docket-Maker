@@ -31,6 +31,10 @@ def get_currencies(db: Session = Depends(get_db)):
 def add_currency(data: CurrencyCreate, db: Session = Depends(get_db)):
     return settings_service.add_currency(db, data)
 
+@router.put("/currencies/{id}")
+def update_currency(id: int, data: CurrencyCreate, db: Session = Depends(get_db)):
+    return settings_service.update_currency(db, id, data)
+
 @router.delete("/currencies/{id}")
 def delete_currency(id: int, db: Session = Depends(get_db)):
     settings_service.delete_currency(db, id)
@@ -44,6 +48,10 @@ def get_units(db: Session = Depends(get_db)):
 @router.post("/units")
 def add_unit(data: UnitCreate, db: Session = Depends(get_db)):
     return settings_service.add_unit(db, data)
+
+@router.put("/units/{id}")
+def update_unit(id: int, data: UnitCreate, db: Session = Depends(get_db)):
+    return settings_service.update_unit(db, id, data)
 
 @router.delete("/units/{id}")
 def delete_unit(id: int, db: Session = Depends(get_db)):

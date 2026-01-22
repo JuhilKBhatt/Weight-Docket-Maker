@@ -31,6 +31,10 @@ export const addCurrency = async (data) => {
     const res = await axios.post(`${API_SETTINGS}/currencies`, data);
     return res.data;
 };
+export const updateCurrency = async (data, id) => {
+    const res = await axios.put(`${API_SETTINGS}/currencies/${id}`, data);
+    return res.data;
+};
 export const deleteCurrency = async (id) => {
     const res = await axios.delete(`${API_SETTINGS}/currencies/${id}`);
     return res.data;
@@ -43,6 +47,10 @@ export const getUnits = async () => {
 };
 export const addUnit = async (data) => {
     const res = await axios.post(`${API_SETTINGS}/units`, data);
+    return res.data;
+};
+export const updateUnit = async (data, id) => {
+    const res = await axios.put(`${API_SETTINGS}/units/${id}`, data);
     return res.data;
 };
 export const deleteUnit = async (id) => {

@@ -6,8 +6,8 @@ import { Tabs, Typography, message, Card, Form } from 'antd';
 import { selectorData } from '../scripts/utilities/invoiceUtils';
 import { 
     deleteSelector, getDefaults, updateDefaults, 
-    getCurrencies, addCurrency, deleteCurrency,
-    getUnits, addUnit, deleteUnit,
+    getCurrencies, addCurrency, updateCurrency, deleteCurrency,
+    getUnits, addUnit, updateUnit, deleteUnit,
     saveCompanyFrom, saveCompanyTo, saveAccount, forceBackup
 } from '../services/settingsService';
 
@@ -168,8 +168,14 @@ export default function Settings() {
           const values = await modalForm.validateFields();
           const id = editingItem?.id;
 
-          if (modalType === 'currency') await addCurrency(values);
-          else if (modalType === 'unit') await addUnit(values);
+          if (modalType === 'currency') {
+              if (id) await updateCurrency(values, id);
+              else await addCurrency(values);
+          }
+          else if (modalType === 'unit') {
+              if (id) await updateUnit(values, id);
+              else await addUnit(values);
+          }
           else if (modalType === 'companyFrom') await saveCompanyFrom(values, id);
           else if (modalType === 'companyTo') await saveCompanyTo(values, id);
           else if (modalType === 'account') await saveAccount(values, id);
@@ -191,7 +197,7 @@ export default function Settings() {
     },
     {
       key: '2', label: 'Lists Management',
-      children: <ListsManagementTab currencies={currencies} units={units} onAdd={openModal} onDelete={handleDeleteOption} />
+      children: <ListsManagementTab currencies={currencies} units={units} onAdd={openModal} onEdit={openModal} onDelete={handleDeleteOption} />
     },
     {
       key: '3', label: 'Bill From Companies',
