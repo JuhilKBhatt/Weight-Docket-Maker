@@ -1,6 +1,6 @@
 // ./frontend/src/components/invoice/BillingInfo.jsx
 
-import { Row, Col, Typography, Form, Input, InputNumber, Select, DatePicker } from 'antd';
+import { Row, Col, Typography, Form, Input, InputNumber, Select, DatePicker, App } from 'antd';
 
 export default function BillingInfo({
   form,
@@ -11,6 +11,24 @@ export default function BillingInfo({
   savedCompaniesFrom = [],
   savedCompaniesTo = [],
 }) {
+  const { message } = App.useApp();
+
+  // Watch the saved company selectors to toggle read-only state
+  // We use the form instance to watch the specific fields
+  const fromSavedVal = Form.useWatch('fromSavedCompany', form);
+  const toSavedVal = Form.useWatch('toSavedCompany', form);
+
+  // Determine if fields should be locked (if a value is selected)
+  const isFromLocked = fromSavedVal !== undefined && fromSavedVal !== null;
+  const isToLocked = toSavedVal !== undefined && toSavedVal !== null;
+
+  // Handler to show message when clicking a locked field
+  const handleFieldClick = (isLocked) => {
+    if (isLocked) {
+      message.warning("To edit this field, please go to settings.");
+    }
+  };
+
   return (
     <Row gutter={24}>
       {/* Bill From */}
@@ -54,15 +72,28 @@ export default function BillingInfo({
         </Form.Item>
 
         <Form.Item label="Company Name" name="fromCompanyName" rules={[{ required: true, message: 'Company Name is required' }]}>
-          <Input maxLength={254} />
+          <Input 
+            maxLength={254} 
+            readOnly={isFromLocked}
+            onClick={() => handleFieldClick(isFromLocked)}
+          />
         </Form.Item>
 
         <Form.Item label="Phone" name="fromCompanyPhone">
-          <Input maxLength={49} style={{ width: '100%' }} />
+          <Input 
+            maxLength={49} 
+            style={{ width: '100%' }} 
+            readOnly={isFromLocked}
+            onClick={() => handleFieldClick(isFromLocked)}
+          />
         </Form.Item>
 
         <Form.Item label="Email" name="fromCompanyEmail">
-          <Input maxLength={199} />
+          <Input 
+            maxLength={199} 
+            readOnly={isFromLocked}
+            onClick={() => handleFieldClick(isFromLocked)}
+          />
         </Form.Item>
 
         <Form.Item
@@ -77,11 +108,17 @@ export default function BillingInfo({
           <Input 
             maxLength={11}
             style={{ width: '100%' }} 
+            readOnly={isFromLocked}
+            onClick={() => handleFieldClick(isFromLocked)}
           />
         </Form.Item>
 
         <Form.Item label="Address" name="fromCompanyAddress">
-          <Input maxLength={254}/>
+          <Input 
+            maxLength={254}
+            readOnly={isFromLocked}
+            onClick={() => handleFieldClick(isFromLocked)}
+          />
         </Form.Item>
       </Col>
 
@@ -126,15 +163,28 @@ export default function BillingInfo({
         </Form.Item>
 
         <Form.Item label="Company Name" name="toCompanyName" rules={[{ required: true, message: 'Company Name is required' }]}>
-          <Input maxLength={254} />
+          <Input 
+            maxLength={254} 
+            readOnly={isToLocked}
+            onClick={() => handleFieldClick(isToLocked)}
+          />
         </Form.Item>
 
         <Form.Item label="Phone" name="toCompanyPhone">
-          <Input maxLength={49} style={{ width: '100%' }} />
+          <Input 
+            maxLength={49} 
+            style={{ width: '100%' }} 
+            readOnly={isToLocked}
+            onClick={() => handleFieldClick(isToLocked)}
+          />
         </Form.Item>
 
         <Form.Item label="Email" name="toCompanyEmail">
-          <Input maxLength={199} />
+          <Input 
+            maxLength={199} 
+            readOnly={isToLocked}
+            onClick={() => handleFieldClick(isToLocked)}
+          />
         </Form.Item>
 
         <Form.Item
@@ -143,17 +193,22 @@ export default function BillingInfo({
           rules={[
             { len: 11, message: 'ABN must be 11 digits' } 
           ]}
-          // This function runs on every keystroke, removing non-digits
           getValueFromEvent={(e) => e.target.value.replace(/\D/g, '')}
         >
           <Input 
             maxLength={11} 
             style={{ width: '100%' }} 
+            readOnly={isToLocked}
+            onClick={() => handleFieldClick(isToLocked)}
           />
         </Form.Item>
 
         <Form.Item label="Address" name="toCompanyAddress">
-          <Input maxLength={254} />
+          <Input 
+            maxLength={254} 
+            readOnly={isToLocked}
+            onClick={() => handleFieldClick(isToLocked)}
+          />
         </Form.Item>
       </Col>
 
