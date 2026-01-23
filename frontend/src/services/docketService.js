@@ -11,7 +11,10 @@ const docketService = {
   },
 
   getUniqueCustomers: async (search = '') => {
-    const params = search ? { q: search } : {};
+    const params = { 
+      q: search || '', 
+      _t: new Date().getTime() 
+    };
     const res = await axios.get(`${API}/customers/unique`, { params });
     return res.data;
   },
@@ -19,7 +22,8 @@ const docketService = {
   getUniqueMetals: async (search = '', customerName = '') => {
     const params = { 
         q: search,
-        customer: customerName 
+        customer: customerName,
+        _t: new Date().getTime() 
     };
     const res = await axios.get(`${API}/metals/unique`, { params });
     return res.data;
