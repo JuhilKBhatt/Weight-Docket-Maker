@@ -6,168 +6,139 @@
     padding: 0;
 }
 
-/* Default Body Font - acts as fallback */
 body { font-family: 'Lexend', Helvetica, Arial, sans-serif; padding: 0px; margin: 0px; font-size: 10pt; }
 
-/* HEADER TABLE STYLES - Common */
-.header-layout-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 5px;
-    border: 1px solid #000;
-}
-
-.header-layout-table td {
-    border: 1px solid #000;
-    padding: 5px;
-    vertical-align: middle;
-}
-
-.title-cell h1 { 
-    margin: 0; font-size: 16pt; font-weight: bold; text-align: center; color: #000; 
-}
-
+/* HEADER & GENERAL STYLES */
+.header-layout-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; border: 1px solid #000; }
+.header-layout-table td { border: 1px solid #000; padding: 5px; vertical-align: middle; }
+.title-cell h1 { margin: 0; font-size: 16pt; font-weight: bold; text-align: center; color: #000; }
 .docket-id { font-weight: bold; font-size: 12pt; }
 .sub-info { font-size: 10pt; }
 
-/* Company Block Styling */
-.company-block-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px; 
-}
-
-.company-logo {
-    display: block;
-    max-height: 40px; 
-    width: auto;
-}
-
-.company-text h2 { 
-    margin: 0 0 0px 0; 
-    font-size: 10pt; 
-    font-weight: bold; 
-    text-align: center; 
-}
-.company-text .sub-info { 
-    font-size: 8pt; 
-    line-height: 1.4; 
-    text-align: center;
-}
+.company-block-container { display: flex; align-items: center; justify-content: center; gap: 20px; }
+.company-logo { display: block; max-height: 40px; width: auto; }
+.company-text h2 { margin: 0 0 0px 0; font-size: 10pt; font-weight: bold; text-align: center; }
+.company-text .sub-info { font-size: 8pt; line-height: 1.4; text-align: center; }
 
 /* Customer Section */
 .customer-section { margin-bottom: 0px; font-size: 10pt; }
-.other-info-box { 
-    border: 1px solid #000;
-    padding: 1px; 
-    font-size: 8pt; 
-    background-color: #fff; 
-    line-height: 1.2;
-}
+.other-info-box { border: 1px solid #000; padding: 1px; font-size: 8pt; background-color: #fff; line-height: 1.2; }
 .other-info-label { font-weight: bold; margin-right: 1px; }
 .other-info-val { margin-right: 1px; color: #333; }
 
-/* Base Data Table Styles */
+/* Table Base */
 table.data-table { width: 100%; border-collapse: collapse; margin-top: 1px; }
 table.data-table th { border: 1px solid #000; background-color: #eee; text-align: left; font-weight: bold; }
 table.data-table td { border: 1px solid #000; text-align: left; }
 
-/* Totals Section Base */
+/* Totals Base */
 .totals-section { margin-top: 5px; text-align: right; font-weight: bold; }
 .totals-deduction { margin: 1px 0; font-weight: normal; color: #b01c2e; } 
-
-.footer-section { margin-top: 0px; display: flex; justify-content: space-between; font-size: 8pt; font-weight: bold; }
 .signature-line { border-top: 1px solid #000; width: 150px; display: inline-block; margin-top: 10px; }
 
-/* =========================================
-   TIER 1: Very Spacious (< 10 items)
-   ========================================= */
-.layout-very-spacious { font-size: 12pt; }
-.layout-very-spacious .company-text h2 { font-size: 14pt; margin-bottom: 5px; }
-.layout-very-spacious .company-text .sub-info { font-size: 10pt; }
-.layout-very-spacious .customer-section { font-size: 12pt; margin-bottom: 10px; }
-.layout-very-spacious .other-info-box { font-size: 10pt; padding: 5px; }
-.layout-very-spacious .data-table { font-size: 12pt; margin-top: 30px; }
-.layout-very-spacious .data-table th { padding: 12px 8px; }
-.layout-very-spacious .data-table td { padding: 15px 8px; }
-.layout-very-spacious .totals-section { margin-top: 40px; font-size: 14pt; }
-.layout-very-spacious .totals-row { font-size: 12pt; font-weight: normal; }
-.layout-very-spacious .totals-deduction { font-size: 10pt; margin: 3px 0; }
-.layout-very-spacious .totals-subtotal { font-size: 12pt; font-weight: bold; }
-.layout-very-spacious .totals-gst { font-size: 10pt; font-weight: normal; }
-.layout-very-spacious .totals-final { margin-top: 15px; font-size: 16pt; }
 
-/* =========================================
-   TIER 2: Spacious (10-20 items)
-   ========================================= */
-.layout-spacious { font-size: 11pt; }
-.layout-spacious .company-text h2 { font-size: 12pt; margin-bottom: 3px; }
-.layout-spacious .company-text .sub-info { font-size: 9pt; }
-.layout-spacious .customer-section { font-size: 11pt; margin-bottom: 5px; }
-.layout-spacious .other-info-box { font-size: 9pt; padding: 3px; }
-.layout-spacious .data-table { font-size: 11pt; margin-top: 20px; }
-.layout-spacious .data-table th { padding: 8px 5px; }
-.layout-spacious .data-table td { padding: 10px 5px; }
-.layout-spacious .totals-section { margin-top: 20px; font-size: 12pt; }
-.layout-spacious .totals-row { font-size: 11pt; font-weight: normal; }
-.layout-spacious .totals-deduction { font-size: 9pt; margin: 2px 0; }
-.layout-spacious .totals-subtotal { font-size: 11pt; font-weight: bold; }
-.layout-spacious .totals-gst { font-size: 9pt; font-weight: normal; }
-.layout-spacious .totals-final { margin-top: 10px; font-size: 14pt; }
+/* ==========================================================================
+   INCREMENTAL TIERS (Increments of 5)
+   ========================================================================== */
 
-/* =========================================
-   TIER 3: Standard (21-25 items)
-   ========================================= */
-.layout-standard { font-size: 10pt; }
-.layout-standard .company-text h2 { font-size: 10pt; margin: 0; }
-.layout-standard .company-text .sub-info { font-size: 8pt; }
-.layout-standard .customer-section { font-size: 10pt; margin-bottom: 2px; }
-.layout-standard .other-info-box { font-size: 8pt; padding: 1px; }
-.layout-standard .data-table { font-size: 10pt; margin-top: 5px; } /* Reduced from 10px */
-.layout-standard .data-table th { padding: 4px 3px; }
-.layout-standard .data-table td { padding: 4px 3px; }
-.layout-standard .totals-section { margin-top: 5px; font-size: 11pt; } /* Reduced from 8px */
-.layout-standard .totals-row { font-size: 10pt; font-weight: normal; }
-.layout-standard .totals-deduction { font-size: 8pt; margin: 0; } /* Zero margin */
-.layout-standard .totals-subtotal { font-size: 10pt; font-weight: bold; }
-.layout-standard .totals-gst { font-size: 8pt; font-weight: normal; }
-.layout-standard .totals-final { margin-top: 4px; font-size: 12pt; }
+/* --- TIER 1: 0-5 Items (Super Spacious) --- */
+.layout-5 { font-size: 12pt; }
+.layout-5 .company-text h2 { font-size: 14pt; margin-bottom: 5px; }
+.layout-5 .company-text .sub-info { font-size: 10pt; }
+.layout-5 .customer-section { font-size: 12pt; margin-bottom: 15px; }
+.layout-5 .other-info-box { font-size: 10pt; padding: 8px; }
+.layout-5 .data-table { font-size: 12pt; margin-top: 40px; }
+.layout-5 .data-table th { padding: 15px 10px; }
+.layout-5 .data-table td { padding: 18px 10px; }
+.layout-5 .totals-section { margin-top: 40px; font-size: 14pt; }
+.layout-5 .totals-deduction { margin: 5px 0; }
+.layout-5 .totals-final { margin-top: 15px; font-size: 16pt; }
 
-/* =========================================
-   TIER 4: Compact (26-30 items)
-   Tighter to fit deductions
-   ========================================= */
-.layout-compact { font-size: 9pt; } /* Reduced from 9pt */
-.layout-compact .company-text h2 { font-size: 9pt; margin: 0; }
-.layout-compact .company-text .sub-info { font-size: 7pt; }
-.layout-compact .customer-section { font-size: 9pt; margin-bottom: 1px; }
-.layout-compact .other-info-box { font-size: 7pt; padding: 1px; }
-.layout-compact .data-table { font-size: 8pt; margin-top: 2px; } /* Smaller table font */
-.layout-compact .data-table th { padding: 2px 2px; }
-.layout-compact .data-table td { padding: 2px 2px; } /* Very tight rows */
-.layout-compact .totals-section { margin-top: 2px; font-size: 9pt; }
-.layout-compact .totals-row { font-size: 8pt; font-weight: normal; }
-.layout-compact .totals-deduction { font-size: 7pt; margin: 0; }
-.layout-compact .totals-subtotal { font-size: 8pt; font-weight: bold; }
-.layout-compact .totals-gst { font-size: 7pt; font-weight: normal; }
-.layout-compact .totals-final { margin-top: 2px; font-size: 10pt; }
+/* --- TIER 2: 6-10 Items (Very Spacious) --- */
+.layout-10 { font-size: 12pt; }
+.layout-10 .company-text h2 { font-size: 13pt; margin-bottom: 4px; }
+.layout-10 .company-text .sub-info { font-size: 10pt; }
+.layout-10 .customer-section { font-size: 12pt; margin-bottom: 10px; }
+.layout-10 .other-info-box { font-size: 10pt; padding: 5px; }
+.layout-10 .data-table { font-size: 12pt; margin-top: 30px; }
+.layout-10 .data-table th { padding: 10px 8px; }
+.layout-10 .data-table td { padding: 12px 8px; }
+.layout-10 .totals-section { margin-top: 30px; font-size: 13pt; }
+.layout-10 .totals-deduction { margin: 3px 0; }
+.layout-10 .totals-final { margin-top: 12px; font-size: 15pt; }
 
-/* =========================================
-   TIER 5: Dense (> 30 items)
-   ========================================= */
-.layout-dense { font-size: 8pt; } /* Reduced form 9pt */
-.layout-dense .company-text h2 { font-size: 9pt; margin: 0; }
-.layout-dense .company-text .sub-info { font-size: 7pt; line-height: 1.0; }
-.layout-dense .customer-section { font-size: 8pt; margin-bottom: 0; }
-.layout-dense .other-info-box { font-size: 7pt; padding: 0px 1px; }
-.layout-dense .header-layout-table td { padding: 2px; }
-.layout-dense .data-table { font-size: 7.5pt; margin-top: 2px; }
-.layout-dense .data-table th { padding: 1px; }
-.layout-dense .data-table td { padding: 1px; }
-.layout-dense .totals-section { margin-top: 2px; font-size: 9pt; }
-.layout-dense .totals-row { font-size: 8pt; font-weight: normal; }
-.layout-dense .totals-deduction { font-size: 7pt; margin: 0; }
-.layout-dense .totals-subtotal { font-size: 8pt; font-weight: bold; }
-.layout-dense .totals-gst { font-size: 7pt; font-weight: normal; }
-.layout-dense .totals-final { margin-top: 2px; font-size: 10pt; }
+/* --- TIER 3: 11-15 Items (Spacious) --- */
+.layout-15 { font-size: 11pt; }
+.layout-15 .company-text h2 { font-size: 12pt; }
+.layout-15 .customer-section { font-size: 11pt; margin-bottom: 8px; }
+.layout-15 .other-info-box { font-size: 9pt; padding: 4px; }
+.layout-15 .data-table { font-size: 11pt; margin-top: 20px; }
+.layout-15 .data-table th { padding: 8px 6px; }
+.layout-15 .data-table td { padding: 8px 6px; }
+.layout-15 .totals-section { margin-top: 20px; font-size: 12pt; }
+.layout-15 .totals-deduction { margin: 2px 0; }
+.layout-15 .totals-final { margin-top: 10px; font-size: 14pt; }
+
+/* --- TIER 4: 16-20 Items (Standard-Spacious) --- */
+.layout-20 { font-size: 10pt; }
+.layout-20 .company-text h2 { font-size: 11pt; }
+.layout-20 .customer-section { font-size: 10pt; margin-bottom: 5px; }
+.layout-20 .other-info-box { font-size: 9pt; padding: 3px; }
+.layout-20 .data-table { font-size: 10pt; margin-top: 15px; }
+.layout-20 .data-table th { padding: 6px 4px; }
+.layout-20 .data-table td { padding: 6px 4px; }
+.layout-20 .totals-section { margin-top: 15px; font-size: 11pt; }
+.layout-20 .totals-deduction { margin: 1px 0; }
+.layout-20 .totals-final { margin-top: 8px; font-size: 13pt; }
+
+/* --- TIER 5: 21-25 Items (Standard) --- */
+.layout-25 { font-size: 10pt; }
+.layout-25 .company-text h2 { font-size: 10pt; }
+.layout-25 .customer-section { font-size: 10pt; margin-bottom: 2px; }
+.layout-25 .other-info-box { font-size: 8pt; padding: 2px; }
+.layout-25 .data-table { font-size: 10pt; margin-top: 10px; }
+.layout-25 .data-table th { padding: 4px 3px; }
+.layout-25 .data-table td { padding: 4px 3px; }
+.layout-25 .totals-section { margin-top: 10px; font-size: 11pt; }
+.layout-25 .totals-deduction { margin: 1px 0; }
+.layout-25 .totals-final { margin-top: 6px; font-size: 12pt; }
+
+/* --- TIER 6: 26-30 Items (Compact) --- */
+.layout-30 { font-size: 9pt; }
+.layout-30 .company-text h2 { font-size: 9pt; margin: 0; }
+.layout-30 .company-text .sub-info { font-size: 8pt; }
+.layout-30 .customer-section { font-size: 9pt; margin-bottom: 2px; }
+.layout-30 .other-info-box { font-size: 8pt; padding: 1px; }
+.layout-30 .data-table { font-size: 9pt; margin-top: 5px; }
+.layout-30 .data-table th { padding: 3px 2px; }
+.layout-30 .data-table td { padding: 2px 2px; }
+.layout-30 .totals-section { margin-top: 5px; font-size: 10pt; }
+.layout-30 .totals-deduction { margin: 0; }
+.layout-30 .totals-final { margin-top: 5px; font-size: 11pt; }
+
+/* --- TIER 7: 31-35 Items (Dense) --- */
+.layout-35 { font-size: 8.5pt; }
+.layout-35 .company-text h2 { font-size: 9pt; margin: 0; }
+.layout-35 .company-text .sub-info { font-size: 7pt; line-height: 1.1; }
+.layout-35 .customer-section { font-size: 8.5pt; margin-bottom: 1px; }
+.layout-35 .other-info-box { font-size: 7pt; padding: 1px; }
+.layout-35 .data-table { font-size: 8.5pt; margin-top: 2px; }
+.layout-35 .data-table th { padding: 2px 1px; }
+.layout-35 .data-table td { padding: 1px 1px; }
+.layout-35 .totals-section { margin-top: 2px; font-size: 9pt; }
+.layout-35 .totals-deduction { margin: 0; }
+.layout-35 .totals-final { margin-top: 2px; font-size: 10pt; }
+
+/* --- TIER 8: >35 Items (Ultra Dense) --- */
+.layout-40 { font-size: 7.5pt; }
+.layout-40 .company-text h2 { font-size: 8pt; margin: 0; }
+.layout-40 .company-text .sub-info { font-size: 6pt; line-height: 1.0; }
+.layout-40 .customer-section { font-size: 8pt; margin-bottom: 0; }
+.layout-40 .other-info-box { font-size: 6pt; padding: 0px 1px; }
+.layout-40 .header-layout-table td { padding: 2px; }
+.layout-40 .data-table { font-size: 7.5pt; margin-top: 1px; }
+.layout-40 .data-table th { padding: 1px; }
+.layout-40 .data-table td { padding: 0px 1px; }
+.layout-40 .totals-section { margin-top: 1px; font-size: 8pt; }
+.layout-40 .totals-deduction { margin: 0; }
+.layout-40 .totals-final { margin-top: 1px; font-size: 9pt; }

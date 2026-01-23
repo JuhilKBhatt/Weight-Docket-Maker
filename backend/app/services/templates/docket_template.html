@@ -7,7 +7,7 @@
         {{ css_content }}
     </style>
 </head>
-<body class="{% if items|length < 10 %}layout-very-spacious{% elif items|length <= 20 %}layout-spacious{% elif items|length <= 25 %}layout-standard{% elif items|length <= 30 %}layout-compact{% else %}layout-dense{% endif %}">
+<body class="{% if items|length <= 5 %}layout-5{% elif items|length <= 10 %}layout-10{% elif items|length <= 15 %}layout-15{% elif items|length <= 20 %}layout-20{% elif items|length <= 25 %}layout-25{% elif items|length <= 30 %}layout-30{% elif items|length <= 35 %}layout-35{% else %}layout-40{% endif %}">
     <table class="header-layout-table">
         <tr>
             <td rowspan="2" class="title-cell" style="width: 60%;">
@@ -119,7 +119,7 @@
 
     <table style="width: 100%; border-collapse: collapse; border: none; margin-top: 5px;">
         <tr>
-            <td style="width: 50%; vertical-align: top; border: none; padding-top: 30px;">
+            <td style="width: 50%; vertical-align: top; border: none;">
                 <div style="width: 200px; text-align: center;">
                     <div style="font-size: 8pt; font-weight: bold;">Staff + Customer Signature</div>
                     <div class="signature-line" style="width: 100%; border-top: 1px solid #000; margin-bottom: 5px;"></div>
