@@ -473,7 +473,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 <Row gutter={24} style={{ marginTop: 20 }}>
                     <Col span={12}>
                         <Form.Item label="Docket Notes" name="paperNotes">
-                            <Input.TextArea rows={4} placeholder="Additional notes..." />
+                            <Input.TextArea rows={4} maxLength={280} placeholder="Additional notes..." />
                         </Form.Item>
                     </Col>
                     <InvoiceTotalsSummary

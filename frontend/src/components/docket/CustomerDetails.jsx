@@ -74,18 +74,18 @@ export default function CustomerDetails({ onCustomerSelect }) {
                             onSelect={handleSelect}
                             placeholder="Type to search..."
                         >
-                            <Input suffix={<SearchOutlined />} />
+                            <Input maxLength={254} suffix={<SearchOutlined />} />
                         </AutoComplete>
                     </Form.Item>
                 </Col>
                 <Col span={6}>
                     <Form.Item label="License No." name="licenseNo">
-                        <Input placeholder="License No." />
+                        <Input maxLength={49} placeholder="License No." />
                     </Form.Item>
                 </Col>
                 <Col span={6}>
                     <Form.Item label="Rego No." name="regoNo">
-                        <Input placeholder="Rego No." />
+                        <Input maxLength={49} placeholder="Rego No." />
                     </Form.Item>
                 </Col>
                 
@@ -96,7 +96,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
                 </Col>
                 <Col span={8}>
                     <Form.Item label="PayID" name="payId">
-                        <Input placeholder="PayID" />
+                        <Input maxLength={99} placeholder="PayID" />
                     </Form.Item>
                 </Col>
                 <Col span={8}>
@@ -105,7 +105,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
                         name="phone"
                         getValueFromEvent={(e) => e.target.value.replaceAll(/\D/g, '')}
                     >
-                        <Input placeholder="Phone Number" />
+                        <Input maxLength={49} placeholder="Phone Number" />
                     </Form.Item>
                 </Col>
                 
@@ -127,7 +127,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
                         name="accNo"
                         getValueFromEvent={(e) => e.target.value.replaceAll(/\D/g, '')}    
                     >
-                        <Input placeholder="Account No." />
+                        <Input maxLength={254} placeholder="Account No." />
                     </Form.Item>
                 </Col>
                 <Col span={6}>
@@ -144,7 +144,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
                 </Col>
                 <Col span={10}>
                     <Form.Item label="Address" name="address">
-                        <Input placeholder="Address" />
+                        <Input maxLength={254} placeholder="Address" />
                     </Form.Item>
                 </Col>
             </Row>

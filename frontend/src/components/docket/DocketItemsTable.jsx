@@ -90,7 +90,7 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
             style={{ width: '100%' }}
             placement="topLeft"
         >
-            <Input />
+            <Input maxLength={99} />
         </AutoComplete>
     );
 };
@@ -170,7 +170,8 @@ export default function DocketItemsTable({
             render: (_, record) => (
                 <Input 
                     value={record.notes} 
-                    onChange={(e) => onItemChange(record.key, 'notes', e.target.value)} 
+                    onChange={(e) => onItemChange(record.key, 'notes', e.target.value)}
+                    maxLength={254}
                 />
             ) 
         },
