@@ -80,8 +80,9 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
             placeholder="Metal"
             style={{ width: '100%' }}
             placement="topLeft"
+            maxLength={99} 
         >
-            <Input maxLength={99} />
+            <Input />
         </AutoComplete>
     );
 };

@@ -73,8 +73,9 @@ export default function CustomerDetails({ onCustomerSelect }) {
                             onSearch={handleSearch}
                             onSelect={handleSelect}
                             placeholder="Type to search..."
+                            maxLength={254} 
                         >
-                            <Input maxLength={254} suffix={<SearchOutlined />} />
+                            <Input suffix={<SearchOutlined />} />
                         </AutoComplete>
                     </Form.Item>
                 </Col>
