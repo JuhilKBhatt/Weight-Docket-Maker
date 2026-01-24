@@ -495,6 +495,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                         addDeduction={addDeduction}
                         removeDeduction={removeDeduction}
                         currency={currency}
+                        setCurrency={setCurrency}
+                        currencySymbol={currencyOptions.find(c => c.code === currency)?.symbol || '$'} // Pass symbol
                     />
                 </Row>
                 <Divider />

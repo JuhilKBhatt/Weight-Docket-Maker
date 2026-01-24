@@ -354,6 +354,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
               removeDeduction={invoice.removeDeduction}
               currency={currency}
               setCurrency={setCurrency}
+              currencySymbol={currencyOptions.find(c => c.code === currency)?.symbol || '$'} // Pass symbol
             />
           </Row>
 
