@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { Table, Input, InputNumber, Typography, Button, Row, Col, Select, AutoComplete, Form } from 'antd'; 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
+import { audFormatter, audParser, audFormatterFixed, isValidInput } from '../../scripts/utilities/AUDFormatters';
 import docketService from '../../services/docketService';
 
 const { Text } = Typography;
@@ -13,19 +13,14 @@ const { Option } = Select;
 const MetalCell = ({ value, onChange, onPriceUpdate }) => {
     const [options, setOptions] = useState([]);
     const timeoutRef = useRef(null);
-    
-    // Access the parent form to get the current Customer Name
     const form = Form.useFormInstance();
 
     const handleSearch = (val) => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        
         if (!val) {
             setOptions([]);
             return;
         }
-
-        // Get the customer name so the backend can find specific pricing history
         const customerName = form.getFieldValue('name') || '';
 
         timeoutRef.current = setTimeout(async () => {
@@ -35,7 +30,7 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
             } catch (err) {
                 console.error("Failed to fetch metals", err);
             }
-        }, 200); // 200ms debounce
+        }, 200); 
     };
 
     const handleSelect = (val, option) => {
@@ -47,16 +42,12 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
         }
     };
 
-    // Handle Blur to autofill price when typing manually
     const handleBlur = async () => {
         if (!value || !value.trim()) return;
-
         const customerName = form.getFieldValue('name') || '';
-
         try {
             const data = await docketService.getUniqueMetals(value, customerName);
             const match = data.find(item => item.value.toLowerCase() === value.trim().toLowerCase());
-
             if (match) {
                 if (match.price && match.price > 0) {
                     onPriceUpdate(match.price);
@@ -96,15 +87,19 @@ export default function DocketItemsTable({
     const [rowsToAdd, setRowsToAdd] = useState(1);
     const [selectedRowKey, setSelectedRowKey] = useState(null);
 
-    // Fallback if options aren't loaded yet
     const activeCurrencies = currencyOptions.length > 0 ? currencyOptions : [{ code: 'AUD', label: 'AUD$', symbol: '$' }];
     const activeUnits = unitOptions.length > 0 ? unitOptions : [{ value: 'kg', label: 'kg' }];
-
-    // Helper: Get symbol (e.g. "AUD$")
     const currentSymbolLabel = activeCurrencies.find(c => c.code === currency)?.label || `${currency}$`;
 
-    const weightFormatter = (value) => `${value}`.replaceAll(/\B(?=(\d{3})+(?!\d))/g, ',');
-    const weightParser = (value) => value.replaceAll(/,/g, '');
+    // --- Helper for Input Validation & Change ---
+    const onInputChange = (key, field, e, maxDecimals = 2) => {
+        const rawValue = e.target.value;
+        const parsedValue = audParser(rawValue);
+        
+        if (isValidInput(parsedValue, maxDecimals)) {
+            onItemChange(key, field, parsedValue);
+        }
+    };
 
     const renderUnitSelector = (record) => (
       <Select
@@ -173,12 +168,11 @@ export default function DocketItemsTable({
             dataIndex: 'gross', 
             width: 80, 
             render: (_, record) => (
-                <InputNumber 
+                <Input 
                     style={{ width: '100%' }} 
-                    value={record.gross} 
-                    onChange={(val) => onItemChange(record.key, 'gross', val)} 
-                    formatter={weightFormatter} 
-                    parser={weightParser} 
+                    value={audFormatter(record.gross)} 
+                    // Allow 3 decimals for weights
+                    onChange={(e) => onInputChange(record.key, 'gross', e, 3)} 
                 />
             ) 
         },
@@ -187,12 +181,11 @@ export default function DocketItemsTable({
             dataIndex: 'tare', 
             width: 80, 
             render: (_, record) => (
-                <InputNumber 
+                <Input 
                     style={{ width: '100%' }} 
-                    value={record.tare} 
-                    onChange={(val) => onItemChange(record.key, 'tare', val)} 
-                    formatter={weightFormatter} 
-                    parser={weightParser} 
+                    value={audFormatter(record.tare)} 
+                    // Allow 3 decimals for weights
+                    onChange={(e) => onInputChange(record.key, 'tare', e, 3)} 
                 />
             ) 
         },
@@ -218,12 +211,12 @@ export default function DocketItemsTable({
             dataIndex: 'price',
             width: 100, 
             render: (_, record) => (
-                <InputNumber 
+                <Input 
                     addonBefore={renderCurrencySelector()}
                     style={{ width: '100%' }} 
-                    value={record.price}
-                    onChange={(val) => onItemChange(record.key, 'price', val)} 
-                    formatter={audFormatter} parser={audParser}
+                    value={audFormatter(record.price)}
+                    // Allow 2 decimals for Price
+                    onChange={(e) => onInputChange(record.key, 'price', e, 2)}
                 />
             )
         },

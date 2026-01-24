@@ -1,7 +1,7 @@
 // ./frontend/src/components/TotalsSummary.jsx
 
 import { Row, Col, Typography, Input, InputNumber, Button, Checkbox } from 'antd';
-import { audFormatter, audParser, audFormatterFixed } from '../scripts/utilities/AUDformatters';
+import { audFormatter, audParser, audFormatterFixed, isValidInput } from '../scripts/utilities/AUDFormatters';
 
 export default function TotalsSummary({
   includeGST,
@@ -15,11 +15,21 @@ export default function TotalsSummary({
   addDeduction,
   removeDeduction,
   currency = 'AUD',
-  currencySymbol = '$' // New Prop for dynamic symbol
+  currencySymbol = '$' 
 }) {
   
-  // Construct label (e.g. AUD$)
   const symbolLabel = `${currency}${currencySymbol}`;
+
+  // Helper handler for Amount fields
+  const onAmountChange = (type, key, e) => {
+    const rawValue = e.target.value;
+    const parsedValue = audParser(rawValue);
+    
+    // Allow max 2 decimals for currency
+    if (isValidInput(parsedValue, 2)) {
+      handleDeductionChange(type, key, 'amount', parsedValue);
+    }
+  };
 
   return (
     <Col span={12}>
@@ -38,15 +48,12 @@ export default function TotalsSummary({
             />
           </Col>
           <Col span={8}>
-            <InputNumber
+            <Input
               addonBefore={symbolLabel}
               style={{ width: '100%' }}
-              value={d.amount}
-              formatter={audFormatter}
-              parser={audParser}
-              onChange={(val) =>
-                handleDeductionChange('pre', d.key, 'amount', val)
-              }
+              // Use audFormatter for comma display
+              value={audFormatter(d.amount)}
+              onChange={(e) => onAmountChange('pre', d.key, e)}
             />
           </Col>
           <Col span={4}>
@@ -92,10 +99,8 @@ export default function TotalsSummary({
           </Checkbox>
         </Col>
         
-        {/* If GST is enabled, show Percentage Input and Amount */}
         {includeGST && (
           <Col flex="auto" style={{ display: 'flex', gap: '10px' }}>
-             {/* Percentage Input */}
             <InputNumber
               addonAfter="%"
               min={0}
@@ -105,7 +110,6 @@ export default function TotalsSummary({
               onChange={(val) => setGstPercentage(val)}
             />
 
-             {/* Calculated Amount */}
             <InputNumber
               addonBefore={symbolLabel}
               readOnly
@@ -138,15 +142,12 @@ export default function TotalsSummary({
                 />
               </Col>
               <Col span={8}>
-                <InputNumber
+                <Input
                   addonBefore={symbolLabel}
                   style={{ width: '100%' }}
-                  value={d.amount}
-                  formatter={audFormatter}
-                  parser={audParser}
-                  onChange={(val) =>
-                    handleDeductionChange('post', d.key, 'amount', val)
-                  }
+                  // Use audFormatter for comma display
+                  value={audFormatter(d.amount)}
+                  onChange={(e) => onAmountChange('post', d.key, e)}
                 />
               </Col>
               <Col span={4}>
