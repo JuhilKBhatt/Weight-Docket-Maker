@@ -145,22 +145,41 @@
             <td style="width: 5%;"></td>
             <td style="width: 60%; vertical-align: top;">
                 <table class="totals-table">
-                    {% for d in invoice.pre_gst_deductions %}
-                    <tr>
-                        <td class="text-right text-danger deduction-cell">{{ d.label }}:</td>
-                        <td class="text-right text-danger deduction-cell">-<span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(d.amount) }}</td>
-                    </tr>
-                    {% endfor %}
-
-                    <tr>
-                        <td class="text-right bold subtotal-cell">SUB-TOTAL:</td>
-                        <td class="text-right subtotal-cell" style="width: 100px;"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(totals.subtotal) }}</td>
-                    </tr>
+                    
+                    {% if invoice.pre_gst_deductions %}
+                        <tr>
+                            <td class="text-right bold">Items Total:</td>
+                            <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(totals.grossItems) }}</td>
+                        </tr>
+                        {% for d in invoice.pre_gst_deductions %}
+                        <tr>
+                            <td class="text-right text-danger deduction-cell">{{ d.label }}:</td>
+                            <td class="text-right text-danger deduction-cell">-<span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(d.amount) }}</td>
+                        </tr>
+                        {% endfor %}
+                        
+                        <tr>
+                            <td class="text-right bold subtotal-cell">SUB-TOTAL:</td>
+                            <td class="text-right subtotal-cell" style="width: 100px;"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(totals.subtotal) }}</td>
+                        </tr>
+                    {% else %}
+                        {% if invoice.include_gst %}
+                        <tr>
+                            <td class="text-right bold subtotal-cell">SUB-TOTAL:</td>
+                            <td class="text-right subtotal-cell" style="width: 100px;"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(totals.subtotal) }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endif %}
 
                     {% if invoice.include_gst %}
                     <tr>
                         <td class="text-right bold gst-cell">GST ({{invoice.gst_percentage}}%):</td>
                         <td class="text-right gst-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(totals.gst) }}</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="text-right bold">Total (Inc GST):</td>
+                        <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(totals.totalIncGst) }}</td>
                     </tr>
                     {% endif %}
 

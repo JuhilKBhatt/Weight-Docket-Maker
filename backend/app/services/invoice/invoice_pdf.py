@@ -57,17 +57,26 @@ def render_invoice_html(db: Session, invoice_id: int):
     # 4. Calculate Totals
     items_total = sum([i['quantity'] * i['price'] for i in inv_dict['line_items']])
     trans_total = sum([t['num_of_ctr'] * t['price_per_ctr'] for t in inv_dict['transport_items']])
+
+    gross_items_transport = items_total + trans_total
+
     pre_deductions = sum([d['amount'] for d in inv_dict['pre_gst_deductions']])
     post_deductions = sum([d['amount'] for d in inv_dict['post_gst_deductions']])
 
-    subtotal = items_total + trans_total - pre_deductions
+    # Taxable Amount
+    subtotal = gross_items_transport - pre_deductions
+    
     gst_percent = inv_dict.get('gst_percentage', 10)
     gst = subtotal * (gst_percent/100) if inv_dict['include_gst'] else 0
-    total = subtotal + gst - post_deductions
+
+    total_inc_gst = subtotal + gst
+    total = total_inc_gst - post_deductions
 
     totals = {
+        "grossItems": gross_items_transport,
         "subtotal": subtotal,
         "gst": gst,
+        "totalIncGst": total_inc_gst,
         "total": total
     }
 
