@@ -66,6 +66,10 @@ table.layout td {
 .invoice-number-row { background-color: #111; color: #fff; font-size: 16pt; font-weight: bold; text-align: center; width: 100%; padding: 15px; }
 .invoice-date { font-size: 12pt; text-align: center; width: 100%; padding: 5px; }
 
+.no-wrap-cell {
+    white-space: nowrap;
+}
+
 /* Items Table */
 table.items-table {
     width: 100%;

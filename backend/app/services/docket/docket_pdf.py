@@ -45,6 +45,8 @@ def render_docket_html(db: Session, docket_id: int):
             "unit": item.unit or "kg"
         })
 
+    has_notes = any(item.get('notes') and str(item.get('notes')).strip() for item in items_data)
+
     # 3. Calculate Totals
     items_total = sum([i['total'] for i in items_data])
 
@@ -108,6 +110,7 @@ def render_docket_html(db: Session, docket_id: int):
     return template.render(
         docket=dkt,
         items=items_data,
+        has_notes=has_notes,
         pre_deductions=pre_deductions,
         post_deductions=post_deductions,
         totals={
