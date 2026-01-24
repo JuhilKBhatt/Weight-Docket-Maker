@@ -12,8 +12,9 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
   // NEW: State for the default unit (e.g. 't', 'kg')
   const [defaultUnit, setDefaultUnit] = useState('t');
 
+  // Initializing with null to keep fields empty
   const defaultItems = [
-    { key: uid(), seal: '', containerNumber: '', metal: '', description: '', quantity: 0, price: 0, unit: defaultUnit },
+    { key: uid(), seal: '', containerNumber: '', metal: '', description: '', quantity: null, price: null, unit: defaultUnit },
   ];
 
   // SCRINV ID
@@ -44,13 +45,11 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
         containerNumber: i.container_number || '', 
         metal: i.metal || '',
         description: i.description || '',
-        quantity: i.quantity ?? 0,
-        price: i.price ?? 0,
+        quantity: i.quantity || null,
+        price: i.price || null,
         unit: i.unit || 't',
       }));
     }
-    // Note: This initial state might use the hardcoded 't' until settings load, 
-    // but we update defaultUnit via useEffect in the Form.
     return defaultItems;
   });
 
@@ -60,8 +59,8 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
       return existingInvoice.transport_items.map(t => ({
         key: t.key || t.id || uid(),
         name: t.name || '',
-        numOfCtr: t.num_of_ctr ?? 0,
-        pricePerCtr: t.price_per_ctr ?? 0
+        numOfCtr: t.num_of_ctr || null,
+        pricePerCtr: t.price_per_ctr || null
       }));
     }
     return [];
@@ -99,8 +98,7 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
   // GENERIC HANDLERS
   const handleItemChange = (key, field, value) => setItems(prev => prev.map(item => item.key === key ? { ...item, [field]: value } : item));
   
-  // UPDATED: Use defaultUnit state for new rows
-  const addRow = () => setItems(prev => [...prev, { key: uid(), description: '', quantity: 0, price: 0, containerNumber: '', seal: '', metal: '', unit: defaultUnit }]);
+  const addRow = () => setItems(prev => [...prev, { key: uid(), description: '', quantity: null, price: null, containerNumber: '', seal: '', metal: '', unit: defaultUnit }]);
   
   const removeRow = key => setItems(prev => prev.filter(item => item.key !== key));
 
@@ -121,15 +119,15 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
     setShowTransport(value);
     if (value && transportItems.length === 0) {
       setTransportItems([
-        { key: uid(), name: invoiceType === 'Pickup' ? 'Pickup' : 'Container', numOfCtr: 0, pricePerCtr: 0 },
-        { key: uid(), name: 'Overweight', numOfCtr: 0, pricePerCtr: 0 },
+        { key: uid(), name: invoiceType === 'Pickup' ? 'Pickup' : 'Container', numOfCtr: null, pricePerCtr: null },
+        { key: uid(), name: 'Overweight', numOfCtr: null, pricePerCtr: null },
       ]);
     }
     if (!value) setTransportItems([]);
   };
 
   const resetInvoice = () => {
-    setItems([{ key: uid(), seal: '', containerNumber: '', metal: '', description: '', quantity: 0, price: 0, unit: defaultUnit }]); // Use dynamic default
+    setItems([{ key: uid(), seal: '', containerNumber: '', metal: '', description: '', quantity: null, price: null, unit: defaultUnit }]); 
     setTransportItems([]);
     setPreGstDeductions([]);
     setPostGstDeductions([]);
@@ -166,6 +164,6 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
     addDeduction,
     removeDeduction,
     resetInvoice,
-    setDefaultUnit, // Export this so the Form can update it
+    setDefaultUnit, 
   };
 }
