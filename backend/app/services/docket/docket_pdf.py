@@ -61,8 +61,10 @@ def render_docket_html(db: Session, docket_id: int):
     gst_amount = 0
     if dkt.include_gst:
         gst_amount = gross_total * (dkt.gst_percentage / 100)
+
+    total_inc_gst = gross_total + gst_amount
         
-    final_total = max(0, gross_total + gst_amount - post_deductions_amount)
+    final_total = max(0, total_inc_gst - post_deductions_amount)
 
     # 4. Use Stored Currency Symbol
     currency_code = dkt.currency or 'AUD'
@@ -112,6 +114,7 @@ def render_docket_html(db: Session, docket_id: int):
             "itemsTotal": items_total,
             "grossTotal": gross_total,
             "gstAmount": gst_amount,
+            "totalIncGst": total_inc_gst,
             "finalTotal": final_total  
         },
         formatted_date=formatted_date,
