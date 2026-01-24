@@ -9,16 +9,7 @@ from weasyprint import HTML, CSS
 from datetime import datetime, timedelta, date
 
 from app.services.invoice import invoice_crud
-
-CURRENCY_SYMBOLS = {
-  'AUD': 'AUD$',
-  'USD': 'USD$',
-  'EUR': 'EUR€',
-  'GBP': 'GBP£',
-  'JPY': 'JPY¥',
-  'CNY': 'CNY¥',
-  'NZD': 'NZD$',
-}
+from app.models.settingsModels import CurrencyOption
 
 def get_file_base64(file_path):
     if not os.path.exists(file_path):
@@ -49,9 +40,19 @@ def render_invoice_html(db: Session, invoice_id: int):
     due_date_obj = date_obj + timedelta(days=2)
     formatted_due_date = due_date_obj.strftime("%d/%m/%Y")
 
-    # 3. Logic: Currency Symbol
+    # 3. Logic: Currency Symbol (Updated to use DB Label)
     currency_code = inv_dict.get('currency', 'AUD')
-    symbol = CURRENCY_SYMBOLS.get(currency_code, '$')
+    
+    # Query database for custom symbol/label
+    currency_option = db.query(CurrencyOption).filter(CurrencyOption.code == currency_code).first()
+    
+    symbol = '$' # Default fallback
+    if currency_option:
+        # Prioritize Label (e.g. "INR₹") over Symbol (e.g. "₹")
+        if currency_option.label:
+            symbol = currency_option.label
+        elif currency_option.symbol:
+            symbol = currency_option.symbol
 
     # 4. Calculate Totals
     items_total = sum([i['quantity'] * i['price'] for i in inv_dict['line_items']])
