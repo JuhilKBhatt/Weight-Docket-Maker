@@ -6,7 +6,7 @@ import { Input, Table, Button, Typography, Popconfirm, Tag, DatePicker, Row, Col
 import { EditOutlined, DeleteOutlined, CheckCircleOutlined, CloseCircleOutlined, SendOutlined, FileTextOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { audFormatterFixed } from '../../scripts/utilities/AUDformatters';
-import { getCurrencyLabel } from '../../scripts/utilities/invoiceConstants';
+import { getCurrencies } from '../../services/settingsService';
 
 import { 
   getAllInvoices, 
@@ -21,6 +21,7 @@ export default function InvoiceList() {
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const [invoices, setInvoices] = useState([]);
+  const [currencyMap, setCurrencyMap] = useState({});
   
   // Pagination State
   const [pagination, setPagination] = useState({
@@ -35,8 +36,25 @@ export default function InvoiceList() {
   // Debounce Ref
   const searchDebounce = useRef(null);
 
+  // --- FETCH CURRENCIES (for Labels) ---
+  useEffect(() => {
+      const loadCurrencies = async () => {
+          try {
+              const data = await getCurrencies();
+              // Create a map for easy lookup: { 'AUD': '$', 'USD': '$', ... }
+              const map = {};
+              data.forEach(c => {
+                  map[c.code] = c.symbol;
+              });
+              setCurrencyMap(map);
+          } catch (err) {
+              console.error("Failed to load currencies for list view", err);
+          }
+      };
+      loadCurrencies();
+  }, []);
+
   // --- FETCH DATA ---
-  // Added isBackground flag to suppress spinner during auto-refresh
   const fetchInvoices = async (page = 1, pageSize = 10, search = '', dates = null, isBackground = false) => {
     try {
       if (!isBackground) setLoading(true);
@@ -71,8 +89,8 @@ export default function InvoiceList() {
 
     // 2. Setup Interval
     const intervalId = setInterval(() => {
-      fetchInvoices(pagination.current, pagination.pageSize, searchText, dateRange, true); // true = background
-    }, 5000); // Refresh every 5 seconds
+      fetchInvoices(pagination.current, pagination.pageSize, searchText, dateRange, true); 
+    }, 5000); 
 
     // 3. Cleanup on unmount or when dependencies change
     return () => clearInterval(intervalId);
@@ -89,7 +107,6 @@ export default function InvoiceList() {
     }
 
     searchDebounce.current = setTimeout(() => {
-        // Reset to page 1 on new search
         fetchInvoices(1, pagination.pageSize, value, dateRange);
     }, 500);
   };
@@ -105,7 +122,6 @@ export default function InvoiceList() {
   };
 
   const handleTableChange = (newPagination) => {
-    // Update state creates a re-render which triggers the useEffect to fetch
     setPagination(prev => ({ ...prev, current: newPagination.current, pageSize: newPagination.pageSize }));
   };
 
@@ -129,7 +145,7 @@ export default function InvoiceList() {
       await updateInvoiceStatus(id, statusType);
       const statusLabel = statusType.charAt(0).toUpperCase() + statusType.slice(1);
       message.success(`Invoice marked as ${statusLabel}`);
-      refreshCurrentPage(); // Instant update
+      refreshCurrentPage(); 
     } catch (err) {
       console.error(err);
       message.error(`Could not mark invoice as ${statusType}`);
@@ -169,7 +185,8 @@ export default function InvoiceList() {
         key: 'total_amount',
         align: 'right',
         render: (val, record) => {
-          return `${getCurrencyLabel(record.currency)}${audFormatterFixed(val)}`;
+          const symbol = currencyMap[record.currency] || '$';
+          return `${record.currency}${symbol}${audFormatterFixed(val)}`;
         },
       },
       {

@@ -31,7 +31,6 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
         timeoutRef.current = setTimeout(async () => {
             try {
                 const data = await docketService.getUniqueMetals(val, customerName);
-                // Ensure data is mapped correctly for AutoComplete options
                 setOptions(data);
             } catch (err) {
                 console.error("Failed to fetch metals", err);
@@ -48,12 +47,16 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
         }
     };
 
+    // Handle Blur to autofill price when typing manually
     const handleBlur = async () => {
         if (!value || !value.trim()) return;
+
         const customerName = form.getFieldValue('name') || '';
+
         try {
             const data = await docketService.getUniqueMetals(value, customerName);
             const match = data.find(item => item.value.toLowerCase() === value.trim().toLowerCase());
+
             if (match) {
                 if (match.price && match.price > 0) {
                     onPriceUpdate(match.price);
@@ -92,8 +95,12 @@ export default function DocketItemsTable({
     const [rowsToAdd, setRowsToAdd] = useState(1);
     const [selectedRowKey, setSelectedRowKey] = useState(null);
 
-    // Helper: Get symbol
-    const currentSymbolLabel = currencyOptions.find(c => c.code === currency)?.label || `${currency}$`;
+    // Fallback if options aren't loaded yet
+    const activeCurrencies = currencyOptions.length > 0 ? currencyOptions : [{ code: 'AUD', label: 'AUD$', symbol: '$' }];
+    const activeUnits = unitOptions.length > 0 ? unitOptions : [{ value: 'kg', label: 'kg' }];
+
+    // Helper: Get symbol (e.g. "AUD$")
+    const currentSymbolLabel = activeCurrencies.find(c => c.code === currency)?.label || `${currency}$`;
 
     const weightFormatter = (value) => `${value}`.replaceAll(/\B(?=(\d{3})+(?!\d))/g, ',');
     const weightParser = (value) => value.replaceAll(/,/g, '');
@@ -101,13 +108,13 @@ export default function DocketItemsTable({
     const renderUnitSelector = (record) => (
       <Select
         value={record.unit || 'kg'}
-        style={{ width: 80, margin: '-5px 0' }}
+        style={{ width: 80, margin: '-5px 0' }} 
         popupMatchSelectWidth={false}
         showSearch
         optionFilterProp="children"
         onChange={(val) => onItemChange(record.key, 'unit', val)}
       >
-        {unitOptions.map(unit => (
+        {activeUnits.map(unit => (
           <Option key={unit.value} value={unit.value}>{unit.label}</Option>
         ))}
       </Select>
@@ -122,7 +129,7 @@ export default function DocketItemsTable({
         optionFilterProp="children"
         onChange={(val) => setCurrency(val)}
       >
-        {currencyOptions.map(curr => (
+        {activeCurrencies.map(curr => (
           <Option key={curr.code} value={curr.code}>{curr.label}</Option>
         ))}
       </Select>
@@ -151,7 +158,7 @@ export default function DocketItemsTable({
         { 
             title: 'Notes', 
             dataIndex: 'notes', 
-            width: '12%',
+            width: '12%', 
             render: (_, record) => (
                 <Input 
                     value={record.notes} 
@@ -163,7 +170,7 @@ export default function DocketItemsTable({
         { 
             title: 'Gross', 
             dataIndex: 'gross', 
-            width: 80,
+            width: 80, 
             render: (_, record) => (
                 <InputNumber 
                     style={{ width: '100%' }} 
@@ -177,7 +184,7 @@ export default function DocketItemsTable({
         { 
             title: 'Tare', 
             dataIndex: 'tare', 
-            width: 80,
+            width: 80, 
             render: (_, record) => (
                 <InputNumber 
                     style={{ width: '100%' }} 
@@ -191,7 +198,7 @@ export default function DocketItemsTable({
         {
             title: 'Net Weight',
             dataIndex: 'net',
-            width: 100,
+            width: 100, 
             render: (text, record) => {
                 const val = Number(text);
                 const isNegative = !isNaN(val) && val < 0;
@@ -208,7 +215,7 @@ export default function DocketItemsTable({
         {
             title: 'Price / unit',
             dataIndex: 'price',
-            width: 100,
+            width: 100, 
             render: (_, record) => (
                 <InputNumber 
                     addonBefore={renderCurrencySelector()}
@@ -222,7 +229,7 @@ export default function DocketItemsTable({
         {
             title: 'Total',
             dataIndex: 'total',
-            width: 125,
+            width: 125, 
             render: (text) => (
                 <Input prefix={currentSymbolLabel} value={audFormatterFixed(text)} readOnly style={{ textAlign: 'right' }} />
             )

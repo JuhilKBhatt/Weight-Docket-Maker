@@ -21,7 +21,7 @@ import useInvoiceSelectors from '../../hooks/invoice/useInvoiceSelectors';
 // Utilities
 import { SaveDocket, DownloadPDFDocket, PrintDocket, CheckPrintStatus } from '../../scripts/utilities/docketUtils';
 import { getDefaults, getCurrencies, getUnits } from '../../services/settingsService';
-import docketService from '../../services/docketService'; // Ensure this is imported
+import docketService from '../../services/docketService'; 
 import '../../styles/Form.css'; 
 
 const { Text } = Typography;
@@ -66,23 +66,17 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const handleCustomerSelect = async (customerName) => {
         if (!customerName) return;
         
-        // Only target rows that have a metal selected BUT NO price (null or 0)
-        // This preserves manually entered prices.
         const rowsToUpdate = dataSource.filter(item => item.metal && (!item.price || item.price === 0));
         
         if (rowsToUpdate.length === 0) return;
 
         message.loading({ content: "Fetching prices...", key: "pricing" });
 
-        // Fetch prices for these items
         const updatedRows = await Promise.all(rowsToUpdate.map(async (row) => {
             try {
-                // Fetch metals for this specific customer context
                 const results = await docketService.getUniqueMetals(row.metal, customerName);
-                // Look for strict match
                 const match = results.find(r => r.value.toLowerCase() === row.metal.toLowerCase());
                 
-                // Only update if we found a price > 0
                 if (match && match.price > 0) {
                     return { ...row, price: match.price };
                 }
@@ -92,7 +86,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             return row;
         }));
 
-        // Update State
         setDataSource(prev => prev.map(prevRow => {
             const updated = updatedRows.find(u => u.key === prevRow.key);
             return updated || prevRow;
@@ -131,7 +124,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     const defUnit = defaults.default_unit || 'kg';
                     setDefaultUnit(defUnit);
 
-                    // USE DOCKET-SPECIFIC GST SETTING
                     if (defaults.default_docket_gst_enabled) {
                         setGstEnabled(defaults.default_docket_gst_enabled === 'true');
                     }
@@ -230,7 +222,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
     useEffect(() => {
         const performAutoSave = () => {
-            message.info('Auto-saving docket...', 0.5);
             const state = stateRef.current;
             if (!state.scrdktID) return;
 
@@ -308,7 +299,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 body: JSON.stringify(payload),
                 keepalive: true 
             }).catch((error) => {
-                message.error('Auto-save failed.');
                 console.error('Auto-save failed:', error);
             });
         };
@@ -345,7 +335,12 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
     const handleSave = async () => {
         try {
-            const values = await form.validateFields(); 
+            const values = await form.validateFields();
+            
+            // Get correct symbol from options
+            const currentOption = currencyOptions.find(c => c.code === currency);
+            const symbol = currentOption ? currentOption.symbol : '$';
+
             await SaveDocket({
                 scrdktID,
                 status: "Saved", 
@@ -355,7 +350,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 deductions: { pre: preGstDeductions, post: postGstDeductions },
                 includeGST: gstEnabled,
                 gstPercentage,
-                currency
+                currency,
+                currencySymbol: symbol
             });
             message.success('Docket saved successfully!');
             if (mode === 'new') { resetDocket(); form.resetFields(); setDataSource(generateInitialRows(20, defaultUnit)); formValuesRef.current = {}; }
@@ -366,6 +362,11 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const handleDownload = async () => {
         try {
             const values = await form.validateFields();
+            
+            // Get correct symbol from options
+            const currentOption = currencyOptions.find(c => c.code === currency);
+            const symbol = currentOption ? currentOption.symbol : '$';
+
             const result = await SaveDocket({
                 scrdktID,
                 status: "Downloaded", 
@@ -375,7 +376,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 deductions: { pre: preGstDeductions, post: postGstDeductions },
                 includeGST: gstEnabled,
                 gstPercentage,
-                currency
+                currency,
+                currencySymbol: symbol
             });
 
             await DownloadPDFDocket(result.id, scrdktID);
@@ -393,6 +395,10 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             const values = await form.validateFields();
             const qty = values.printQty || 1;
 
+            // Get correct symbol from options
+            const currentOption = currencyOptions.find(c => c.code === currency);
+            const symbol = currentOption ? currentOption.symbol : '$';
+
             const result = await SaveDocket({
                 scrdktID,
                 status: "Printed", 
@@ -402,7 +408,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 deductions: { pre: preGstDeductions, post: postGstDeductions },
                 includeGST: gstEnabled,
                 gstPercentage,
-                currency
+                currency,
+                currencySymbol: symbol
             });
 
             const printResponse = await PrintDocket(result.id, qty);

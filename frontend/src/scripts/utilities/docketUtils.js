@@ -2,7 +2,6 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import { CURRENCY_OPTIONS } from "./invoiceConstants";
 
 const API = 'http://localhost:8000/api/dockets';
 
@@ -15,14 +14,11 @@ export const SaveDocket = async ({
   totals,
   includeGST,
   gstPercentage,
-  currency
+  currency,
+  currencySymbol // NEW ARGUMENT
 }) => {
   const safeValue = (val, fallback = "") => val ?? fallback;
   
-  // 1. Resolve Currency Symbol from Frontend Config
-  const selectedOption = CURRENCY_OPTIONS.find(c => c.code === currency) || CURRENCY_OPTIONS[0];
-  const symbol = selectedOption.symbol || '$';
-
   let formattedDate = null;
   if (values.date) {
       if (dayjs.isDayjs(values.date) && values.date.isValid()) {
@@ -54,7 +50,7 @@ export const SaveDocket = async ({
     docket_type: safeValue(values.docketType, "Customer"),
     company_name: safeValue(values.companyDetails),
     currency: safeValue(currency, "AUD"),
-    currency_symbol: symbol,
+    currency_symbol: safeValue(currencySymbol, "$"), // Use passed symbol
     
     // Financials
     include_gst: includeGST,
@@ -120,7 +116,6 @@ export const DownloadPDFDocket = async (docketId, scrdktID) => {
     const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
     const link = document.createElement('a');
     link.href = url;
-    // We can still use the SCR ID for the filename so it looks nice for the user
     link.setAttribute('download', `Docket_${scrdktID}.pdf`);
     document.body.appendChild(link);
     link.click();
@@ -146,7 +141,7 @@ export const PrintDocket = async (docketId, copies = 1) => {
 export const CheckPrintStatus = async (filename) => {
     try {
         const res = await axios.get(`${API}/print-status/${filename}`);
-        return res.data.status; // "pending" or "completed"
+        return res.data.status; 
     } catch (err) {
         return "error";
     }

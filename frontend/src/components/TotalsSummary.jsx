@@ -2,7 +2,6 @@
 
 import { Row, Col, Typography, Input, InputNumber, Button, Checkbox } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../scripts/utilities/AUDformatters';
-import { getCurrencyLabel } from '../scripts/utilities/invoiceConstants';
 
 export default function TotalsSummary({
   includeGST,
@@ -16,10 +15,11 @@ export default function TotalsSummary({
   addDeduction,
   removeDeduction,
   currency = 'AUD',
+  currencySymbol = '$' // New Prop for dynamic symbol
 }) {
   
-  // Use Helper
-  const symbolLabel = getCurrencyLabel(currency);
+  // Construct label (e.g. AUD$)
+  const symbolLabel = `${currency}${currencySymbol}`;
 
   return (
     <Col span={12}>
