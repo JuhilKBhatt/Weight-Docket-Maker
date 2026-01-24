@@ -32,9 +32,9 @@ table.data-table th { border: 1px solid #000; background-color: #eee; text-align
 table.data-table td { border: 1px solid #000; text-align: left; }
 
 /* Totals Base */
-.totals-section { margin-top: 5px; text-align: right; font-weight: bold; }
+.totals-section { text-align: right; font-weight: bold; }
 .totals-deduction { margin: 1px 0; font-weight: normal; color: #b01c2e; } 
-.signature-line { border-top: 1px solid #000; width: 150px; display: inline-block; margin-top: 10px; }
+.signature-line { border-top: 1px solid #000; width: 150px; display: inline-block; margin-top: 5px; }
 
 
 /* ==========================================================================
@@ -50,7 +50,7 @@ table.data-table td { border: 1px solid #000; text-align: left; }
 .layout-5 .data-table { font-size: 12pt; margin-top: 40px; }
 .layout-5 .data-table th { padding: 15px 10px; }
 .layout-5 .data-table td { padding: 18px 10px; }
-.layout-5 .totals-section { margin-top: 40px; font-size: 14pt; }
+.layout-5 .totals-section { margin-top: 20px; font-size: 14pt; }
 .layout-5 .totals-deduction { margin: 5px 0; }
 .layout-5 .totals-final { margin-top: 15px; font-size: 16pt; }
 
@@ -63,7 +63,7 @@ table.data-table td { border: 1px solid #000; text-align: left; }
 .layout-10 .data-table { font-size: 12pt; margin-top: 30px; }
 .layout-10 .data-table th { padding: 10px 8px; }
 .layout-10 .data-table td { padding: 12px 8px; }
-.layout-10 .totals-section { margin-top: 30px; font-size: 13pt; }
+.layout-10 .totals-section { margin-top: 20px; font-size: 13pt; }
 .layout-10 .totals-deduction { margin: 3px 0; }
 .layout-10 .totals-final { margin-top: 12px; font-size: 15pt; }
 
@@ -75,7 +75,7 @@ table.data-table td { border: 1px solid #000; text-align: left; }
 .layout-15 .data-table { font-size: 11pt; margin-top: 20px; }
 .layout-15 .data-table th { padding: 8px 6px; }
 .layout-15 .data-table td { padding: 8px 6px; }
-.layout-15 .totals-section { margin-top: 20px; font-size: 12pt; }
+.layout-15 .totals-section { margin-top: 10px; font-size: 12pt; }
 .layout-15 .totals-deduction { margin: 2px 0; }
 .layout-15 .totals-final { margin-top: 10px; font-size: 14pt; }
 
@@ -87,7 +87,7 @@ table.data-table td { border: 1px solid #000; text-align: left; }
 .layout-20 .data-table { font-size: 10pt; margin-top: 15px; }
 .layout-20 .data-table th { padding: 6px 4px; }
 .layout-20 .data-table td { padding: 6px 4px; }
-.layout-20 .totals-section { margin-top: 15px; font-size: 11pt; }
+.layout-20 .totals-section { margin-top: 10px; font-size: 11pt; }
 .layout-20 .totals-deduction { margin: 1px 0; }
 .layout-20 .totals-final { margin-top: 8px; font-size: 13pt; }
 
@@ -99,7 +99,7 @@ table.data-table td { border: 1px solid #000; text-align: left; }
 .layout-25 .data-table { font-size: 10pt; margin-top: 10px; }
 .layout-25 .data-table th { padding: 4px 3px; }
 .layout-25 .data-table td { padding: 4px 3px; }
-.layout-25 .totals-section { margin-top: 10px; font-size: 11pt; }
+.layout-25 .totals-section { margin-top: 5px; font-size: 11pt; }
 .layout-25 .totals-deduction { margin: 1px 0; }
 .layout-25 .totals-final { margin-top: 6px; font-size: 12pt; }
 
