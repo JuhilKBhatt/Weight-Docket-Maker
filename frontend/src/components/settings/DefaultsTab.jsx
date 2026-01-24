@@ -18,7 +18,7 @@ export default function DefaultsTab({ form, currencies, units, selectors, onSave
                                 <Option value="AUD">AUD (Fallback)</Option>
                             </Select>
                         </Form.Item>
-                        <Form.Item label="Default Unit" name="default_unit">
+                        <Form.Item label="Default Docket Unit" name="default_unit">
                             <Select>
                                 {units.map(u => <Option key={u.value} value={u.value}>{u.label}</Option>)}
                                 <Option value="kg">kg (Fallback)</Option>
