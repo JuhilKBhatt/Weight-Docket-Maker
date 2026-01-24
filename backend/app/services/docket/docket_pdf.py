@@ -31,7 +31,7 @@ def render_docket_html(db: Session, docket_id: int):
         tare = item.tare or 0
         price = item.price or 0
         
-        net = max(0, gross - tare)
+        net = gross - tare
         total = net * price
         
         items_data.append({
@@ -56,7 +56,7 @@ def render_docket_html(db: Session, docket_id: int):
     post_deductions_amount = sum([d.amount for d in post_deductions])
 
     # Gross (Taxable) Total
-    gross_total = max(0, items_total - pre_deductions_amount)
+    gross_total = items_total - pre_deductions_amount
     
     gst_amount = 0
     if dkt.include_gst:
@@ -64,7 +64,7 @@ def render_docket_html(db: Session, docket_id: int):
 
     total_inc_gst = gross_total + gst_amount
         
-    final_total = max(0, total_inc_gst - post_deductions_amount)
+    final_total = total_inc_gst - post_deductions_amount
 
     # 4. Use Stored Currency Symbol
     currency_code = dkt.currency or 'AUD'
