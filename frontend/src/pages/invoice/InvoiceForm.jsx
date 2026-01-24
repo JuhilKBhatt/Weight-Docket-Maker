@@ -203,6 +203,12 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
           
           // Template Replacements
           let subject = defaults.email_default_subject || `Invoice {{number}}`;
+          
+          // ADDED: Prepend Revised if in Edit Mode
+          if (mode === 'edit') {
+              subject = `Revised: ${subject}`;
+          }
+
           let body = defaults.email_default_body || `Please find attached Invoice {{number}}.`;
           
           const replacements = {
@@ -354,7 +360,6 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
               removeDeduction={invoice.removeDeduction}
               currency={currency}
               setCurrency={setCurrency}
-              currencySymbol={currencyOptions.find(c => c.code === currency)?.symbol || '$'} // Pass symbol
             />
           </Row>
 
