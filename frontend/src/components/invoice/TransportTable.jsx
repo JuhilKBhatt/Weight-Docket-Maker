@@ -2,19 +2,19 @@
 
 import { Table, InputNumber, Typography } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
-import { getCurrencyLabel } from '../../scripts/utilities/invoiceConstants';
 
 export default function TransportTable({
   invoiceType,
   transportItems,
   handleTransportChange,
   currency = 'AUD',
+  currencyOptions = []
 }) {
   const isContainer = invoiceType === 'Container';
   const unitLabel = isContainer ? 'CNT' : 'Trip';
   
-  // Use Helper
-  const symbolLabel = getCurrencyLabel(currency);
+  // Find label based on currency code
+  const symbolLabel = currencyOptions.find(c => c.code === currency)?.label || `${currency}$`;
 
   const mappedItems = transportItems.map((item, index) => {
     let name = item.name;

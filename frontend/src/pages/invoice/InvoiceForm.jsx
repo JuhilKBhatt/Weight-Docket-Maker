@@ -331,6 +331,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
               transportItems={invoice.transportItems}
               handleTransportChange={invoice.handleTransportChange}
               currency={currency}
+              currencyOptions={currencyOptions} // Added prop
             />
           )}
 

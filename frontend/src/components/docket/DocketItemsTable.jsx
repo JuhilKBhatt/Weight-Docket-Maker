@@ -4,7 +4,6 @@ import React, { useState, useRef } from 'react';
 import { Table, Input, InputNumber, Typography, Button, Row, Col, Select, AutoComplete, Form } from 'antd'; 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
-import { UNIT_OPTIONS as DEFAULT_UNITS, CURRENCY_OPTIONS as DEFAULT_CURRENCIES } from '../../scripts/utilities/invoiceConstants';
 import docketService from '../../services/docketService';
 
 const { Text } = Typography;
@@ -42,8 +41,6 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
 
     const handleSelect = (val, option) => {
         onChange(val);
-        // If the backend returned a price > 0, update it.
-        // If 0 or null, set it to null (blank) so it doesn't default to 0.00
         if (option.price && option.price > 0) {
             onPriceUpdate(option.price);
         } else {
@@ -51,22 +48,13 @@ const MetalCell = ({ value, onChange, onPriceUpdate }) => {
         }
     };
 
-    // New: Handle Blur to autofill price when typing manually (not selecting from dropdown)
     const handleBlur = async () => {
-        // If empty, do nothing
         if (!value || !value.trim()) return;
-
         const customerName = form.getFieldValue('name') || '';
-
         try {
-            // Fetch exact matches or close matches for the typed text
             const data = await docketService.getUniqueMetals(value, customerName);
-            
-            // Find a match (case-insensitive) to the typed text
             const match = data.find(item => item.value.toLowerCase() === value.trim().toLowerCase());
-
             if (match) {
-                // Apply the same logic as handleSelect
                 if (match.price && match.price > 0) {
                     onPriceUpdate(match.price);
                 } else {
@@ -104,11 +92,8 @@ export default function DocketItemsTable({
     const [rowsToAdd, setRowsToAdd] = useState(1);
     const [selectedRowKey, setSelectedRowKey] = useState(null);
 
-    const activeCurrencies = currencyOptions.length > 0 ? currencyOptions : DEFAULT_CURRENCIES;
-    const activeUnits = unitOptions.length > 0 ? unitOptions : DEFAULT_UNITS;
-
-    // Helper: Get symbol (e.g. "AUD$")
-    const currentSymbolLabel = activeCurrencies.find(c => c.code === currency)?.label || `${currency}$`;
+    // Helper: Get symbol
+    const currentSymbolLabel = currencyOptions.find(c => c.code === currency)?.label || `${currency}$`;
 
     const weightFormatter = (value) => `${value}`.replaceAll(/\B(?=(\d{3})+(?!\d))/g, ',');
     const weightParser = (value) => value.replaceAll(/,/g, '');
@@ -116,13 +101,13 @@ export default function DocketItemsTable({
     const renderUnitSelector = (record) => (
       <Select
         value={record.unit || 'kg'}
-        style={{ width: 80, margin: '-5px 0' }} // Compact width
-        popupMatchSelectWidth={false} // Allow dropdown to be wider than the button
+        style={{ width: 80, margin: '-5px 0' }}
+        popupMatchSelectWidth={false}
         showSearch
         optionFilterProp="children"
         onChange={(val) => onItemChange(record.key, 'unit', val)}
       >
-        {activeUnits.map(unit => (
+        {unitOptions.map(unit => (
           <Option key={unit.value} value={unit.value}>{unit.label}</Option>
         ))}
       </Select>
@@ -131,13 +116,13 @@ export default function DocketItemsTable({
     const renderCurrencySelector = () => (
       <Select
         value={currency} 
-        style={{ width: 100, margin: '-5px 0' }} // Compact width
-        popupMatchSelectWidth={false} // Allow dropdown to be wider than the button
+        style={{ width: 100, margin: '-5px 0' }}
+        popupMatchSelectWidth={false}
         showSearch
         optionFilterProp="children"
         onChange={(val) => setCurrency(val)}
       >
-        {activeCurrencies.map(curr => (
+        {currencyOptions.map(curr => (
           <Option key={curr.code} value={curr.code}>{curr.label}</Option>
         ))}
       </Select>
@@ -154,7 +139,7 @@ export default function DocketItemsTable({
         { 
             title: 'Metal', 
             dataIndex: 'metal', 
-            width: '12%', // Increased width for better visibility
+            width: '12%', 
             render: (_, record) => (
                 <MetalCell 
                     value={record.metal}
@@ -166,7 +151,7 @@ export default function DocketItemsTable({
         { 
             title: 'Notes', 
             dataIndex: 'notes', 
-            width: '12%', // Increased width
+            width: '12%',
             render: (_, record) => (
                 <Input 
                     value={record.notes} 
@@ -178,7 +163,7 @@ export default function DocketItemsTable({
         { 
             title: 'Gross', 
             dataIndex: 'gross', 
-            width: 80, // Compact
+            width: 80,
             render: (_, record) => (
                 <InputNumber 
                     style={{ width: '100%' }} 
@@ -192,7 +177,7 @@ export default function DocketItemsTable({
         { 
             title: 'Tare', 
             dataIndex: 'tare', 
-            width: 80, // Compact
+            width: 80,
             render: (_, record) => (
                 <InputNumber 
                     style={{ width: '100%' }} 
@@ -206,7 +191,7 @@ export default function DocketItemsTable({
         {
             title: 'Net Weight',
             dataIndex: 'net',
-            width: 100, // Compact
+            width: 100,
             render: (text, record) => {
                 const val = Number(text);
                 const isNegative = !isNaN(val) && val < 0;
@@ -223,7 +208,7 @@ export default function DocketItemsTable({
         {
             title: 'Price / unit',
             dataIndex: 'price',
-            width: 100, // Compact
+            width: 100,
             render: (_, record) => (
                 <InputNumber 
                     addonBefore={renderCurrencySelector()}
@@ -237,7 +222,7 @@ export default function DocketItemsTable({
         {
             title: 'Total',
             dataIndex: 'total',
-            width: 125, // Compact
+            width: 125,
             render: (text) => (
                 <Input prefix={currentSymbolLabel} value={audFormatterFixed(text)} readOnly style={{ textAlign: 'right' }} />
             )

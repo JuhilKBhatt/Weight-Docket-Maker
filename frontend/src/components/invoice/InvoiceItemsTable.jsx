@@ -3,8 +3,6 @@
 import React, {useState} from 'react';
 import { Table, Input, InputNumber, Button, Popconfirm, Typography, Select } from 'antd';
 import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
-// We assume CURRENCY_OPTIONS/UNIT_OPTIONS are passed as props now, but keep imports as fallback if needed
-import { CURRENCY_OPTIONS as DEFAULT_CURRENCIES, UNIT_OPTIONS as DEFAULT_UNITS, getCurrencyLabel } from '../../scripts/utilities/invoiceConstants';
 
 const { Option } = Select;
 
@@ -16,21 +14,16 @@ export default function InvoiceItemsTable({
   handleItemChange,
   addRow,
   removeRow,
-  // New Props
   currencyOptions = [],
   unitOptions = []
 }) {
 
   const [selectedRowKey, setSelectedRowKey] = useState(null);
 
-  // Fallback to constants if API failed or empty
-  const activeCurrencies = currencyOptions.length > 0 ? currencyOptions : DEFAULT_CURRENCIES;
-  const activeUnits = unitOptions.length > 0 ? unitOptions : DEFAULT_UNITS;
-
   // Helper: Find label for current currency
-  const currentSymbolLabel = activeCurrencies.find(c => c.code === currency)?.label || `${currency}$`;
+  const currentSymbolLabel = currencyOptions.find(c => c.code === currency)?.label || `${currency}$`;
 
-  // 1. Optimized Unit Selector
+  // 1. Unit Selector
   const renderUnitSelector = (record) => (
     <Select
       value={record.unit || 't'}
@@ -39,13 +32,13 @@ export default function InvoiceItemsTable({
       optionFilterProp="children"
       onChange={(val) => handleItemChange(record.key, 'unit', val)}
     >
-      {activeUnits.map(unit => (
+      {unitOptions.map(unit => (
         <Option key={unit.value} value={unit.value}>{unit.label}</Option>
       ))}
     </Select>
   );
 
-  // 2. Optimized Currency Selector
+  // 2. Currency Selector
   const renderCurrencySelector = () => (
     <Select
       value={currency} 
@@ -54,7 +47,7 @@ export default function InvoiceItemsTable({
       optionFilterProp="children"
       onChange={(val) => setCurrency(val)}
     >
-      {activeCurrencies.map(curr => (
+      {currencyOptions.map(curr => (
         <Option key={curr.code} value={curr.code}>{curr.label}</Option>
       ))}
     </Select>
