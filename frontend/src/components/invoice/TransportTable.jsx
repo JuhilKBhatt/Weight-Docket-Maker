@@ -1,7 +1,7 @@
 // ./frontend/src/components/invoice/TransportTable.jsx
 
-import { Table, InputNumber, Typography } from 'antd';
-import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
+import { Table, Input, InputNumber, Typography } from 'antd';
+import { audFormatter, audParser, audFormatterFixed, isValidInput } from '../../scripts/utilities/AUDFormatters';
 
 export default function TransportTable({
   invoiceType,
@@ -13,8 +13,16 @@ export default function TransportTable({
   const isContainer = invoiceType === 'Container';
   const unitLabel = isContainer ? 'CNT' : 'Trip';
   
-  // Find label based on currency code
   const symbolLabel = currencyOptions.find(c => c.code === currency)?.label || `${currency}$`;
+
+  const onInputChange = (key, field, e, maxDecimals = 2) => {
+    const rawValue = e.target.value;
+    const parsedValue = audParser(rawValue);
+    
+    if (isValidInput(parsedValue, maxDecimals)) {
+      handleTransportChange(key, field, parsedValue);
+    }
+  };
 
   const mappedItems = transportItems.map((item, index) => {
     let name = item.name;
@@ -35,11 +43,11 @@ export default function TransportTable({
       title: `Number of ${unitLabel}s`,
       dataIndex: 'numOfCtr',
       render: (_, record) => (
-        <InputNumber
+        <Input
           addonAfter={unitLabel}
           style={{ width: '100%' }}
-          value={record.numOfCtr}
-          onChange={(val) => handleTransportChange(record.key, 'numOfCtr', val)}
+          value={audFormatter(record.numOfCtr)}
+          onChange={(e) => onInputChange(record.key, 'numOfCtr', e, 2)}
         />
       ),
     },
@@ -47,13 +55,11 @@ export default function TransportTable({
       title: `Price / ${unitLabel}`,
       dataIndex: 'pricePerCtr',
       render: (_, record) => (
-        <InputNumber
+        <Input
           addonBefore={symbolLabel}
           style={{ width: '100%' }}
-          value={record.pricePerCtr}
-          formatter={audFormatter}
-          parser={audParser}
-          onChange={(val) => handleTransportChange(record.key, 'pricePerCtr', val)}
+          value={audFormatter(record.pricePerCtr)}
+          onChange={(e) => onInputChange(record.key, 'pricePerCtr', e, 2)}
         />
       ),
     },

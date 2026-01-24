@@ -2,7 +2,7 @@
 
 import React, {useState} from 'react';
 import { Table, Input, InputNumber, Button, Popconfirm, Typography, Select } from 'antd';
-import { audFormatter, audParser, audFormatterFixed } from '../../scripts/utilities/AUDformatters';
+import { audFormatter, audParser, audFormatterFixed, isValidInput } from '../../scripts/utilities/AUDFormatters';
 
 const { Option } = Select;
 
@@ -20,10 +20,19 @@ export default function InvoiceItemsTable({
 
   const [selectedRowKey, setSelectedRowKey] = useState(null);
 
-  // Helper: Find label for current currency
   const currentSymbolLabel = currencyOptions.find(c => c.code === currency)?.label || `${currency}$`;
 
-  // 1. Unit Selector
+  // UPDATED: Handler now accepts maxDecimals
+  const onInputChange = (key, field, e, maxDecimals = 2) => {
+    const rawValue = e.target.value;
+    const parsedValue = audParser(rawValue);
+    
+    // Pass the precision limit here
+    if (isValidInput(parsedValue, maxDecimals)) {
+      handleItemChange(key, field, parsedValue);
+    }
+  };
+
   const renderUnitSelector = (record) => (
     <Select
       value={record.unit || 't'}
@@ -38,7 +47,6 @@ export default function InvoiceItemsTable({
     </Select>
   );
 
-  // 2. Currency Selector
   const renderCurrencySelector = () => (
     <Select
       value={currency} 
@@ -69,11 +77,11 @@ export default function InvoiceItemsTable({
       title: 'Quantity', 
       dataIndex: 'quantity',
       render: (_, record) => (
-        <InputNumber
+        <Input
           addonAfter={renderUnitSelector(record)}
           style={{ width: '100%' }}
-          value={record.quantity}
-          onChange={(val) => handleItemChange(record.key, 'quantity', val)}
+          value={audFormatter(record.quantity)}
+          onChange={(e) => onInputChange(record.key, 'quantity', e, 3)}
         />
       ),
     },
@@ -81,14 +89,11 @@ export default function InvoiceItemsTable({
       title: 'Unit Price',
       dataIndex: 'price',
       render: (_, record) => (
-        <InputNumber
-          // Universal Selector
+        <Input
           addonBefore={renderCurrencySelector()} 
           style={{ width: '100%' }}
-          value={record.price}
-          formatter={audFormatter}
-          parser={audParser}
-          onChange={(val) => handleItemChange(record.key, 'price', val)}
+          value={audFormatter(record.price)}
+          onChange={(e) => onInputChange(record.key, 'price', e, 2)}
         />
       ),
     },
@@ -97,7 +102,6 @@ export default function InvoiceItemsTable({
       dataIndex: 'total',
       render: (_, record) => (
         <InputNumber
-          // Dynamic Symbol Label
           addonBefore={currentSymbolLabel} 
           style={{ width: '100%' }}
           value={record.total}

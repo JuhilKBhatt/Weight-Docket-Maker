@@ -111,6 +111,11 @@
   border-color: #999999;
 }
 
+.ant-table .ant-input-group-addon {
+  background-color: #ffffff;
+  border-color: #999999;
+}
+
 /* Buttons */
 .ant-btn {
   font-weight: 600;

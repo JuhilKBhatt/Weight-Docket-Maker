@@ -1,11 +1,12 @@
-// ./frontend/src/scripts/utilities/AUDformatters.js
+// ./frontend/src/scripts/utilities/AUDFormatters.js
 
 export const audFormatter = (value) => {
   if (value === undefined || value === null || value === '') return '';
-  const [integer, decimal] = String(value).split('.');
+  
+  const valStr = String(value);
+  const [integer, decimal] = valStr.split('.');
   const formattedInt = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-  // While typing, DO NOT force decimals
   return decimal !== undefined
     ? `${formattedInt}.${decimal}`
     : formattedInt;
@@ -13,7 +14,14 @@ export const audFormatter = (value) => {
 
 export const audParser = (value) => {
   if (!value) return '';
-  return value.replace(/,/g, '');
+  return String(value).replace(/,/g, '');
+};
+
+export const isValidInput = (value, precision = 2) => {
+  if (value === '' || value === '-') return true; 
+  
+  const regex = new RegExp(`^\\d*(\\.\\d{0,${precision}})?$`);
+  return regex.test(value);
 };
 
 export const audFormatterFixed = (value) => {
