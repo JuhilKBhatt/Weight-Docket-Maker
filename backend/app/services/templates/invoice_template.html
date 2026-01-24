@@ -13,7 +13,7 @@
 <br>
     <table class="layout">
         <tr>
-            <td style="width: 40%; vertical-align: top; padding-right: 20px;">
+            <td style="width: 37%; vertical-align: top; padding-right: 20px;">
                 <div class="address-block">
                     <div class="section-label">BILL FROM</div>
                     <div style="margin-top: 5px;">
@@ -25,7 +25,7 @@
                     </div>
                 </div>
             </td>
-            <td style="width: 40%; vertical-align: top; padding-right: 20px;">    
+            <td style="width: 37%; vertical-align: top; padding-right: 20px;">    
                 <div class="address-block">
                     <div class="section-label">BILL TO</div>
                     <div style="margin-top: 5px;">
@@ -37,7 +37,7 @@
                     </div>
                 </div>
             </td>
-            <td style="width: 20%; text-align: right; vertical-align: top;">
+            <td style="width: 26%; text-align: right; vertical-align: top;">
                 <table style="width: 100%; margin-top: 20px;">
                     <tr>
                         <td class="invoice-number-row">TAX INVOICE ID#:{{ invoice.scrinv_number }}</td>
@@ -83,23 +83,23 @@
                     <td>{{ item.seal }}</td>
                     <td>{{ item.container_number }}</td>
                     <td>{{ item.description }}</td>
-                    <td class="text-right">{{ item.quantity }} {{ item.unit }}</td>
-                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
-                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
+                    <td class="text-right no-wrap-cell">{{ "{:,.2f}".format(item.quantity) }} {{ item.unit }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
 
                 {% elif invoice.invoice_type == 'Pickup' %}
                     <td>{{ loop.index }}</td>
                     <td>{{ item.metal }}</td>
                     <td>{{ item.description }}</td>
-                    <td class="text-right">{{ item.quantity }} {{ item.unit }}</td>
-                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
-                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
+                    <td class="text-right no-wrap-cell">{{ "{:,.2f}".format(item.quantity) }} {{ item.unit }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
 
                 {% else %} 
                     <td>{{ item.description }}</td>
-                    <td class="text-right">{{ item.quantity }} {{ item.unit }}</td>
-                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
-                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
+                    <td class="text-right no-wrap-cell">{{ "{:,.2f}".format(item.quantity) }} {{ item.unit }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
                 {% endif %}
             </tr>
             {% endfor %}
@@ -109,23 +109,23 @@
                 {% if invoice.invoice_type == 'Container' %}
                     <td colspan="2">Transport</td>
                     <td>{{ trans.name }}</td>
-                    <td class="text-right">{{ trans.num_of_ctr }}</td>
-                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
-                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+                    <td class="text-right no-wrap-cell">{{ "{:,.2f}".format(trans.num_of_ctr) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
 
                 {% elif invoice.invoice_type == 'Pickup' %}
                     <td></td>
                     <td>Transport</td>
                     <td>{{ trans.name }}</td>
-                    <td class="text-right">{{ trans.num_of_ctr }}</td>
-                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
-                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+                    <td class="text-right no-wrap-cell">{{ "{:,.2f}".format(trans.num_of_ctr) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
 
                 {% else %}
                     <td>Transport:{{ trans.name }}</td>
-                    <td class="text-right">{{ trans.num_of_ctr }}</td>
-                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
-                    <td class="text-right"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+                    <td class="text-right no-wrap-cell">{{ "{:,.2f}".format(trans.num_of_ctr) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
                 {% endif %}
             </tr>
             {% endfor %}
@@ -255,6 +255,5 @@
     </table>
     <br>
     <br>
-<!--<img src="data:image/png;base64,{{ footer_img_base64 }}" class="full-width-img" alt="Footer" />-->
 </body>
 </html>
