@@ -5,7 +5,6 @@ import { Table, DatePicker, Input, Card, Typography, Row, Col, App } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { getInventoryReport } from '../../services/inventoryService';
-import { audFormatterFixed } from '../../scripts/utilities/AUDformatters'; 
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -15,7 +14,7 @@ export default function InventoryReport() {
 
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState([]);
-    const [grandTotal, setGrandTotal] = useState({ netWeight: 0, value: 0 });
+    const [grandTotals, setGrandTotals] = useState({ weights: {}, values: {} });
     
     const [dateRange, setDateRange] = useState([
         dayjs().startOf('month'), 
@@ -23,15 +22,9 @@ export default function InventoryReport() {
     ]);
     const [metalSearch, setMetalSearch] = useState('');
     
-    // Debounce Ref
-    const searchDebounce = useRef(null);
-
-    // Added isBackground flag
+    // Fetch Report Data
     const fetchReport = async (dates, search, isBackground = false) => {
-        // If dates are cleared, return early
-        if (!dates || !dates[0] || !dates[1]) {
-            return;
-        }
+        if (!dates || !dates[0] || !dates[1]) return;
 
         if (!isBackground) setLoading(true);
         
@@ -42,41 +35,29 @@ export default function InventoryReport() {
             const response = await getInventoryReport(startDate, endDate, search);
             
             setData(response.data);
-            setGrandTotal(response.grandTotal);
+            setGrandTotals(response.grandTotals);
         } catch (error) {
             console.error(error);
             if (!isBackground) {
-                if (error.response && error.response.data && error.response.data.detail) {
-                    const details = JSON.stringify(error.response.data.detail);
-                    message.error(`Server Validation Error: ${details}`);
-                } else {
-                    message.error("Failed to load inventory report.");
-                }
+                message.error("Failed to load inventory report.");
             }
         } finally {
             if (!isBackground) setLoading(false);
         }
     };
 
-    // Initial Load, Date Change & Polling
+    // Initial Load & Polling
     useEffect(() => {
-        // 1. Fetch immediately
         fetchReport(dateRange, metalSearch);
-
-        // 2. Poll every 5 seconds
         const intervalId = setInterval(() => {
-            fetchReport(dateRange, metalSearch, true); // true = background
+            fetchReport(dateRange, metalSearch, true); 
         }, 5000);
-
         return () => clearInterval(intervalId);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dateRange, metalSearch]); 
 
-    // Handle Search with Debounce
+    // Handle Search
     const handleSearchChange = (e) => {
-        const val = e.target.value;
-        setMetalSearch(val);
-        // useEffect handles the fetch because metalSearch is a dependency
+        setMetalSearch(e.target.value);
     };
 
     const columns = [
@@ -88,18 +69,24 @@ export default function InventoryReport() {
         },
         {
             title: 'Total Net Weight',
-            dataIndex: 'netWeight',
             key: 'netWeight',
             align: 'right',
-            render: (val) => <Text>{val.toLocaleString('en-US', { minimumFractionDigits: 2 })} kg</Text>,
+            render: (_, record) => (
+                <Text>
+                    {record.netWeight.toLocaleString('en-US', { minimumFractionDigits: 2 })} {record.unit}
+                </Text>
+            ),
             sorter: (a, b) => a.netWeight - b.netWeight,
         },
         {
             title: 'Total Value',
-            dataIndex: 'value',
             key: 'value',
             align: 'right',
-            render: (val) => <Text>AUD${audFormatterFixed(val)}</Text>,
+            render: (_, record) => (
+                <Text>
+                    {record.currency}{record.currencySymbol} {record.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </Text>
+            ),
             sorter: (a, b) => a.value - b.value,
         },
     ];
@@ -126,7 +113,7 @@ export default function InventoryReport() {
                         </Col>
                         <Col>
                             <Input 
-                                placeholder="Search Metal (e.g. Copper)" 
+                                placeholder="Search Metal..." 
                                 prefix={<SearchOutlined />} 
                                 value={metalSearch}
                                 onChange={handleSearchChange}
@@ -139,7 +126,7 @@ export default function InventoryReport() {
                 <Table 
                     dataSource={data}
                     columns={columns}
-                    rowKey="metal"
+                    rowKey={(record) => `${record.metal}-${record.unit}-${record.currency}`}
                     loading={loading}
                     bordered
                     pagination={false} 
@@ -147,17 +134,29 @@ export default function InventoryReport() {
                         <Table.Summary fixed>
                             <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
                                 <Table.Summary.Cell index={0}>
-                                    <Text strong style={{ fontSize: '16px' }}>GRAND TOTAL</Text>
+                                    <Text strong style={{ fontSize: '20' }}>GRAND TOTALS</Text>
                                 </Table.Summary.Cell>
+                                
+                                {/* Weights Summary */}
                                 <Table.Summary.Cell index={1} align="right">
-                                    <Text strong style={{ fontSize: '16px' }}>
-                                        {grandTotal.netWeight.toLocaleString('en-US', { minimumFractionDigits: 2 })} kg
-                                    </Text>
+                                    {Object.entries(grandTotals.weights).map(([unit, weight]) => (
+                                        <div key={unit}>
+                                            <Text strong style={{ fontSize: '22px' }}>
+                                                {weight.toLocaleString('en-US', { minimumFractionDigits: 2 })} {unit}
+                                            </Text>
+                                        </div>
+                                    ))}
                                 </Table.Summary.Cell>
+                                
+                                {/* Values Summary */}
                                 <Table.Summary.Cell index={2} align="right">
-                                    <Text strong style={{ fontSize: '16px' }}>
-                                        AUD${audFormatterFixed(grandTotal.value)}
-                                    </Text>
+                                    {Object.entries(grandTotals.values).map(([curr, { amount, symbol }]) => (
+                                        <div key={curr}>
+                                            <Text strong style={{ fontSize: '22px' }}>
+                                                {curr}{symbol} {amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                            </Text>
+                                        </div>
+                                    ))}
                                 </Table.Summary.Cell>
                             </Table.Summary.Row>
                         </Table.Summary>
