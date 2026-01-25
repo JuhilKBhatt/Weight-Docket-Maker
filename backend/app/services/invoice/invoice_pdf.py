@@ -1,7 +1,9 @@
-# app/services/invoice/invoice_pdf.py
+# backend/app/services/invoice/invoice_pdf.py
+
 import os
 import base64
 from io import BytesIO
+from decimal import Decimal
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from jinja2 import Environment, FileSystemLoader
@@ -10,6 +12,23 @@ from datetime import datetime, timedelta, date
 
 from app.services.invoice import invoice_crud
 from app.models.settingsModels import CurrencyOption
+
+# --- Helper for Decimal conversion ---
+def to_decimal(val):
+    if val is None:
+        return Decimal("0.00")
+    return Decimal(str(val))
+
+# --- NEW: Smart Quantity Formatting ---
+def format_qty(val):
+    if val is None:
+        return "0"
+    # Format with 3 decimals first (e.g. 1,234.500)
+    s = "{:,.3f}".format(val)
+    # Remove trailing zeros and the decimal point if it becomes empty
+    if '.' in s:
+        s = s.rstrip('0').rstrip('.')
+    return s
 
 def get_file_base64(file_path):
     if not os.path.exists(file_path):
@@ -40,34 +59,48 @@ def render_invoice_html(db: Session, invoice_id: int):
     due_date_obj = date_obj + timedelta(days=2)
     formatted_due_date = due_date_obj.strftime("%d/%m/%Y")
 
-    # 3. Logic: Currency Symbol (Updated to use DB Label)
+    # 3. Logic: Currency Symbol
     currency_code = inv_dict.get('currency', 'AUD')
-    
-    # Query database for custom symbol/label
     currency_option = db.query(CurrencyOption).filter(CurrencyOption.code == currency_code).first()
     
-    symbol = '$' # Default fallback
+    symbol = '$' 
     if currency_option:
-        # Prioritize Label (e.g. "INR₹") over Symbol (e.g. "₹")
         if currency_option.label:
             symbol = currency_option.label
         elif currency_option.symbol:
             symbol = currency_option.symbol
 
-    # 4. Calculate Totals
-    items_total = sum([i['quantity'] * i['price'] for i in inv_dict['line_items']])
-    trans_total = sum([t['num_of_ctr'] * t['price_per_ctr'] for t in inv_dict['transport_items']])
+    # 4. Calculate Totals (Using Decimal)
+    items_total = Decimal("0.00")
+    for i in inv_dict['line_items']:
+        qty = to_decimal(i.get('quantity', 0))
+        price = to_decimal(i.get('price', 0))
+        items_total += (qty * price)
+        
+        # [NEW] Add formatted quantity string to the item dictionary
+        i['qty_formatted'] = format_qty(qty)
+
+    trans_total = Decimal("0.00")
+    for t in inv_dict['transport_items']:
+        num = to_decimal(t.get('num_of_ctr', 0))
+        price = to_decimal(t.get('price_per_ctr', 0))
+        trans_total += (num * price)
+        
+        # [NEW] Add formatted number string to the transport dictionary
+        t['num_formatted'] = format_qty(num)
 
     gross_items_transport = items_total + trans_total
 
-    pre_deductions = sum([d['amount'] for d in inv_dict['pre_gst_deductions']])
-    post_deductions = sum([d['amount'] for d in inv_dict['post_gst_deductions']])
+    pre_deductions = sum([to_decimal(d.get('amount', 0)) for d in inv_dict['pre_gst_deductions']])
+    post_deductions = sum([to_decimal(d.get('amount', 0)) for d in inv_dict['post_gst_deductions']])
 
     # Taxable Amount
     subtotal = gross_items_transport - pre_deductions
     
-    gst_percent = inv_dict.get('gst_percentage', 10)
-    gst = subtotal * (gst_percent/100) if inv_dict['include_gst'] else 0
+    gst = Decimal("0.00")
+    if inv_dict['include_gst']:
+        gst_percent = to_decimal(inv_dict.get('gst_percentage', 10))
+        gst = subtotal * (gst_percent / Decimal("100.00"))
 
     total_inc_gst = subtotal + gst
     total = total_inc_gst - post_deductions
@@ -98,7 +131,6 @@ def render_invoice_html(db: Session, invoice_id: int):
     }}
     """
 
-    # Load CSS and prepend font face
     css_path = os.path.join(template_dir, "invoice_template_styles.css")
     css_content = ""
     if os.path.exists(css_path):

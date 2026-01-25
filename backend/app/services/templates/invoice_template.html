@@ -83,7 +83,7 @@
                     <td>{{ item.seal }}</td>
                     <td>{{ item.container_number }}</td>
                     <td>{{ item.description }}</td>
-                    <td class="text-right no-wrap-cell">{{ "{:,.2f}".format(item.quantity) }} {{ item.unit }}</td>
+                    <td class="text-right no-wrap-cell">{{ item.qty_formatted }} {{ item.unit }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
 
@@ -91,13 +91,13 @@
                     <td>{{ loop.index }}</td>
                     <td>{{ item.metal }}</td>
                     <td>{{ item.description }}</td>
-                    <td class="text-right no-wrap-cell">{{ "{:,.2f}".format(item.quantity) }} {{ item.unit }}</td>
+                    <td class="text-right no-wrap-cell">{{ item.qty_formatted }} {{ item.unit }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
 
                 {% else %} 
                     <td>{{ item.description }}</td>
-                    <td class="text-right no-wrap-cell">{{ "{:,.2f}".format(item.quantity) }} {{ item.unit }}</td>
+                    <td class="text-right no-wrap-cell">{{ item.qty_formatted }} {{ item.unit }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
                 {% endif %}
@@ -109,7 +109,7 @@
                 {% if invoice.invoice_type == 'Container' %}
                     <td colspan="2">Transport</td>
                     <td>{{ trans.name }}</td>
-                    <td class="text-right no-wrap-cell">{{ "{:,.2f}".format(trans.num_of_ctr) }}</td>
+                    <td class="text-right no-wrap-cell">{{ trans.num_formatted }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
 
@@ -117,13 +117,13 @@
                     <td></td>
                     <td>Transport</td>
                     <td>{{ trans.name }}</td>
-                    <td class="text-right no-wrap-cell">{{ "{:,.2f}".format(trans.num_of_ctr) }}</td>
+                    <td class="text-right no-wrap-cell">{{ trans.num_formatted }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
 
                 {% else %}
                     <td>Transport:{{ trans.name }}</td>
-                    <td class="text-right no-wrap-cell">{{ "{:,.2f}".format(trans.num_of_ctr) }}</td>
+                    <td class="text-right no-wrap-cell">{{ trans.num_formatted }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
                 {% endif %}
