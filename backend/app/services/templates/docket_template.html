@@ -103,7 +103,8 @@
                 {% else %}
                     <th style="width: 1%; text-align: center;">#</th>
                     <th style="width: 20%; text-align: center;">Metal</th>
-                    <th style="width: 1%; text-align: center;">Notes</th> <th style="width: 16%; text-align: center;">Gross</th>
+                    <th style="width: 1%; text-align: center;">Notes</th>
+                    <th style="width: 16%; text-align: center;">Gross</th>
                     <th style="width: 16%; text-align: center;">Tare</th>
                     <th style="width: 16%; text-align: center;">Net</th>
                     <th style="width: 10%; text-align: center;">{{ currency_label }}/Unit</th>
@@ -117,11 +118,13 @@
                 <td style="text-align: center;">{{ loop.index }}</td>
                 <td>{{ item.metal }}</td>
                 <td>{{ item.notes or '' }}</td>
-                <td>{{ "{:,.0f}".format(item.gross) }} {{ item.unit }}</td>
-                <td>{{ "{:,.0f}".format(item.tare) }} {{ item.unit }}</td>
-                <td><strong>{{ "{:,.0f}".format(item.net) }} {{ item.unit }}</strong></td>
-                <td>{{ currency_label }}{{ "{:,.2f}".format(item.price) }}</td>
-                <td>{{ currency_label }}{{ "{:,.2f}".format(item.total) }}</td>
+                
+                <td class="no-wrap-cell">{{ item.gross_fmt }} {{ item.unit }}</td>
+                <td class="no-wrap-cell">{{ item.tare_fmt }} {{ item.unit }}</td>
+                <td class="no-wrap-cell"><strong>{{ item.net_fmt }} {{ item.unit }}</strong></td>
+                
+                <td class="no-wrap-cell">{{ currency_label }}{{ "{:,.2f}".format(item.price) }}</td>
+                <td class="no-wrap-cell">{{ currency_label }}{{ "{:,.2f}".format(item.total) }}</td>
             </tr>
             {% endfor %}
         </tbody>

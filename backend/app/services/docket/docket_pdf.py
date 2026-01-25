@@ -3,6 +3,7 @@
 import os
 import base64
 from io import BytesIO
+from decimal import Decimal
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from jinja2 import Environment, FileSystemLoader
@@ -17,6 +18,19 @@ def get_file_base64(file_path):
     with open(file_path, "rb") as f:
         return base64.b64encode(f.read()).decode('utf-8')
 
+# --- Helper for Decimal conversion ---
+def to_decimal(val):
+    if val is None:
+        return Decimal("0.00")
+    return Decimal(str(val))
+
+# --- NEW: Helper for Conditional Weight Formatting ---
+def format_weight(val):
+    # val is expected to be a Decimal
+    if val % 1 == 0:
+        return "{:,.0f}".format(val)
+    return "{:,.3f}".format(val)
+
 def render_docket_html(db: Session, docket_id: int):
     # 1. Fetch Data
     dkt = db.query(Docket).filter(Docket.id == docket_id).first()
@@ -26,13 +40,19 @@ def render_docket_html(db: Session, docket_id: int):
     # 2. Prepare Items Data
     items_data = []
     
+    # Use Decimal accumulator for precision
+    items_total = Decimal("0.00")
+
     for item in dkt.items:
-        gross = item.gross or 0
-        tare = item.tare or 0
-        price = item.price or 0
+        # Convert to Decimal
+        gross = to_decimal(item.gross)
+        tare = to_decimal(item.tare)
+        price = to_decimal(item.price)
         
         net = gross - tare
         total = net * price
+        
+        items_total += total
         
         items_data.append({
             "metal": item.metal,
@@ -41,28 +61,31 @@ def render_docket_html(db: Session, docket_id: int):
             "net": net,
             "price": price,
             "total": total,
+            "gross_fmt": format_weight(gross),
+            "tare_fmt": format_weight(tare),
+            "net_fmt": format_weight(net),
             "notes": item.row_notes,
             "unit": item.unit or "kg"
         })
 
     has_notes = any(item.get('notes') and str(item.get('notes')).strip() for item in items_data)
 
-    # 3. Calculate Totals
-    items_total = sum([i['total'] for i in items_data])
-
+    # 3. Calculate Totals (using Decimal)
+    
     # Filter Deductions
     pre_deductions = [d for d in dkt.deductions if d.type == 'pre']
     post_deductions = [d for d in dkt.deductions if d.type == 'post']
 
-    pre_deductions_amount = sum([d.amount for d in pre_deductions])
-    post_deductions_amount = sum([d.amount for d in post_deductions])
+    pre_deductions_amount = sum([to_decimal(d.amount) for d in pre_deductions])
+    post_deductions_amount = sum([to_decimal(d.amount) for d in post_deductions])
 
     # Gross (Taxable) Total
     gross_total = items_total - pre_deductions_amount
     
-    gst_amount = 0
+    gst_amount = Decimal("0.00")
     if dkt.include_gst:
-        gst_amount = gross_total * (dkt.gst_percentage / 100)
+        gst_percent = to_decimal(dkt.gst_percentage)
+        gst_amount = gross_total * (gst_percent / Decimal("100.00"))
 
     total_inc_gst = gross_total + gst_amount
         
