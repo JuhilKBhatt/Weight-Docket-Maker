@@ -58,6 +58,99 @@ Go to Settings -> Email Config
 
 ---
 
-Open Docker Application at Login/Restart
+# 1 - How to Setup
 
-Add Company In Bill Form Invoice
+## 1.1 - Setup Environment
+
+### 1.1.1 - Import .env at ./
+
+```
+# Docker Environment Variables for Weight Docket Maker
+#./env
+
+# Database Credentials
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_DB=
+DATABASE_URL=
+
+# Host Paths (Your Google Drive)
+GOOGLE_DRIVE_PATH=
+```
+
+### 1.1.2 - Import .env at ./backend
+
+```
+# ./backend/.env
+
+DATABASE_URL=""
+
+# ---------------- Backup Configuration ----------------
+CONTAINER_NAME=""
+DB_USER=""
+DB_NAME=""
+BACKUP_DIR=""
+```
+
+### 1.1.3 - Import console.log and Customer Details.csv
+
+### 1.1.4 - Setup Google Drive
+
+1. Install & Setup Google Drive Desktop Application
+2. Create a folder for backup data
+
+## 1.2 - Start Application
+
+1) Install & Setup Docker Application
+2) Make Sure Docker Application Open at login/restart
+3) Open Terminal at /Weight-Docket-Maker
+4) docker compose up --build -d
+5) docker compose exec backend alembic stamp head
+6) Update the Models
+7) docker compose exec backend python app/utilities/seed_lists.py
+
+## 1.3 - Start Printer File
+
+Add default printer via settings and setup print format defaults
+
+### 1.3.1 - Linux/Mac
+
+Run Commands from ./
+
+1. lpstat -p
+
+2. lpoptions -d <Your_Printer_Name>
+
+3. lpstat -p
+
+4. chmod +x backend/run_printer.sh
+
+5. backend/run_printer.sh
+
+6. VISUAL=nano crontab -e
+
+7. @reboot {Full System Path}/backend/run_printer.sh
+
+8. Esc then :w
+
+9. :wq
+
+### 1.3.2 - Windows
+
+1. Open Task Scheduler
+2. Create Task (not "Create Basic Task")
+3. Give Name & Description
+4. Run wether user is logged on or not & Run with highest privileges
+5. Go to Triggers & Click New
+6. Change Begin the task to At Startup
+7. Go to Actions & Click New
+8. Click on Browse & select the run_printer.bat
+9. Click Ok/Done
+10. Right click on task and click run
+
+## 1.4 - Setup Runtime Vars
+
+1. Add Company In Bill Form Invoice
+2. Add Bank Accounts
+3. Add Email Server Config & Email Template
+4. Setup Settings Defaults
