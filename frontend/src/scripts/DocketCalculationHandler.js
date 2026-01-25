@@ -20,21 +20,25 @@ export default class DocketCalculationHandler {
     return Number.isNaN(num) ? 0 : num;
   }
 
+  // Currency rounding (2 decimals)
   round(value) {
     return Math.round(this.safeNumber(value) * 100) / 100;
+  }
+
+  roundWeight(value) {
+    return Math.round(this.safeNumber(value) * 1000) / 1000;
   }
 
   // ---------- ROW CALCULATIONS ----------
   calculateItemTotals() {
     return this.items.map(item => {
-      // Docket Specific: Net = Gross - Tare
       const gross = this.safeNumber(item.gross);
       const tare = this.safeNumber(item.tare);
       const price = this.safeNumber(item.price);
 
-      const net = this.round(gross - tare);
+      const net = this.roundWeight(gross - tare);
       
-      // Calculate Total
+      // Calculate Total (Currency, 2 decimals)
       const total = this.round(net * price);
 
       return {
@@ -56,7 +60,6 @@ export default class DocketCalculationHandler {
   getCalculations() {
     const itemsWithTotals = this.calculateItemTotals();
     
-    // Sum of all line item totals
     const itemsTotal = itemsWithTotals.reduce(
       (sum, item) => sum + this.safeNumber(item.total),
       0
@@ -69,11 +72,8 @@ export default class DocketCalculationHandler {
     
     const gstRate = this.gstPercentage / 100;
     
-    // Calculate GST even if gross is negative (standard behavior for credit notes, etc.)
-    // If you prefer GST to be 0 on negative totals, check if (grossTotal > 0)
     const gstAmount = this.includeGST ? this.round(grossTotal * gstRate) : 0;
     
-    // Post-GST Deductions
     const postGstDeductionTotal = this.calculateDeductionsTotal(this.postGstDeductions);
     
     // Final Total

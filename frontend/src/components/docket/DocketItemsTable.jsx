@@ -91,7 +91,6 @@ export default function DocketItemsTable({
     const activeUnits = unitOptions.length > 0 ? unitOptions : [{ value: 'kg', label: 'kg' }];
     const currentSymbolLabel = activeCurrencies.find(c => c.code === currency)?.label || `${currency}$`;
 
-    // --- Helper for Input Validation & Change ---
     const onInputChange = (key, field, e, maxDecimals = 2) => {
         const rawValue = e.target.value;
         const parsedValue = audParser(rawValue);
@@ -171,7 +170,6 @@ export default function DocketItemsTable({
                 <Input 
                     style={{ width: '100%' }} 
                     value={audFormatter(record.gross)} 
-                    // Allow 3 decimals for weights
                     onChange={(e) => onInputChange(record.key, 'gross', e, 3)} 
                 />
             ) 
@@ -184,7 +182,6 @@ export default function DocketItemsTable({
                 <Input 
                     style={{ width: '100%' }} 
                     value={audFormatter(record.tare)} 
-                    // Allow 3 decimals for weights
                     onChange={(e) => onInputChange(record.key, 'tare', e, 3)} 
                 />
             ) 
@@ -196,12 +193,23 @@ export default function DocketItemsTable({
             render: (text, record) => {
                 const val = Number(text);
                 const isNegative = !isNaN(val) && val < 0;
+                const displayVal = !isNaN(val) 
+                    ? val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 }) 
+                    : text;
                 return (
                     <Input 
-                        value={!isNaN(val) ? val.toLocaleString('en-US') : text} 
+                        value={displayVal} 
                         addonAfter={renderUnitSelector(record)}
                         readOnly 
-                        style={{ backgroundColor: isNegative ? '#ffcccc' : '#f0f0f0', color: isNegative ? '#cf1322' : undefined, textAlign: 'right', fontWeight: 'bold' }} 
+                        style={{ 
+                            backgroundColor: isNegative ? '#e52b2b' : '#f0f0f0', 
+                            color: isNegative ? 'red' : undefined, 
+                            borderColor: isNegative ? 'red' : undefined,
+                            textAlign: 'right', 
+                            fontWeight: 'bold',
+                            opacity: 1, 
+                            WebkitTextFillColor: isNegative ? 'red' : undefined
+                        }} 
                     />
                 );
             }
@@ -215,7 +223,6 @@ export default function DocketItemsTable({
                     addonBefore={renderCurrencySelector()}
                     style={{ width: '100%' }} 
                     value={audFormatter(record.price)}
-                    // Allow 2 decimals for Price
                     onChange={(e) => onInputChange(record.key, 'price', e, 2)}
                 />
             )
