@@ -19,6 +19,9 @@ def get_dockets_paginated(
     # Base Query
     query = db.query(Docket)
 
+    # --- FILTER: ONLY SHOW SAVED DOCKETS ---
+    query = query.filter(Docket.is_saved == True)
+
     # --- FILTER EMPTY DOCKETS ---
     # Only show dockets that have a Name OR have Items
     query = query.filter(
