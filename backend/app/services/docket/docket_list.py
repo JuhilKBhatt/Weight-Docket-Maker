@@ -23,12 +23,10 @@ def get_dockets_paginated(
     query = query.filter(Docket.is_saved == True)
 
     # --- FILTER EMPTY DOCKETS ---
-    # Only show dockets that have a Name OR have Items
     query = query.filter(
         or_(
             and_(Docket.customer_name.isnot(None), Docket.customer_name != ""),
-            and_(Docket.company_name.isnot(None), Docket.company_name != ""),
-            Docket.items.any() # Also show if it has items, even if unnamed
+            Docket.items.any() # Show if it has items, even if unnamed
         )
     )
 
