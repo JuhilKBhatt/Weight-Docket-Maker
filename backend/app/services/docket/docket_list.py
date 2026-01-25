@@ -2,9 +2,17 @@
 
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, and_
+from datetime import date
 from app.models.docketModels import Docket, DocketItem
 
-def get_dockets_paginated(db: Session, page: int = 1, limit: int = 10, search: str = None):
+def get_dockets_paginated(
+    db: Session, 
+    page: int = 1, 
+    limit: int = 10, 
+    search: str = None,
+    start_date: date = None, 
+    end_date: date = None
+):
     # Calculate offset
     skip = (page - 1) * limit
 
@@ -32,10 +40,16 @@ def get_dockets_paginated(db: Session, page: int = 1, limit: int = 10, search: s
             )
         )
 
-    # 2. Get Total Count (for frontend pagination)
+    # 2. Apply Date Filter
+    if start_date:
+        query = query.filter(Docket.docket_date >= start_date)
+    if end_date:
+        query = query.filter(Docket.docket_date <= end_date)
+
+    # 3. Get Total Count (for frontend pagination)
     total = query.count()
 
-    # 3. Apply Sorting, Pagination & Optimization
+    # 4. Apply Sorting, Pagination & Optimization
     # joinedload prevents N+1 problem by fetching items in the same query
     dockets = query.order_by(Docket.id.desc())\
                    .options(joinedload(Docket.items), joinedload(Docket.deductions))\
@@ -45,7 +59,7 @@ def get_dockets_paginated(db: Session, page: int = 1, limit: int = 10, search: s
 
     results = []
 
-    # 4. Process only the fetched page (e.g., 10 items)
+    # 5. Process only the fetched page (e.g., 10 items)
     for dkt in dockets:
         # Filter out invalid drafts if needed (optional)
         if not dkt.scrdkt_number: continue

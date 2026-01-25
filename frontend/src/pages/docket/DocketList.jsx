@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Input, Table, Button, Typography, Popconfirm, Tag, message, Row, Col, Space, Tooltip, App } from 'antd';
+import { Input, Table, Button, Typography, Popconfirm, Tag, message, Row, Col, Space, Tooltip, App, DatePicker } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { audFormatterFixed } from '../../scripts/utilities/AUDformatters';
@@ -11,6 +11,8 @@ import {
   getAllDockets, 
   deleteDocketById
 } from '../../services/docketListService';
+
+const { RangePicker } = DatePicker;
 
 export default function DocketList() {
   const { message } = App.useApp(); 
@@ -25,14 +27,22 @@ export default function DocketList() {
   });
 
   const [searchText, setSearchText] = useState('');
+  const [dateRange, setDateRange] = useState(null);
   const searchDebounce = useRef(null);
 
   // --- FETCH DOCKETS ---
-  const fetchDockets = async (page = 1, pageSize = 10, search = '', isBackground = false) => {
+  const fetchDockets = async (page = 1, pageSize = 10, search = '', dates = null, isBackground = false) => {
     try {
       if (!isBackground) setLoading(true);
       
-      const response = await getAllDockets(page, pageSize, search);
+      let start = null;
+      let end = null;
+      if (dates && dates[0] && dates[1]) {
+          start = dates[0].format('YYYY-MM-DD');
+          end = dates[1].format('YYYY-MM-DD');
+      }
+
+      const response = await getAllDockets(page, pageSize, search, start, end);
       
       setDockets(response.data);
       setPagination({
@@ -51,15 +61,15 @@ export default function DocketList() {
   // --- POLLING / EFFECT ---
   useEffect(() => {
     // 1. Initial
-    fetchDockets(pagination.current, pagination.pageSize, searchText);
+    fetchDockets(pagination.current, pagination.pageSize, searchText, dateRange);
 
     // 2. Poll every 5s
     const intervalId = setInterval(() => {
-        fetchDockets(pagination.current, pagination.pageSize, searchText, true); // True = Background
+        fetchDockets(pagination.current, pagination.pageSize, searchText, dateRange, true); // True = Background
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [pagination.current, pagination.pageSize, searchText]);
+  }, [pagination.current, pagination.pageSize, searchText, dateRange]);
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -71,13 +81,18 @@ export default function DocketList() {
 
     searchDebounce.current = setTimeout(() => {
         // Reset page on search
-        setPagination(prev => ({...prev, current: 1}));
+        fetchDockets(1, pagination.pageSize, value, dateRange);
     }, 500);
   };
 
   const onSearchManual = (value) => {
     if (searchDebounce.current) clearTimeout(searchDebounce.current);
-    setPagination(prev => ({...prev, current: 1}));
+    fetchDockets(1, pagination.pageSize, value, dateRange);
+  };
+
+  const handleDateChange = (dates) => {
+      setDateRange(dates);
+      fetchDockets(1, pagination.pageSize, searchText, dates);
   };
 
   const handleTableChange = (newPagination) => {
@@ -89,7 +104,7 @@ export default function DocketList() {
       await deleteDocketById(id);
       message.success('Docket deleted');
       // Refresh immediately
-      fetchDockets(pagination.current, pagination.pageSize, searchText);
+      fetchDockets(pagination.current, pagination.pageSize, searchText, dateRange);
     } catch (err) {
       console.error(err);
       message.error('Could not delete docket');
@@ -197,10 +212,19 @@ export default function DocketList() {
           />
         </Col>
         <Col>
+          <RangePicker 
+            value={dateRange}
+            onChange={handleDateChange}
+            format="DD/MM/YYYY"
+            style={{ width: 300 }}
+          />
+        </Col>
+        <Col>
             <Button onClick={() => { 
                 setSearchText(''); 
+                setDateRange(null);
                 if(searchDebounce.current) clearTimeout(searchDebounce.current);
-                setPagination(prev => ({...prev, current: 1}));
+                fetchDockets(1, pagination.pageSize, '', null);
             }}>
                 Reset Filters
             </Button>

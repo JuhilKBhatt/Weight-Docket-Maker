@@ -45,8 +45,15 @@ def get_unique_metals_route( q: Optional[str] = None, customer: Optional[str] = 
     return docket_list.get_unique_metals(db, search=q, customer_name=customer)
 
 @router.get("/list")
-def get_dockets( page: int = 1, limit: int = 10, search: Optional[str] = None, db: Session = Depends(get_db)):
-    return docket_list.get_dockets_paginated(db, page, limit, search)
+def get_dockets(
+    page: int = 1, 
+    limit: int = 10, 
+    search: Optional[str] = None, 
+    start_date: Optional[date] = None, 
+    end_date: Optional[date] = None, 
+    db: Session = Depends(get_db)
+):
+    return docket_list.get_dockets_paginated(db, page, limit, search, start_date, end_date)
 
 @router.get("/{docket_id}")
 def get_docket(docket_id: int, db: Session = Depends(get_db)):
