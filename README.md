@@ -106,7 +106,7 @@ BACKUP_DIR=""
 3) Open Terminal at /Weight-Docket-Maker
 4) docker compose up --build -d
 5) docker compose exec backend alembic stamp head
-docker compose exec backend alembic upgrade head
+   docker compose exec backend alembic upgrade head
 6) Update the Models: docker compose exec backend python manage_db.py
 7) docker compose exec backend python app/utilities/seed_lists.py
 
@@ -119,40 +119,33 @@ Add default printer via settings and setup print format defaults
 Run Commands from ./
 
 1. lpstat -p
-
 2. lpoptions -d <Your_Printer_Name>
-
 3. lpstat -p
-
 4. chmod +x backend/run_printer.sh
-
 5. backend/run_printer.sh
-
 6. VISUAL=nano crontab -e
-
 7. @reboot {Full System Path}/backend/run_printer.sh
-
 8. Esc then :w
-
 9. :wq
 
-### 1.3.2 - Windows - This is not Working
-Turn off Allow Windows to manage my default printer
-Select printer and set as default
+### 1.3.2 - Windows
 
-1. Open Task Scheduler
-2. Create Task (not "Create Basic Task")
-3. Give Name & Description
-4. Run user is logged on & Run with highest privileges
-5. Go to Triggers & Click New
-6. Change Begin the task to At Startup & At Log On
-7. Go to Actions & Click New
-8. Click on Browse & select the run_printer.bat
-Edit Conditions & Settings
-9. Click Ok/Done
-10. Right click on task and click run
+1. Turn off Allow Windows to manage my default printer
+2. Select printer and set as default
+3. Open Task Scheduler
+4. Create Task (not "Create Basic Task")
+5. Give Name & Description
+6. Run user is logged on & Run with highest privileges
+7. Go to Triggers & Click New
+8. Change Begin the task to At Startup & At Log On
+9. Go to Actions & Click New
+10. Click on Browse & select the run_printer.bat
+    Edit Conditions & Settings
+11. Click Ok/Done
+12. Right click on task and click run
 
 ## 1.4 - Setup Runtime Vars
+
 Go To: localhost:5173
 
 1. Add Company In Bill Form Invoice
