@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 # -----------------------------------------------------------
 from app.database import Base, DATABASE_URL
 # Must import ALL models so Base.metadata can find them
-from app.models import invoiceModels, docketModels 
+from app.models import invoiceModels, docketModels, settingsModels
 
 config = context.config
 
