@@ -102,8 +102,8 @@
 }
 
 .ant-table-tbody > tr > td:nth-child(even) {
-  background-color: rgb(211, 211, 211) !important;
-  color: white !important; /* black text for readability */
+  background-color: rgb(238, 238, 238) !important;
+  color: rgb(0, 0, 0) !important; /* black text for readability */
 }
 
 .ant-table .ant-input-number-group-addon {
