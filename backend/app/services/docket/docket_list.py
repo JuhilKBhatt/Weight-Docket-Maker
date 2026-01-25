@@ -56,20 +56,22 @@ def get_dockets_paginated(db: Session, page: int = 1, limit: int = 10, search: s
             gross = item.gross or 0
             tare = item.tare or 0
             price = item.price or 0
-            net = max(0, gross - tare)
+            # Allow negative net weight
+            net = gross - tare 
             items_total += (net * price)
 
         pre_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "pre"])
         post_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "post"])
 
-        gross_total = max(0, items_total - pre_deductions)
+        # Allow negative totals
+        gross_total = items_total - pre_deductions
         
         gst_amount = 0
         if dkt.include_gst:
             gst_percent = (dkt.gst_percentage or 10) / 100
             gst_amount = gross_total * gst_percent
 
-        final_total = max(0, gross_total + gst_amount - post_deductions)
+        final_total = gross_total + gst_amount - post_deductions
 
         display_name = dkt.company_name if dkt.docket_type == "Weight" else dkt.customer_name
 
@@ -205,8 +207,9 @@ def get_unique_metals(db: Session, search: str = None, customer_name: str = None
 
 def delete_docket(db: Session, docket_id: int):
     docket = db.query(Docket).filter(Docket.id == docket_id).first()
-    if docket:
-        db.delete(docket)
-        db.commit()
-        return {"message": "Docket deleted"}
-    return {"error": "Docket not found"}
+    if not docket:
+        return {"error": "Docket not found"}
+        
+    db.delete(docket)
+    db.commit()
+    return {"message": "Docket deleted"}

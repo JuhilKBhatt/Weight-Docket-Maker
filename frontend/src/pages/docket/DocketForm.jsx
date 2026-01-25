@@ -171,7 +171,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 notes: i.notes || '',
                 gross: i.gross,
                 tare: i.tare,
-                net: Math.max(0, (i.gross || 0) - (i.tare || 0)),
+                net: (i.gross || 0) - (i.tare || 0),
                 price: i.price,
                 total: 0,
                 unit: i.unit || 'kg'
