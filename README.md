@@ -143,11 +143,12 @@ Select printer and set as default
 1. Open Task Scheduler
 2. Create Task (not "Create Basic Task")
 3. Give Name & Description
-4. Run wether user is logged on or not & Run with highest privileges
+4. Run user is logged on & Run with highest privileges
 5. Go to Triggers & Click New
-6. Change Begin the task to At Startup
+6. Change Begin the task to At Startup & At Log On
 7. Go to Actions & Click New
 8. Click on Browse & select the run_printer.bat
+Edit Conditions & Settings
 9. Click Ok/Done
 10. Right click on task and click run
 
