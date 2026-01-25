@@ -27,6 +27,7 @@
                 <div class="sub-info">Date: {{ formatted_date }} | {{docket.docket_time}}</div>
             </td>
         </tr>
+        {% if docket.is_saved %}
         <tr>
             <td colspan="2">
                 <div class="company-block-container">
@@ -47,6 +48,7 @@
                 </div>
             </td>
         </tr>
+        {% endif %}
     </table>
 
     <div class="customer-section">
