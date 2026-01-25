@@ -1,6 +1,6 @@
 // ./frontend/src/components/docket/DocketItemsTable.jsx
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react'; // Added useMemo
 import { Table, Input, InputNumber, Typography, Button, Row, Col, Select, AutoComplete, Form } from 'antd'; 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { audFormatter, audParser, audFormatterFixed, isValidInput } from '../../scripts/utilities/AUDFormatters';
@@ -87,9 +87,18 @@ export default function DocketItemsTable({
     const [rowsToAdd, setRowsToAdd] = useState(1);
     const [selectedRowKey, setSelectedRowKey] = useState(null);
 
-    const activeCurrencies = currencyOptions.length > 0 ? currencyOptions : [{ code: 'AUD', label: 'AUD$', symbol: '$' }];
-    const activeUnits = unitOptions.length > 0 ? unitOptions : [{ value: 'kg', label: 'kg' }];
-    const currentSymbolLabel = activeCurrencies.find(c => c.code === currency)?.label || `${currency}$`;
+    // Memoize options to prevent unnecessary re-creation
+    const activeCurrencies = useMemo(() => 
+        currencyOptions.length > 0 ? currencyOptions : [{ code: 'AUD', label: 'AUD$', symbol: '$' }],
+    [currencyOptions]);
+
+    const activeUnits = useMemo(() => 
+        unitOptions.length > 0 ? unitOptions : [{ value: 'kg', label: 'kg' }],
+    [unitOptions]);
+
+    const currentSymbolLabel = useMemo(() => 
+        activeCurrencies.find(c => c.code === currency)?.label || `${currency}$`,
+    [activeCurrencies, currency]);
 
     const onInputChange = (key, field, e, maxDecimals = 2) => {
         const rawValue = e.target.value;
@@ -100,37 +109,8 @@ export default function DocketItemsTable({
         }
     };
 
-    const renderUnitSelector = (record) => (
-      <Select
-        value={record.unit || 'kg'}
-        style={{ width: 80, margin: '-5px 0' }} 
-        popupMatchSelectWidth={false}
-        showSearch
-        optionFilterProp="children"
-        onChange={(val) => onItemChange(record.key, 'unit', val)}
-      >
-        {activeUnits.map(unit => (
-          <Option key={unit.value} value={unit.value}>{unit.label}</Option>
-        ))}
-      </Select>
-    );
-
-    const renderCurrencySelector = () => (
-      <Select
-        value={currency} 
-        style={{ width: 100, margin: '-5px 0' }}
-        popupMatchSelectWidth={false}
-        showSearch
-        optionFilterProp="children"
-        onChange={(val) => setCurrency(val)}
-      >
-        {activeCurrencies.map(curr => (
-          <Option key={curr.code} value={curr.code}>{curr.label}</Option>
-        ))}
-      </Select>
-    );
-
-    const columns = [
+    // WRAP COLUMNS IN useMemo
+    const columns = useMemo(() => [
         { 
             title: '#', 
             key: 'serial', 
@@ -199,7 +179,20 @@ export default function DocketItemsTable({
                 return (
                     <Input 
                         value={displayVal} 
-                        addonAfter={renderUnitSelector(record)}
+                        addonAfter={
+                            <Select
+                                value={record.unit || 'kg'}
+                                style={{ width: 80, margin: '-5px 0' }} 
+                                popupMatchSelectWidth={false}
+                                showSearch
+                                optionFilterProp="children"
+                                onChange={(val) => onItemChange(record.key, 'unit', val)}
+                            >
+                                {activeUnits.map(unit => (
+                                <Option key={unit.value} value={unit.value}>{unit.label}</Option>
+                                ))}
+                            </Select>
+                        }
                         readOnly 
                         style={{ 
                             backgroundColor: isNegative ? '#e52b2b' : '#f0f0f0', 
@@ -220,7 +213,20 @@ export default function DocketItemsTable({
             width: 100, 
             render: (_, record) => (
                 <Input 
-                    addonBefore={renderCurrencySelector()}
+                    addonBefore={
+                        <Select
+                            value={currency} 
+                            style={{ width: 100, margin: '-5px 0' }}
+                            popupMatchSelectWidth={false}
+                            showSearch
+                            optionFilterProp="children"
+                            onChange={(val) => setCurrency(val)}
+                        >
+                            {activeCurrencies.map(curr => (
+                            <Option key={curr.code} value={curr.code}>{curr.label}</Option>
+                            ))}
+                        </Select>
+                    }
                     style={{ width: '100%' }} 
                     value={audFormatter(record.price)}
                     onChange={(e) => onInputChange(record.key, 'price', e, 2)}
@@ -240,7 +246,7 @@ export default function DocketItemsTable({
             width: 1,
             render: (_, record) => <Button type="text" style={{ width: 10, marginRight:-10}} danger icon={<DeleteOutlined />} onClick={() => removeRow(record.key)} />
         }
-    ];
+    ], [currency, activeCurrencies, activeUnits, currentSymbolLabel, items]); 
 
     return (
         <div style={{ marginBottom: 30 }}>

@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Input, Table, Button, Typography, Popconfirm, Tag, DatePicker, Row, Col, Space, Tooltip, App } from 'antd';
 import { EditOutlined, DeleteOutlined, CheckCircleOutlined, CloseCircleOutlined, SendOutlined, FileTextOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { audFormatterFixed } from '../../scripts/utilities/AUDformatters';
+import { audFormatterFixed } from '../../scripts/utilities/AUDFormatters';
 import { getCurrencies } from '../../services/settingsService';
 
 import { 
@@ -36,16 +36,20 @@ export default function InvoiceList() {
   // Debounce Ref
   const searchDebounce = useRef(null);
 
-  // --- FETCH CURRENCIES (for Labels) ---
+  // Polling Refs
+  const searchRef = useRef(searchText);
+  const dateRef = useRef(dateRange);
+
+  useEffect(() => { searchRef.current = searchText; }, [searchText]);
+  useEffect(() => { dateRef.current = dateRange; }, [dateRange]);
+
+  // --- FETCH CURRENCIES ---
   useEffect(() => {
       const loadCurrencies = async () => {
           try {
               const data = await getCurrencies();
-              // Create a map for easy lookup: { 'AUD': '$', 'USD': '$', ... }
               const map = {};
-              data.forEach(c => {
-                  map[c.code] = c.symbol;
-              });
+              data.forEach(c => { map[c.code] = c.symbol; });
               setCurrencyMap(map);
           } catch (err) {
               console.error("Failed to load currencies for list view", err);
@@ -85,16 +89,16 @@ export default function InvoiceList() {
   // --- AUTO REFRESH / INITIAL LOAD ---
   useEffect(() => {
     // 1. Initial Load
-    fetchInvoices(pagination.current, pagination.pageSize, searchText, dateRange);
+    fetchInvoices(pagination.current, pagination.pageSize, searchRef.current, dateRef.current);
 
     // 2. Setup Interval
     const intervalId = setInterval(() => {
-      fetchInvoices(pagination.current, pagination.pageSize, searchText, dateRange, true); 
+      fetchInvoices(pagination.current, pagination.pageSize, searchRef.current, dateRef.current, true); 
     }, 5000); 
 
-    // 3. Cleanup on unmount or when dependencies change
+    // 3. Cleanup
     return () => clearInterval(intervalId);
-  }, [pagination.current, pagination.pageSize, searchText, dateRange]); 
+  }, [pagination.current, pagination.pageSize]); // REMOVED searchText
 
   // --- HANDLERS ---
 

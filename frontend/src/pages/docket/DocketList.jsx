@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Input, Table, Button, Typography, Popconfirm, Tag, message, Row, Col, Space, Tooltip, App, DatePicker } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { audFormatterFixed } from '../../scripts/utilities/AUDformatters';
+import { audFormatterFixed } from '../../scripts/utilities/AUDFormatters';
 
 import { 
   getAllDockets, 
@@ -28,7 +28,16 @@ export default function DocketList() {
 
   const [searchText, setSearchText] = useState('');
   const [dateRange, setDateRange] = useState(null);
+  
   const searchDebounce = useRef(null);
+  
+  // REFS FOR POLLING
+  const searchRef = useRef(searchText);
+  const dateRef = useRef(dateRange);
+
+  // Keep refs synced
+  useEffect(() => { searchRef.current = searchText; }, [searchText]);
+  useEffect(() => { dateRef.current = dateRange; }, [dateRange]);
 
   // --- FETCH DOCKETS ---
   const fetchDockets = async (page = 1, pageSize = 10, search = '', dates = null, isBackground = false) => {
@@ -60,25 +69,27 @@ export default function DocketList() {
 
   // --- POLLING / EFFECT ---
   useEffect(() => {
-    // 1. Initial
-    fetchDockets(pagination.current, pagination.pageSize, searchText, dateRange);
+    // 1. Initial Fetch on Mount or Pagination Change
+    fetchDockets(pagination.current, pagination.pageSize, searchRef.current, dateRef.current);
 
     // 2. Poll every 5s
     const intervalId = setInterval(() => {
-        fetchDockets(pagination.current, pagination.pageSize, searchText, dateRange, true); // True = Background
+        // Use REFS here so we don't need to add searchText to dependency array
+        fetchDockets(pagination.current, pagination.pageSize, searchRef.current, dateRef.current, true); 
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [pagination.current, pagination.pageSize, searchText, dateRange]);
+  }, [pagination.current, pagination.pageSize]); // REMOVED searchText & dateRange
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
-    setSearchText(value);
+    setSearchText(value); // Updates UI immediately
 
     if (searchDebounce.current) {
         clearTimeout(searchDebounce.current);
     }
 
+    // Debounced Fetch
     searchDebounce.current = setTimeout(() => {
         // Reset page on search
         fetchDockets(1, pagination.pageSize, value, dateRange);
@@ -103,7 +114,6 @@ export default function DocketList() {
     try {
       await deleteDocketById(id);
       message.success('Docket deleted');
-      // Refresh immediately
       fetchDockets(pagination.current, pagination.pageSize, searchText, dateRange);
     } catch (err) {
       console.error(err);
