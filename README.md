@@ -106,7 +106,8 @@ BACKUP_DIR=""
 3) Open Terminal at /Weight-Docket-Maker
 4) docker compose up --build -d
 5) docker compose exec backend alembic stamp head
-6) Update the Models
+docker compose exec backend alembic upgrade head
+6) Update the Models: docker compose exec backend python manage_db.py
 7) docker compose exec backend python app/utilities/seed_lists.py
 
 ## 1.3 - Start Printer File
@@ -135,7 +136,9 @@ Run Commands from ./
 
 9. :wq
 
-### 1.3.2 - Windows
+### 1.3.2 - Windows - This is not Working
+Turn off Allow Windows to manage my default printer
+Select printer and set as default
 
 1. Open Task Scheduler
 2. Create Task (not "Create Basic Task")
@@ -149,6 +152,7 @@ Run Commands from ./
 10. Right click on task and click run
 
 ## 1.4 - Setup Runtime Vars
+Go To: localhost:5173
 
 1. Add Company In Bill Form Invoice
 2. Add Bank Accounts

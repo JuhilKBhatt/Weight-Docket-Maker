@@ -359,8 +359,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 currencySymbol: symbol
             });
             message.success('Docket saved successfully!');
-            if (mode === 'new') { resetDocket(); form.resetFields(); setDataSource(generateInitialRows(20, defaultUnit)); formValuesRef.current = {}; }
-            else { navigate('/view-docket'); }
         } catch (error) { console.error(error); message.error('Failed to save docket.'); }
     };
 
@@ -439,15 +437,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     setPrinting(false);
                     message.success(`Printing Started (${qty} copies)`);
                     
-                    if (mode === 'new') {
-                       resetDocket();
-                       form.resetFields(); 
-                       setCurrency('AUD');
-                       setDataSource(generateInitialRows(20, defaultUnit));
-                       formValuesRef.current = {};
-                    } else {
-                       navigate('/view-docket');
-                    }
                 } else if (attempts >= maxRetries) {
                     clearInterval(pollInterval);
                     setPrinting(false);

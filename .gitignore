@@ -28,3 +28,4 @@ backend/*.csv
 *.pyc
 
 postgres_data/
+.env
