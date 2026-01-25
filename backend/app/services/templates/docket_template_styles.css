@@ -36,6 +36,13 @@ table.data-table td { border: 1px solid #000; text-align: left; }
 .totals-deduction { margin: 1px 0; font-weight: normal; color: #b01c2e; } 
 .signature-line { border-top: 1px solid #000; width: 150px; display: inline-block; margin-top: 5px; }
 
+/* NEW: Currency Symbol Style */
+.currency-symbol {
+    font-size: 0.75em;
+    vertical-align: baseline;
+    font-weight: normal;
+    margin-right: 1px;
+}
 
 /* ==========================================================================
    INCREMENTAL TIERS (Increments of 5)

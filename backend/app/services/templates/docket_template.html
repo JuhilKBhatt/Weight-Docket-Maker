@@ -57,7 +57,7 @@
             <strong>Other Information:</strong>
             
             <span class="other-info-label">DOB:</span>
-            <span class="other-info-val">{{ docket.customer_dob or '' }}</span>|
+            <span class="other-info-val">{{ formatted_dob }}</span>|
             
             <span class="other-info-label">License No.:</span>
             <span class="other-info-val">{{ docket.customer_license_no }}</span>|
@@ -98,7 +98,7 @@
                     <th style="width: 13%; text-align: center;">Gross</th>
                     <th style="width: 13%; text-align: center;">Tare</th>
                     <th style="width: 13%; text-align: center;">Net</th>
-                    <th style="width: 9%; text-align: center;">{{ currency_label }}/Unit</th>
+                    <th style="width: 9%; text-align: center;"><span class="currency-symbol">{{ currency_label }}</span>/Unit</th>
                     <th style="width: 12%; text-align: center;">Total</th>
                 {% else %}
                     <th style="width: 1%; text-align: center;">#</th>
@@ -107,7 +107,7 @@
                     <th style="width: 16%; text-align: center;">Gross</th>
                     <th style="width: 16%; text-align: center;">Tare</th>
                     <th style="width: 16%; text-align: center;">Net</th>
-                    <th style="width: 10%; text-align: center;">{{ currency_label }}/Unit</th>
+                    <th style="width: 10%; text-align: center;"><span class="currency-symbol">{{ currency_label }}</span>/Unit</th>
                     <th style="width: 16%; text-align: center;">Total</th>
                 {% endif %}
             </tr>
@@ -123,8 +123,8 @@
                 <td class="no-wrap-cell">{{ item.tare_fmt }} {{ item.unit }}</td>
                 <td class="no-wrap-cell"><strong>{{ item.net_fmt }} {{ item.unit }}</strong></td>
                 
-                <td class="no-wrap-cell">{{ currency_label }}{{ "{:,.2f}".format(item.price) }}</td>
-                <td class="no-wrap-cell">{{ currency_label }}{{ "{:,.2f}".format(item.total) }}</td>
+                <td class="no-wrap-cell"><span class="currency-symbol">{{ currency_label }}</span>{{ "{:,.2f}".format(item.price) }}</td>
+                <td class="no-wrap-cell"><span class="currency-symbol">{{ currency_label }}</span>{{ "{:,.2f}".format(item.total) }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -143,33 +143,33 @@
                 <div class="totals-section">    
                     
                     {% if pre_deductions %}
-                        <div class="totals-row">Items Total: {{ currency_label }}{{ "{:,.2f}".format(totals.itemsTotal) }}</div>
+                        <div class="totals-row">Items Total: <span class="currency-symbol">{{ currency_label }}</span>{{ "{:,.2f}".format(totals.itemsTotal) }}</div>
                         <div style="border-top: 1px solid #ccc;"></div>
                         {% for d in pre_deductions %}
-                            <div class="totals-deduction">{{ d.label }}: -{{ currency_label }}{{ "{:,.2f}".format(d.amount) }}</div>
+                            <div class="totals-deduction">{{ d.label }}: -<span class="currency-symbol">{{ currency_label }}</span>{{ "{:,.2f}".format(d.amount) }}</div>
                         {% endfor %}
                         <div style="border-top: 1px solid #ccc;"></div>
-                        <div class="totals-subtotal" style="display: inline-block; margin-top: 2px; padding-top: 2px;">Subtotal: {{ currency_label }}{{ "{:,.2f}".format(totals.grossTotal) }}</div>
+                        <div class="totals-subtotal" style="display: inline-block; margin-top: 2px; padding-top: 2px;">Subtotal: <span class="currency-symbol">{{ currency_label }}</span>{{ "{:,.2f}".format(totals.grossTotal) }}</div>
                     {% else %}
                         {% if docket.include_gst %}
-                            <div class="totals-row">Subtotal: {{ currency_label }}{{ "{:,.2f}".format(totals.grossTotal) }}</div>
+                            <div class="totals-row">Subtotal: <span class="currency-symbol">{{ currency_label }}</span>{{ "{:,.2f}".format(totals.grossTotal) }}</div>
                         {% endif %}
                     {% endif %}
 
                     {% if docket.include_gst %}
-                        <div class="totals-gst">GST {{docket.gst_percentage}}%: {{ currency_label }}{{ "{:,.2f}".format(totals.gstAmount) }}</div>
+                        <div class="totals-gst">GST {{docket.gst_percentage}}%: <span class="currency-symbol">{{ currency_label }}</span>{{ "{:,.2f}".format(totals.gstAmount) }}</div>
                         
-                        <div class="totals-row" style="font-weight: bold; margin-top: 2px;">Total (Inc GST): {{ currency_label }}{{ "{:,.2f}".format(totals.totalIncGst) }}</div>
+                        <div class="totals-row" style="font-weight: bold; margin-top: 2px;">Total (Inc GST): <span class="currency-symbol">{{ currency_label }}</span>{{ "{:,.2f}".format(totals.totalIncGst) }}</div>
                     {% endif %}
 
                     {% if post_deductions %}
                         <div style="border-top: 1px solid #ccc;"></div>
                         {% for d in post_deductions %}
-                            <div class="totals-deduction">{{ d.label }}: -{{ currency_label }}{{ "{:,.2f}".format(d.amount) }}</div>
+                            <div class="totals-deduction">{{ d.label }}: -<span class="currency-symbol">{{ currency_label }}</span>{{ "{:,.2f}".format(d.amount) }}</div>
                         {% endfor %}
                     {% endif %}
 
-                    <div class="totals-final" style="border-top: 1px solid #ccc;">Final Total: {{ currency_label }}{{ "{:,.2f}".format(totals.finalTotal) }}</div>
+                    <div class="totals-final" style="border-top: 1px solid #ccc;">Final Total: <span class="currency-symbol">{{ currency_label }}</span>{{ "{:,.2f}".format(totals.finalTotal) }}</div>
                 </div>
             </td>
         </tr>

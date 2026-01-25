@@ -127,7 +127,9 @@ def render_docket_html(db: Session, docket_id: int):
     icon_path = os.path.join(template_dir, "Recycling_Icon.png")
     recycling_icon_b64 = get_file_base64(icon_path)
 
+    # --- FORMAT DATES (DD/MM/YYYY) ---
     formatted_date = dkt.docket_date.strftime("%d/%m/%Y") if dkt.docket_date else "N/A"
+    formatted_dob = dkt.customer_dob.strftime("%d/%m/%Y") if dkt.customer_dob else ""
 
     # 6. Render
     return template.render(
@@ -144,6 +146,7 @@ def render_docket_html(db: Session, docket_id: int):
             "finalTotal": final_total  
         },
         formatted_date=formatted_date,
+        formatted_dob=formatted_dob,
         css_content=css_content,
         recycling_icon=recycling_icon_b64,
         currency_label=currency_label 
