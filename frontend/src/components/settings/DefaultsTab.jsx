@@ -11,42 +11,76 @@ export default function DefaultsTab({ form, currencies, units, selectors, onSave
         <Form form={form} layout="vertical" onFinish={onSave}>
             <Row gutter={24}>
                 <Col span={12}>
-                    <Card title="Global Configuration" size="small">
-                        <Form.Item label="Default Currency" name="default_currency">
-                            <Select>
-                                {currencies.map(c => <Option key={c.code} value={c.code}>{c.label}</Option>)}
-                                <Option value="AUD">AUD (Fallback)</Option>
-                            </Select>
-                        </Form.Item>
-                        <Form.Item label="Default Docket Unit" name="default_unit">
-                            <Select>
-                                {units.map(u => <Option key={u.value} value={u.value}>{u.label}</Option>)}
-                                <Option value="kg">kg (Fallback)</Option>
-                            </Select>
-                        </Form.Item>
-                        
-                        {/* GST SETTINGS SPLIT */}
+                    {/* --- DOCKET DEFAULTS --- */}
+                    <Card title="Docket Configuration" size="small" style={{ marginBottom: 20 }}>
                         <Row gutter={16}>
                             <Col span={12}>
-                                <Form.Item label="Default GST %" name="default_gst_percentage">
-                                    <InputNumber min={0} max={100} addonAfter="%" style={{ width: '100%' }} />
+                                <Form.Item label="Default Currency" name="default_docket_currency">
+                                    <Select>
+                                        {currencies.map(c => <Option key={c.code} value={c.code}>{c.label}</Option>)}
+                                        <Option value="AUD">AUD (Fallback)</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item label="Default Unit" name="default_docket_unit">
+                                    <Select>
+                                        {units.map(u => <Option key={u.value} value={u.value}>{u.label}</Option>)}
+                                        <Option value="kg">kg (Fallback)</Option>
+                                    </Select>
                                 </Form.Item>
                             </Col>
                         </Row>
                         <Row gutter={16}>
                             <Col span={12}>
-                                <Form.Item label="Default Docket GST Enabled" name="default_docket_gst_enabled" valuePropName="checked">
-                                    <Switch />
+                                <Form.Item label="Default GST %" name="default_docket_gst_percentage">
+                                    <InputNumber min={0} max={100} addonAfter="%" style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
-                                <Form.Item label="Default Invoice GST Enabled" name="default_invoice_gst_enabled" valuePropName="checked">
+                                <Form.Item label="GST Enabled by Default" name="default_docket_gst_enabled" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
+
+                    {/* --- INVOICE DEFAULTS --- */}
+                    <Card title="Invoice Configuration" size="small">
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item label="Default Currency" name="default_invoice_currency">
+                                    <Select>
+                                        {currencies.map(c => <Option key={c.code} value={c.code}>{c.label}</Option>)}
+                                        <Option value="AUD">AUD (Fallback)</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item label="Default Unit" name="default_invoice_unit">
+                                    <Select>
+                                        {units.map(u => <Option key={u.value} value={u.value}>{u.label}</Option>)}
+                                        <Option value="t">t (Fallback)</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item label="Default GST %" name="default_invoice_gst_percentage">
+                                    <InputNumber min={0} max={100} addonAfter="%" style={{ width: '100%' }} />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item label="GST Enabled by Default" name="default_invoice_gst_enabled" valuePropName="checked">
                                     <Switch />
                                 </Form.Item>
                             </Col>
                         </Row>
                     </Card>
                 </Col>
+
+                {/* --- ENTITIES --- */}
                 <Col span={12}>
                     <Card title="Default Entities" size="small">
                         <Form.Item label="Default 'Bill From' Company" name="default_bill_from">

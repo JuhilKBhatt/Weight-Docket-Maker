@@ -57,34 +57,37 @@ export default function Settings() {
       setCurrencies(curData);
       setUnits(unitData);
 
-      const provider = defData.email_provider || 'SMTP'; // Default to SMTP now
+      const provider = defData.email_provider || 'SMTP'; 
       setEmailProvider(provider);
 
-      // Init Form Defaults
+      // Init Form Defaults with Fallbacks
       form.setFieldsValue({
           ...defData,
           
-          // SPLIT GST DEFAULTS
+          // DOCKET DEFAULTS
           default_docket_gst_enabled: defData.default_docket_gst_enabled === 'true',
+          default_docket_currency: defData.default_docket_currency || defData.default_currency || 'AUD',
+          default_docket_unit: defData.default_docket_unit || defData.default_unit || 'kg',
+          default_docket_gst_percentage: Number(defData.default_docket_gst_percentage) || Number(defData.default_gst_percentage) || 10,
+
+          // INVOICE DEFAULTS
           default_invoice_gst_enabled: defData.default_invoice_gst_enabled === 'true',
+          default_invoice_currency: defData.default_invoice_currency || defData.default_currency || 'AUD',
+          default_invoice_unit: defData.default_invoice_unit || 't',
+          default_invoice_gst_percentage: Number(defData.default_invoice_gst_percentage) || Number(defData.default_gst_percentage) || 10,
           
-          default_gst_percentage: Number(defData.default_gst_percentage) || 10,
+          // ENTITIES
           default_bill_from: defData.default_bill_from ? Number(defData.default_bill_from) : null,
           default_account: defData.default_account ? Number(defData.default_account) : null,
           
           // Email
           email_provider: provider,
-          
-          // SMTP Defaults
           smtp_host: defData.smtp_host || 'ventraip.email',
           smtp_port: defData.smtp_port || '465',
           smtp_user: defData.smtp_user || '',
           smtp_password: defData.smtp_password || '',
-
-          // Axigen
           axigen_api_url: defData.axigen_api_url || '',
           
-          // Templates
           email_default_subject: defData.email_default_subject || 'Invoice {{number}}',
           email_default_body: defData.email_default_body || 'Please find attached invoice {{number}}.',
       });

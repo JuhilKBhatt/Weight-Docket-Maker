@@ -119,15 +119,19 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 setUnitOptions(units);
 
                 if (mode === 'new') {
-                    if (defaults.default_currency) setCurrency(defaults.default_currency);
+                    // DOCKET SPECIFIC DEFAULTS
+                    const defCurrency = defaults.default_docket_currency || defaults.default_currency || 'AUD';
+                    setCurrency(defCurrency);
                     
-                    const defUnit = defaults.default_unit || 'kg';
+                    const defUnit = defaults.default_docket_unit || defaults.default_unit || 'kg';
                     setDefaultUnit(defUnit);
 
                     if (defaults.default_docket_gst_enabled) {
                         setGstEnabled(defaults.default_docket_gst_enabled === 'true');
                     }
-                    if (defaults.default_gst_percentage) setGstPercentage(Number(defaults.default_gst_percentage));
+                    
+                    const defGstPct = Number(defaults.default_docket_gst_percentage) || Number(defaults.default_gst_percentage) || 10;
+                    setGstPercentage(defGstPct);
                     
                     const defaultCompId = Number(defaults.default_bill_from);
                     if (defaultCompId && savedCompaniesFrom.length > 0) {
@@ -143,6 +147,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                         }
                     }
 
+                    // Re-initialize rows with the new default unit
                     setDataSource(generateInitialRows(20, defUnit));
                     formValuesRef.current = form.getFieldsValue();
                 }

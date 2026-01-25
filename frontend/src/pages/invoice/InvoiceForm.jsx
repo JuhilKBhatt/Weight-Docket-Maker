@@ -66,17 +66,27 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
 
         // Apply Defaults ONLY if New Mode
         if (mode === 'new') {
-          if (defaults.default_currency) setCurrency(defaults.default_currency);
-          if (defaults.default_unit) setDefaultUnit(defaults.default_unit);
+          // INVOICE SPECIFIC DEFAULTS
+          const defCurrency = defaults.default_invoice_currency || defaults.default_currency || 'AUD';
+          setCurrency(defCurrency);
+
+          const defUnit = defaults.default_invoice_unit || 't';
+          setDefaultUnit(defUnit);
           
-          // USE INVOICE-SPECIFIC GST SETTING
           if (defaults.default_invoice_gst_enabled) {
               invoice.setIncludeGST(defaults.default_invoice_gst_enabled === 'true');
           }
           
-          if (defaults.default_gst_percentage) invoice.setGstPercentage(Number(defaults.default_gst_percentage));
+          const defGstPct = Number(defaults.default_invoice_gst_percentage) || Number(defaults.default_gst_percentage) || 10;
+          invoice.setGstPercentage(defGstPct);
+
           if (defaults.default_invoice_type) invoice.setInvoiceType(defaults.default_invoice_type);
           
+          // Force update the first empty item to use the new default unit
+          if (invoice.items.length === 1 && !invoice.items[0].quantity) {
+             invoice.handleItemChange(invoice.items[0].key, 'unit', defUnit);
+          }
+
           // Apply Default Entities
           const defaultBillFromId = Number(defaults.default_bill_from);
           const defaultAccountId = Number(defaults.default_account);
