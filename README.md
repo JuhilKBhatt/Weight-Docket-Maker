@@ -102,13 +102,29 @@ BACKUP_DIR=""
 ## 1.2 - Start Application
 
 1) Install & Setup Docker Application
-2) Make Sure Docker Application Open at login/restart
+2) Make Sure Docker Application Open at login/restart ()
 3) Open Terminal at /Weight-Docket-Maker
 4) docker compose up --build -d
 5) docker compose exec backend alembic stamp head
    docker compose exec backend alembic upgrade head
 6) Update the Models: docker compose exec backend python manage_db.py
 7) docker compose exec backend python app/utilities/seed_lists.py
+
+Option 2: Use Task Scheduler for "Highest Privileges"** **
+
+Standard startup apps often wait for other background processes. Task Scheduler can trigger Docker earlier and with more authority.** **
+
+1. **Open Task Scheduler:** **Search for it in the Start menu.**
+2. **Create Task:** **Click** **Create Task** **(not Basic Task).**
+3. **General Tab:**
+   * **Name it "Docker High Priority".**
+   * **Check**  **"Run with highest privileges"** **.**
+4. **Triggers Tab:** **Set to**  **"At log on"** **.**
+5. **Actions Tab:**
+   * **Action:** **Start a program.**
+   * **Program/script:** `cmd.exe`
+   * **Add arguments:** `/c start "" /high "C:\Program Files\Docker\Docker\Docker Desktop.exe"`.
+6. **Settings Tab:** **Uncheck "Stop the task if it runs longer than 3 days" to ensure Docker stays open.**
 
 ## 1.3 - Start Printer File
 
@@ -131,7 +147,7 @@ Run Commands from ./
 ### 1.3.2 - Windows
 
 1. Turn off Allow Windows to manage my default printer
-2. Select printer and set as default
+2. Select printer and set as default also add printer name in .bat file
 3. Open Task Scheduler
 4. Create Task (not "Create Basic Task")
 5. Give Name & Description
