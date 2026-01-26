@@ -24,7 +24,7 @@ services:
     volumes:
       - ./backend:/app
       - ./backend/print_spool:/app/print_spool
-      - ${GOOGLE_DRIVE_PATH}:/backups
+      - ./backups:/backups
     ports:
       - "8000:8000"
     depends_on:

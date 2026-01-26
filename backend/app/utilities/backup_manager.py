@@ -20,13 +20,30 @@ os.environ["PGPASSWORD"] = os.getenv("POSTGRES_PASSWORD", "password")
 # MATCHES DOCKER VOLUME
 BACKUP_ROOT = "/backups"
 
-def create_backup():
+def run_pg_dump(target_path):
+    """Core function to execute pg_dump for consistent logic across backup types."""
+    try:
+        command = [
+            "pg_dump",
+            "-h", DB_HOST,
+            "-U", DB_USER,
+            "-d", DB_NAME,
+            "-f", target_path
+        ]
+        # Overwrites the file if it already exists at target_path
+        subprocess.run(command, check=True)
+        return True
+    except subprocess.CalledProcessError as e:
+        logger.error(f"❌ Backup Failed: {e}")
+        return False
+
+def create_scheduled_backup():
+    """Daily/Weekly/Monthly scheduled backup logic."""
     logger.info("⏳ Starting scheduled backup...")
     
-    # datetime.now() will use the Container's Timezone (set in docker-compose)
     today = datetime.now()
     timestamp = today.strftime("%Y-%m-%d_%H%M%S")
-    filename = f"invoice_backup_{timestamp}.sql"
+    filename = f"scheduled_backup_{timestamp}.sql"
     
     daily_dir = os.path.join(BACKUP_ROOT, "daily")
     weekly_dir = os.path.join(BACKUP_ROOT, "weekly")
@@ -37,40 +54,41 @@ def create_backup():
 
     target_file = os.path.join(daily_dir, filename)
 
-    # 1. RUN PG_DUMP
-    try:
-        command = [
-            "pg_dump",
-            "-h", DB_HOST,
-            "-U", DB_USER,
-            "-d", DB_NAME,
-            "-f", target_file
-        ]
-        subprocess.run(command, check=True)
+    if run_pg_dump(target_file):
         logger.info(f"✅ Daily backup created: {filename}")
-    except subprocess.CalledProcessError as e:
-        logger.error(f"❌ Backup Failed: {e}")
-        return
 
-    # 2. ROTATION LOGIC
-    # Sunday = 6
-    if today.weekday() == 6:
-        shutil.copy2(target_file, os.path.join(weekly_dir, filename))
-        logger.info(f"📅 Sunday: Copied to Weekly")
+        # Sunday = 6
+        if today.weekday() == 6:
+            shutil.copy2(target_file, os.path.join(weekly_dir, filename))
+            logger.info(f"📅 Sunday: Copied to Weekly")
 
-    # 1st of Month
-    if today.day == 1:
-        shutil.copy2(target_file, os.path.join(monthly_dir, filename))
-        logger.info(f"📅 1st of Month: Copied to Monthly")
+        # 1st of Month
+        if today.day == 1:
+            shutil.copy2(target_file, os.path.join(monthly_dir, filename))
+            logger.info(f"📅 1st of Month: Copied to Monthly")
 
-    # 3. CLEANUP
+    # CLEANUP
     cleanup_old_files(daily_dir, days=7)
     cleanup_old_files(weekly_dir, days=30)
     cleanup_old_files(monthly_dir, days=365)
 
+def create_on_update_backup():
+    """Triggered whenever the database is successfully updated. Replaces the previous version."""
+    update_dir = os.path.join(BACKUP_ROOT, "on_update")
+    os.makedirs(update_dir, exist_ok=True)
+    
+    # Static filename so new backups replace the old one
+    filename = "last_updated_backup.sql"
+    target_path = os.path.join(update_dir, filename)
+    
+    if run_pg_dump(target_path):
+        logger.info(f"💾 On-Update backup saved: {filename}")
+
 def cleanup_old_files(directory, days):
+    """Deletes SQL files in a directory older than a certain number of days."""
     cutoff_time = datetime.now() - timedelta(days=days)
-    if not os.path.exists(directory): return
+    if not os.path.exists(directory): 
+        return
 
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
@@ -84,9 +102,8 @@ def cleanup_old_files(directory, days):
 def start_backup_scheduler():
     scheduler = BackgroundScheduler()
     
-    # CHANGED: Set to 11:00 AM
-    # Because we set TZ in docker-compose, this is 11:00 AM Local Time
-    scheduler.add_job(create_backup, 'cron', hour=11, minute=0)
+    # Runs daily at 11:00 AM Local Time
+    scheduler.add_job(create_scheduled_backup, 'cron', hour=11, minute=0)
     
     scheduler.start()
     logger.info("🚀 Backup Scheduler Initialized (Runs daily at 11:00 AM Local Time)")
