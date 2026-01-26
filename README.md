@@ -97,12 +97,12 @@ BACKUP_DIR=""
 ### 1.1.4 - Setup Google Drive
 
 1. Install & Setup Google Drive Desktop Application
-2. Create a folder for backup data
+2. Add the Weight-Docket-Maker folder as sync floder
 
 ## 1.2 - Start Application
 
 1) Install & Setup Docker Application
-2) Make Sure Docker Application Open at login/restart ()
+2) Make Sure Docker Application Open at login/restart (via task scheduler)
 3) Open Terminal at /Weight-Docket-Maker
 4) docker compose up --build -d
 5) docker compose exec backend alembic stamp head
