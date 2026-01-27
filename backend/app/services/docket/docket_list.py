@@ -1,7 +1,7 @@
 # app/services/docket/docket_list.py
 
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 from datetime import date
 from app.models.docketModels import Docket, DocketItem
 
@@ -51,7 +51,6 @@ def get_dockets_paginated(
     total = query.count()
 
     # 4. Apply Sorting, Pagination & Optimization
-    # joinedload prevents N+1 problem by fetching items in the same query
     dockets = query.order_by(Docket.id.desc())\
                    .options(joinedload(Docket.items), joinedload(Docket.deductions))\
                    .offset(skip)\
@@ -60,25 +59,21 @@ def get_dockets_paginated(
 
     results = []
 
-    # 5. Process only the fetched page (e.g., 10 items)
+    # 5. Process results
     for dkt in dockets:
-        # Filter out invalid drafts if needed (optional)
         if not dkt.scrdkt_number: continue
 
-        # --- Calculate Totals ---
         items_total = 0
         for item in dkt.items:
             gross = item.gross or 0
             tare = item.tare or 0
             price = item.price or 0
-            # Allow negative net weight
             net = gross - tare 
             items_total += (net * price)
 
         pre_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "pre"])
         post_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "post"])
 
-        # Allow negative totals
         gross_total = items_total - pre_deductions
         
         gst_amount = 0
@@ -102,7 +97,6 @@ def get_dockets_paginated(
             "notes": dkt.notes,
         })
 
-    # Return structure for Table
     return {
         "data": results,
         "total": total,
@@ -112,71 +106,70 @@ def get_dockets_paginated(
 
 def get_unique_customers(db: Session, search: str = None):
     """
-    Returns unique customers, prioritizing recent ones.
-    If search is provided, filters by name.
+    OPTIMIZED: Returns unique customers based on search.
+    Filters by Name, ABN, PayID, or License No efficiently.
     """
-    query = db.query(Docket).order_by(Docket.id.desc())
-    
+    # 1. First, find distinct customer names matching the criteria.
+    # We group by customer name to avoid fetching thousands of duplicate rows.
+    name_query = db.query(Docket.customer_name)\
+        .filter(Docket.is_saved == True)\
+        .filter(Docket.customer_name != None, Docket.customer_name != "")
+
     if search:
-        query = query.filter(Docket.customer_name.ilike(f"%{search}%"))
+        search_term = f"%{search}%"
+        name_query = name_query.filter(
+            or_(
+                Docket.customer_name.ilike(search_term),
+                Docket.customer_abn.ilike(search_term),
+                Docket.customer_pay_id.ilike(search_term),
+                Docket.customer_license_no.ilike(search_term)
+            )
+        )
     
-    # Execute query
-    dockets = query.all()
+    # Get top 20 distinct names
+    matching_names_rows = name_query.group_by(Docket.customer_name).limit(20).all()
     
-    seen_customers = {}
     results = []
     
-    for d in dockets:
-        name = d.customer_name
-        if not name or not name.strip():
-            continue
-            
-        # Check uniqueness
-        if name in seen_customers:
-            continue
-            
-        seen_customers[name] = True
+    # 2. For each unique name, fetch the *LATEST* docket details.
+    for row in matching_names_rows:
+        name = row[0]
         
-        results.append({
-            "value": name,
-            "label": name,
-            "customer_details": {
-                "name": name,
-                "address": d.customer_address,
-                "phone": d.customer_phone,
-                "abn": d.customer_abn,
-                "licenseNo": d.customer_license_no,
-                "regoNo": d.customer_rego_no,
-                "dob": d.customer_dob,
-                "payId": d.customer_pay_id,
-                "bsb": d.bank_bsb,
-                "accNo": d.bank_account_number
-            }
-        })
+        # Fast lookup for the latest record of this customer
+        d = db.query(Docket).filter(
+            Docket.customer_name == name,
+            Docket.is_saved == True
+        ).order_by(Docket.id.desc()).first()
         
-        # Limit the number of suggestions returned to Frontend (e.g. 20)
-        if len(results) >= 20:
-            break
+        if d:
+            results.append({
+                "value": name,
+                "label": name,
+                "customer_details": {
+                    "name": d.customer_name,
+                    "address": d.customer_address,
+                    "phone": d.customer_phone,
+                    "abn": d.customer_abn,
+                    "licenseNo": d.customer_license_no,
+                    "regoNo": d.customer_rego_no,
+                    "dob": d.customer_dob,
+                    "payId": d.customer_pay_id,
+                    "bsb": d.bank_bsb,
+                    "accNo": d.bank_account_number
+                }
+            })
             
     return results
 
 def get_unique_metals(db: Session, search: str = None, customer_name: str = None):
-    """
-    Returns unique metals matching the search.
-    If 'customer_name' is provided, the price returned is the latest price 
-    for that specific customer. If that customer hasn't used the metal, 
-    price is returned as None/0.
-    """
     # Base query: Join Item & Docket
     query = db.query(DocketItem.metal, DocketItem.price, Docket.customer_name)\
         .join(Docket)\
-        .order_by(Docket.id.desc()) # Latest first
+        .order_by(Docket.id.desc()) 
     
     if search:
         query = query.filter(DocketItem.metal.ilike(f"%{search}%"))
     
-    # We fetch a larger batch to process in python, as complex deduplication 
-    # with conditional pricing in SQL can be heavy.
     items = query.limit(500).all()
     
     seen_metals = {}
@@ -188,36 +181,23 @@ def get_unique_metals(db: Session, search: str = None, customer_name: str = None
             
         key = metal.strip().lower()
         
-        # Logic: 
-        # 1. We want a list of unique metals.
-        # 2. If we already have this metal in 'results', we might need to update its price
-        #    if we found a "better" match (i.e., belonging to the specific customer).
-        
         is_target_customer = (customer_name and dkt_customer and 
                               dkt_customer.lower() == customer_name.lower())
 
         if key not in seen_metals:
-            # First time seeing this metal
             seen_metals[key] = {
                 "value": metal,
                 "label": metal,
-                # Only set price if it matches the customer (or if no customer logic is needed)
-                # But per requirement: "only load metal price based on name"
                 "price": price if is_target_customer else 0,
                 "found_for_customer": is_target_customer
             }
             results.append(seen_metals[key])
         else:
-            # We have seen this metal. 
-            # If the current entry IS for the target customer, and the previous one WAS NOT,
-            # we update the entry to use this specific price.
             existing = seen_metals[key]
             if is_target_customer and not existing["found_for_customer"]:
                 existing["price"] = price
                 existing["found_for_customer"] = True
-                # We essentially "upgraded" this metal entry to be customer-specific
     
-    # Return top 20
     return results[:20]
 
 def delete_docket(db: Session, docket_id: int):

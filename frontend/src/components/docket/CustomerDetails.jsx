@@ -8,16 +8,19 @@ import docketService from '../../services/docketService';
 
 export default function CustomerDetails({ onCustomerSelect }) {
     const form = Form.useFormInstance(); 
-    const [options, setOptions] = useState([]);
     const { message } = App.useApp();
     
-    // Ref for debounce timer
-    const searchTimeout = useRef(null);
+    // Separate Options State for each field
+    const [nameOptions, setNameOptions] = useState([]);
+    const [abnOptions, setAbnOptions] = useState([]);
+    const [payIdOptions, setPayIdOptions] = useState([]);
+    const [licOptions, setLicOptions] = useState([]);
 
+    const searchTimeout = useRef(null);
     const dateFormat = ['DD/MM/YYYY', 'D/M/YYYY'];
 
-    // Updated Search Handler with Debounce
-    const handleSearch = (value) => {
+    // Generic Search Handler
+    const handleSearch = (type, setOptions) => (value) => {
         if (searchTimeout.current) {
             clearTimeout(searchTimeout.current);
         }
@@ -29,8 +32,51 @@ export default function CustomerDetails({ onCustomerSelect }) {
 
         searchTimeout.current = setTimeout(async () => {
             try {
+                // Backend searches all fields for the query string
                 const data = await docketService.getUniqueCustomers(value);
-                setOptions(data);
+                
+                const formattedOptions = data
+                    .filter(item => {
+                        // Filter specific fields
+                        if (type === 'abn') return item.customer_details.abn;
+                        if (type === 'payId') return item.customer_details.payId;
+                        if (type === 'licenseNo') return item.customer_details.licenseNo;
+                        return true; 
+                    })
+                    .map(item => {
+                        const d = item.customer_details;
+                        
+                        let mainText = d.name;
+                        let subText = `ABN: ${d.abn || 'N/A'}`;
+                        let fillValue = d.name; // Default fill
+
+                        if (type === 'abn') {
+                            mainText = d.abn;
+                            subText = d.name;
+                            fillValue = d.abn;
+                        } else if (type === 'payId') {
+                            mainText = d.payId;
+                            subText = d.name;
+                            fillValue = d.payId;
+                        } else if (type === 'licenseNo') {
+                            mainText = d.licenseNo;
+                            subText = d.name;
+                            fillValue = d.licenseNo;
+                        }
+
+                        return {
+                            value: fillValue, 
+                            label: (
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontWeight: 'bold' }}>{mainText}</span>
+                                    <span style={{ fontSize: '12px', color: '#888' }}>{subText}</span>
+                                </div>
+                            ),
+                            customer_details: d
+                        };
+                    });
+
+                setOptions(formattedOptions);
             } catch (error) {
                 message.error("Failed to load customers");
                 console.error("Failed to load customers", error);
@@ -39,26 +85,29 @@ export default function CustomerDetails({ onCustomerSelect }) {
     };
 
     // Auto-fill fields on selection
-    const handleSelect = (value, option) => {
+    const handleSelect = (setOptions) => (value, option) => {
         const details = option.customer_details;
         
+        // Force update all fields
         form.setFieldsValue({
-            name: details.name,
-            licenseNo: details.licenseNo,
-            regoNo: details.regoNo,
+            name: details.name || "",
+            licenseNo: details.licenseNo || "",
+            regoNo: details.regoNo || "",
             dob: details.dob ? dayjs(details.dob) : null,
-            payId: details.payId,
-            phone: details.phone,
-            bsb: details.bsb,
-            accNo: details.accNo,
-            abn: details.abn,
-            address: details.address,
+            payId: details.payId || "",
+            phone: details.phone || "",
+            bsb: details.bsb || "",
+            accNo: details.accNo || "",
+            abn: details.abn || "",
+            address: details.address || "",
         });
         
         message.success("Customer details autofilled");
+        
+        // Clear options to reset dropdown state and prevent stale interactions
+        setOptions([]);
 
-        // Trigger Autofill for Prices in Parent
-        if (onCustomerSelect) {
+        if (onCustomerSelect && details.name) {
             onCustomerSelect(details.name);
         }
     };
@@ -69,10 +118,10 @@ export default function CustomerDetails({ onCustomerSelect }) {
                 <Col span={12}>
                     <Form.Item label="Name" name="name">
                         <AutoComplete
-                            options={options}
-                            onSearch={handleSearch}
-                            onSelect={handleSelect}
-                            placeholder="Type to search..."
+                            options={nameOptions}
+                            onSearch={handleSearch('name', setNameOptions)}
+                            onSelect={handleSelect(setNameOptions)}
+                            placeholder="Search Name..."
                             maxLength={254} 
                         >
                             <Input suffix={<SearchOutlined />} />
@@ -81,7 +130,15 @@ export default function CustomerDetails({ onCustomerSelect }) {
                 </Col>
                 <Col span={6}>
                     <Form.Item label="License No." name="licenseNo">
-                        <Input maxLength={49} placeholder="License No." />
+                        <AutoComplete
+                            options={licOptions}
+                            onSearch={handleSearch('licenseNo', setLicOptions)}
+                            onSelect={handleSelect(setLicOptions)}
+                            placeholder="Search License..."
+                            maxLength={49}
+                        >
+                            <Input suffix={<SearchOutlined />} />
+                        </AutoComplete>
                     </Form.Item>
                 </Col>
                 <Col span={6}>
@@ -97,7 +154,15 @@ export default function CustomerDetails({ onCustomerSelect }) {
                 </Col>
                 <Col span={8}>
                     <Form.Item label="PayID" name="payId">
-                        <Input maxLength={99} placeholder="PayID" />
+                        <AutoComplete
+                            options={payIdOptions}
+                            onSearch={handleSearch('payId', setPayIdOptions)}
+                            onSelect={handleSelect(setPayIdOptions)}
+                            placeholder="Search PayID..."
+                            maxLength={99}
+                        >
+                            <Input suffix={<SearchOutlined />} />
+                        </AutoComplete>
                     </Form.Item>
                 </Col>
                 <Col span={8}>
@@ -138,9 +203,16 @@ export default function CustomerDetails({ onCustomerSelect }) {
                         rules={[
                             { len: 11, message: 'ABN must be 11 digits' } 
                         ]}
-                        getValueFromEvent={(e) => e.target.value.replaceAll(/\D/g, '')}
                     >
-                        <Input maxLength={11} placeholder="ABN" />
+                        <AutoComplete
+                            options={abnOptions}
+                            onSearch={handleSearch('abn', setAbnOptions)}
+                            onSelect={handleSelect(setAbnOptions)}
+                            placeholder="Search ABN..."
+                            maxLength={11}
+                        >
+                            <Input suffix={<SearchOutlined />} />
+                        </AutoComplete>
                     </Form.Item>
                 </Col>
                 <Col span={10}>
