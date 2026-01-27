@@ -106,56 +106,69 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         }
     }, [scrdktID, form]);
 
-    useEffect(() => {
-        async function loadSettings() {
-            try {
-                const [defaults, curs, units] = await Promise.all([
-                    getDefaults(),
-                    getCurrencies(),
-                    getUnits()
-                ]);
-                
-                setCurrencyOptions(curs);
-                setUnitOptions(units);
+    // --- LOAD DEFAULTS FUNCTION ---
+    const loadDefaults = async () => {
+        try {
+            const [defaults, curs, units] = await Promise.all([
+                getDefaults(),
+                getCurrencies(),
+                getUnits()
+            ]);
+            
+            setCurrencyOptions(curs);
+            setUnitOptions(units);
 
-                if (mode === 'new') {
-                    // DOCKET SPECIFIC DEFAULTS
-                    const defCurrency = defaults.default_docket_currency || defaults.default_currency || 'AUD';
-                    setCurrency(defCurrency);
-                    
-                    const defUnit = defaults.default_docket_unit || defaults.default_unit || 'kg';
-                    setDefaultUnit(defUnit);
+            // DOCKET SPECIFIC DEFAULTS
+            const defCurrency = defaults.default_docket_currency || defaults.default_currency || 'AUD';
+            setCurrency(defCurrency);
+            
+            const defUnit = defaults.default_docket_unit || defaults.default_unit || 'kg';
+            setDefaultUnit(defUnit);
 
-                    if (defaults.default_docket_gst_enabled) {
-                        setGstEnabled(defaults.default_docket_gst_enabled === 'true');
-                    }
-                    
-                    const defGstPct = Number(defaults.default_docket_gst_percentage) || Number(defaults.default_gst_percentage) || 10;
-                    setGstPercentage(defGstPct);
-                    
-                    const defaultCompId = Number(defaults.default_bill_from);
-                    if (defaultCompId && savedCompaniesFrom.length > 0) {
-                        const match = savedCompaniesFrom.find(c => c.id === defaultCompId);
-                        if (match) {
-                            form.setFieldsValue({
-                                companyDetails: match.name,
-                                companyAddress: match.address,
-                                companyPhone: match.phone,
-                                companyEmail: match.email,
-                                companyABN: match.abn
-                            });
-                        }
-                    }
-
-                    // Re-initialize rows with the new default unit
-                    setDataSource(generateInitialRows(20, defUnit));
-                    formValuesRef.current = form.getFieldsValue();
-                }
-            } catch (err) {
-                console.error("Error loading settings", err);
+            if (defaults.default_docket_gst_enabled) {
+                setGstEnabled(defaults.default_docket_gst_enabled === 'true');
             }
+            
+            const defGstPct = Number(defaults.default_docket_gst_percentage) || Number(defaults.default_gst_percentage) || 10;
+            setGstPercentage(defGstPct);
+            
+            const defaultCompId = Number(defaults.default_bill_from);
+            if (defaultCompId && savedCompaniesFrom.length > 0) {
+                const match = savedCompaniesFrom.find(c => c.id === defaultCompId);
+                if (match) {
+                    form.setFieldsValue({
+                        companyDetails: match.name,
+                        companyAddress: match.address,
+                        companyPhone: match.phone,
+                        companyEmail: match.email,
+                        companyABN: match.abn
+                    });
+                }
+            }
+
+            // Re-initialize rows with the new default unit
+            setDataSource(generateInitialRows(20, defUnit));
+            formValuesRef.current = form.getFieldsValue();
+        } catch (err) {
+            console.error("Error loading settings", err);
         }
-        loadSettings();
+    };
+
+    // Initial Load Effect
+    useEffect(() => {
+        if (mode === 'new') {
+            loadDefaults();
+        } else {
+            // In Edit mode, just load the options lists (the docket data is loaded in the next effect)
+            async function loadOptions() {
+                try {
+                    const [curs, units] = await Promise.all([getCurrencies(), getUnits()]);
+                    setCurrencyOptions(curs);
+                    setUnitOptions(units);
+                } catch(e) { console.error(e); }
+            }
+            loadOptions();
+        }
     }, [mode, savedCompaniesFrom]); 
 
     useEffect(() => {
@@ -538,9 +551,15 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                         () => confirmReset(() => {
                             resetDocket();
                             form.resetFields();
-                            setCurrency('AUD');
-                            setDataSource(generateInitialRows(20, defaultUnit));
-                            formValuesRef.current = {};
+                            
+                            // Re-apply defaults if new mode
+                            if (mode === 'new') {
+                                loadDefaults();
+                            } else {
+                                setCurrency('AUD');
+                                setDataSource(generateInitialRows(20, defaultUnit));
+                                formValuesRef.current = {};
+                            }
                         })
                     }>
                         Reset Form
