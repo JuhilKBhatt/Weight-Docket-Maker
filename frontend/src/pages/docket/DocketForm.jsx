@@ -359,7 +359,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             const currentOption = currencyOptions.find(c => c.code === currency);
             const symbol = currentOption ? currentOption.symbol : '$';
 
-            await SaveDocket({
+            // Backend returns the Saved docket ID
+            const result = await SaveDocket({
                 scrdktID,
                 status: "Saved", 
                 values,
@@ -372,6 +373,13 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 currencySymbol: symbol
             });
             message.success('Docket saved successfully!');
+            
+            if (mode === 'new' && result.id) {
+                // Remove the "reserved" ID from session storage since we are now editing a real record
+                sessionStorage.removeItem("scrdktID");
+                navigate(`/edit-docket/${result.id}`, { replace: true });
+            }
+
         } catch (error) { console.error(error); message.error('Failed to save docket.'); }
     };
 
@@ -398,6 +406,12 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
             await DownloadPDFDocket(result.id, scrdktID);
             message.success('Download initiated!');
+            
+            if (mode === 'new' && result.id) {
+                sessionStorage.removeItem("scrdktID");
+                navigate(`/edit-docket/${result.id}`, { replace: true });
+            }
+
         } catch (error) {
             console.error(error);
             message.error('Failed to download docket.');
@@ -430,6 +444,11 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
             const printResponse = await PrintDocket(result.id, qty);
             const filename = printResponse.filename;
+
+            if (mode === 'new' && result.id) {
+                sessionStorage.removeItem("scrdktID");
+                navigate(`/edit-docket/${result.id}`, { replace: true });
+            }
 
             if (!filename) {
                 message.success(`Sent to printer (${qty} copies)`);
