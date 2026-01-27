@@ -61,19 +61,23 @@ def get_dockets_paginated(
 
     # 5. Process results
     for dkt in dockets:
+        # Filter out invalid drafts if needed (optional)
         if not dkt.scrdkt_number: continue
 
+        # --- Calculate Totals ---
         items_total = 0
         for item in dkt.items:
             gross = item.gross or 0
             tare = item.tare or 0
             price = item.price or 0
+            # Allow negative net weight
             net = gross - tare 
             items_total += (net * price)
 
         pre_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "pre"])
         post_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "post"])
 
+        # Allow negative totals
         gross_total = items_total - pre_deductions
         
         gst_amount = 0
@@ -97,6 +101,7 @@ def get_dockets_paginated(
             "notes": dkt.notes,
         })
 
+    # Return structure for Table
     return {
         "data": results,
         "total": total,
@@ -126,8 +131,10 @@ def get_unique_customers(db: Session, search: str = None):
             )
         )
     
-    # Get top 20 distinct names
-    matching_names_rows = name_query.group_by(Docket.customer_name).limit(20).all()
+    # Get top 10 distinct names, ordered by most recently used (Max ID)
+    matching_names_rows = name_query.group_by(Docket.customer_name)\
+        .order_by(func.max(Docket.id).desc())\
+        .limit(10).all()
     
     results = []
     
@@ -162,43 +169,56 @@ def get_unique_customers(db: Session, search: str = None):
     return results
 
 def get_unique_metals(db: Session, search: str = None, customer_name: str = None):
-    # Base query: Join Item & Docket
-    query = db.query(DocketItem.metal, DocketItem.price, Docket.customer_name)\
+    """
+    Returns unique metals matching the search.
+    If 'customer_name' is provided, the price returned is the latest price 
+    for that specific customer.
+    """
+    # 1. Find distinct metals, prioritizing recently used ones
+    # Joined with Docket to ensure we only look at relevant/saved data if needed,
+    # and to use Docket.id for recency sorting.
+    query = db.query(DocketItem.metal)\
         .join(Docket)\
-        .order_by(Docket.id.desc()) 
-    
+        .filter(DocketItem.metal.isnot(None), DocketItem.metal != "")
+
     if search:
         query = query.filter(DocketItem.metal.ilike(f"%{search}%"))
     
-    items = query.limit(500).all()
+    # Group by metal and order by the latest Docket ID (most recent first)
+    # This ensures the dropdown shows metals we actually use often/recently
+    unique_metals_rows = query.group_by(DocketItem.metal)\
+        .order_by(func.max(Docket.id).desc())\
+        .limit(6)\
+        .all()
     
-    seen_metals = {}
     results = []
     
-    for metal, price, dkt_customer in items:
-        if not metal or not metal.strip():
-            continue
-            
-        key = metal.strip().lower()
+    for row in unique_metals_rows:
+        metal_name = row[0]
+        price = 0.0
         
-        is_target_customer = (customer_name and dkt_customer and 
-                              dkt_customer.lower() == customer_name.lower())
+        # 2. If a customer is selected, fetch their specific last price for this metal
+        if customer_name:
+            last_price_row = db.query(DocketItem.price)\
+                .join(Docket)\
+                .filter(
+                    DocketItem.metal == metal_name,
+                    Docket.customer_name == customer_name,
+                    Docket.is_saved == True
+                )\
+                .order_by(Docket.id.desc())\
+                .first()
+            
+            if last_price_row:
+                price = last_price_row[0]
 
-        if key not in seen_metals:
-            seen_metals[key] = {
-                "value": metal,
-                "label": metal,
-                "price": price if is_target_customer else 0,
-                "found_for_customer": is_target_customer
-            }
-            results.append(seen_metals[key])
-        else:
-            existing = seen_metals[key]
-            if is_target_customer and not existing["found_for_customer"]:
-                existing["price"] = price
-                existing["found_for_customer"] = True
+        results.append({
+            "value": metal_name,
+            "label": metal_name,
+            "price": price
+        })
     
-    return results[:20]
+    return results
 
 def delete_docket(db: Session, docket_id: int):
     docket = db.query(Docket).filter(Docket.id == docket_id).first()
