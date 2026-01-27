@@ -145,34 +145,24 @@ export default function DocketItemsTable({
         { 
             title: 'Gross', 
             dataIndex: 'gross', 
-            width: 100,
+            width: 80, 
             render: (_, record) => (
-                <InputNumber 
+                <Input 
                     style={{ width: '100%' }} 
-                    value={record.gross}
-                    min={0}
-                    step={1} 
-                    precision={3}
-                    formatter={value => value === '' || value === undefined || value === null ? '' : `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                    onChange={(val) => onItemChange(record.key, 'gross', val)} 
+                    value={audFormatter(record.gross)} 
+                    onChange={(e) => onInputChange(record.key, 'gross', e, 3)} 
                 />
             ) 
         },
         { 
             title: 'Tare', 
             dataIndex: 'tare', 
-            width: 100,
+            width: 80, 
             render: (_, record) => (
-                <InputNumber 
+                <Input 
                     style={{ width: '100%' }} 
-                    value={record.tare}
-                    min={0}
-                    step={1}
-                    precision={3}
-                    formatter={value => value === '' || value === undefined || value === null ? '' : `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                    onChange={(val) => onItemChange(record.key, 'tare', val)} 
+                    value={audFormatter(record.tare)} 
+                    onChange={(e) => onInputChange(record.key, 'tare', e, 3)} 
                 />
             ) 
         },

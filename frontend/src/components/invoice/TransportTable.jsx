@@ -43,16 +43,11 @@ export default function TransportTable({
       title: `Number of ${unitLabel}s`,
       dataIndex: 'numOfCtr',
       render: (_, record) => (
-        <InputNumber
+        <Input
           addonAfter={unitLabel}
           style={{ width: '100%' }}
-          value={record.numOfCtr}
-          min={0}
-          step={1}
-          precision={2}
-          formatter={value => value === '' || value === undefined || value === null ? '' : `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-          parser={value => value.replace(/\$\s?|(,*)/g, '')}
-          onChange={(val) => handleTransportChange(record.key, 'numOfCtr', val)}
+          value={audFormatter(record.numOfCtr)}
+          onChange={(e) => onInputChange(record.key, 'numOfCtr', e, 2)}
         />
       ),
     },
