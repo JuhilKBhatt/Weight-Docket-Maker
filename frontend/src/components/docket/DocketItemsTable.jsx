@@ -1,6 +1,6 @@
 // ./frontend/src/components/docket/DocketItemsTable.jsx
 
-import React, { useState, useRef, useMemo } from 'react'; // Added useMemo
+import React, { useState, useRef, useMemo } from 'react';
 import { Table, Input, InputNumber, Typography, Button, Row, Col, Select, AutoComplete, Form } from 'antd'; 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { audFormatter, audParser, audFormatterFixed, isValidInput } from '../../scripts/utilities/AUDFormatters';
@@ -87,7 +87,7 @@ export default function DocketItemsTable({
     const [rowsToAdd, setRowsToAdd] = useState(1);
     const [selectedRowKey, setSelectedRowKey] = useState(null);
 
-    // Memoize options to prevent unnecessary re-creation
+    // Memoize options
     const activeCurrencies = useMemo(() => 
         currencyOptions.length > 0 ? currencyOptions : [{ code: 'AUD', label: 'AUD$', symbol: '$' }],
     [currencyOptions]);
@@ -109,7 +109,7 @@ export default function DocketItemsTable({
         }
     };
 
-    // WRAP COLUMNS IN useMemo
+    // Wrap columns in useMemo to prevent unnecessary re-renders
     const columns = useMemo(() => [
         { 
             title: '#', 
@@ -145,24 +145,34 @@ export default function DocketItemsTable({
         { 
             title: 'Gross', 
             dataIndex: 'gross', 
-            width: 80, 
+            width: 100,
             render: (_, record) => (
-                <Input 
+                <InputNumber 
                     style={{ width: '100%' }} 
-                    value={audFormatter(record.gross)} 
-                    onChange={(e) => onInputChange(record.key, 'gross', e, 3)} 
+                    value={record.gross}
+                    min={0}
+                    step={1} 
+                    precision={3}
+                    formatter={value => value === '' || value === undefined || value === null ? '' : `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                    onChange={(val) => onItemChange(record.key, 'gross', val)} 
                 />
             ) 
         },
         { 
             title: 'Tare', 
             dataIndex: 'tare', 
-            width: 80, 
+            width: 100,
             render: (_, record) => (
-                <Input 
+                <InputNumber 
                     style={{ width: '100%' }} 
-                    value={audFormatter(record.tare)} 
-                    onChange={(e) => onInputChange(record.key, 'tare', e, 3)} 
+                    value={record.tare}
+                    min={0}
+                    step={1}
+                    precision={3}
+                    formatter={value => value === '' || value === undefined || value === null ? '' : `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                    onChange={(val) => onItemChange(record.key, 'tare', val)} 
                 />
             ) 
         },

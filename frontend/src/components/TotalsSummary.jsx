@@ -49,7 +49,7 @@ export default function TotalsSummary({
           </Col>
           <Col span={8}>
             <Input
-              addonBefore={symbolLabel}
+              addonBefore={'-'+symbolLabel}
               style={{ width: '100%' }}
               // Use audFormatter for comma display
               value={audFormatter(d.amount)}
@@ -143,7 +143,7 @@ export default function TotalsSummary({
               </Col>
               <Col span={8}>
                 <Input
-                  addonBefore={symbolLabel}
+                  addonBefore={'-'+symbolLabel}
                   style={{ width: '100%' }}
                   // Use audFormatter for comma display
                   value={audFormatter(d.amount)}

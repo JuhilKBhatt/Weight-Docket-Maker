@@ -81,11 +81,16 @@ export default function InvoiceItemsTable({
           title: 'Quantity', 
           dataIndex: 'quantity',
           render: (_, record) => (
-            <Input
+            <InputNumber
               addonAfter={getUnitSelector(record)}
               style={{ width: '100%' }}
-              value={audFormatter(record.quantity)}
-              onChange={(e) => onInputChange(record.key, 'quantity', e, 3)}
+              value={record.quantity}
+              min={0}
+              step={1}
+              precision={3}
+              formatter={value => value === '' || value === undefined || value === null ? '' : `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={value => value.replace(/\$\s?|(,*)/g, '')}
+              onChange={(val) => handleItemChange(record.key, 'quantity', val)}
             />
           ),
         },
