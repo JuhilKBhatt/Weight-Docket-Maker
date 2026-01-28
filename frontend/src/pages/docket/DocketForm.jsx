@@ -42,7 +42,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const [unitOptions, setUnitOptions] = useState([]);
     const [defaultUnit, setDefaultUnit] = useState('kg');
 
-    // --- 1. INITIALIZE STATES SYNCHRONOUSLY (Fixes Scroll/Height Issues) ---
+    // --- 1. INITIALIZE STATES SYNCHRONOUSLY ---
     
     const [gstEnabled, setGstEnabled] = useState(existingDocket ? existingDocket.include_gst : false);
     const [gstPercentage, setGstPercentage] = useState(existingDocket ? existingDocket.gst_percentage : 10);
@@ -55,7 +55,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         existingDocket?.deductions?.filter(d => d.type === 'post') || []
     );
 
-    // Initialize Items with Padding logic here, not in Effect
     const [dataSource, setDataSource] = useState(() => {
         if (mode === 'edit' && existingDocket) {
             const items = existingDocket.items.map(i => ({
@@ -90,7 +89,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             }
             return items;
         }
-        return []; // New mode will trigger loadDefaults to fill this
+        return [];
     });
 
     const formValuesRef = useRef({});
@@ -135,6 +134,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             window.scrollTo(0, location.state.scrollPos);
         }
 
+        // Clear state to prevent re-triggering on refresh
         if (location.state) {
             window.history.replaceState({}, document.title);
         }
@@ -146,7 +146,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         }));
     };
 
-    // --- PRICE AUTOFILL LOGIC (New) ---
     const handleCustomerSelect = async (customerName) => {
         if (!customerName) return;
         
@@ -190,7 +189,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         }
     }, [scrdktID, form]);
 
-    // --- LOAD DEFAULTS FUNCTION ---
     const loadDefaults = async () => {
         try {
             const [defaults, curs, units] = await Promise.all([
@@ -230,7 +228,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 }
             }
 
-            // Re-initialize rows with the new default unit
             setDataSource(generateInitialRows(20, defUnit));
             formValuesRef.current = form.getFieldsValue();
         } catch (err) {
@@ -238,12 +235,10 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         }
     };
 
-    // Initial Load Effect
     useEffect(() => {
         if (mode === 'new') {
             loadDefaults();
         } else {
-            // In Edit mode, just load the options lists (the docket data is loaded in the next effect)
             async function loadOptions() {
                 try {
                     const [curs, units] = await Promise.all([getCurrencies(), getUnits()]);
@@ -260,9 +255,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         if (mode === 'edit' && existingDocket) {
             message.info('Docket loaded for editing.', 0.8);
             
-            // Note: State (items, currency, gst) is already initialized synchronously above.
-            // We only need to populate Form fields here.
-
             const initialValues = {
                 docketType: existingDocket.docket_type,
                 companyDetails: existingDocket.company_name,
@@ -444,7 +436,10 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 sessionStorage.removeItem("scrdktID");
                 navigate(`/edit-docket/${result.id}`, { 
                     replace: true,
-                    state: { scrollPos: window.scrollY }
+                    state: { 
+                        scrollPos: window.scrollY,
+                        fromNew: true // Flag to tell PageHeader to go back to DocketHome
+                    }
                 });
             }
 
@@ -477,7 +472,10 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 sessionStorage.removeItem("scrdktID");
                 navigate(`/edit-docket/${result.id}`, { 
                     replace: true,
-                    state: { scrollPos: window.scrollY }
+                    state: { 
+                        scrollPos: window.scrollY,
+                        fromNew: true // Flag
+                    }
                 });
             }
 
@@ -519,7 +517,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     state: { 
                         printFilename: filename, 
                         printQty: qty,
-                        scrollPos: window.scrollY
+                        scrollPos: window.scrollY,
+                        fromNew: true // Flag
                     } 
                 });
                 return; 

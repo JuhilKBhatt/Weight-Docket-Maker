@@ -21,8 +21,13 @@ export default function PageHeader() {
         // If opened directly in new tab, go Home instead of nowhere
         navigate('/'); 
       }
-    } else {
-      // 2. Standard Behavior: Use the static route map
+    } 
+    // 2. Handle "New Docket -> Edit Docket" transition
+    else if (location.state?.fromNew) {
+        navigate('/DocketHome');
+    }
+    else {
+      // 3. Standard Behavior: Use the static route map
       const target = getBackRoute(location.pathname);
       navigate(target);
     }
