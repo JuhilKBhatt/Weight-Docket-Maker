@@ -84,7 +84,7 @@ def get_dockets_paginated(
 
         final_total = gross_total + gst_amount - post_deductions
 
-        display_name = dkt.company_name if dkt.docket_type == "Weight" else dkt.customer_name
+        display_name = dkt.customer_name if dkt.customer_name else dkt.company_name
 
         results.append({
             "id": dkt.id,
