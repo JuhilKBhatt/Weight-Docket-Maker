@@ -622,24 +622,42 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     <Button onClick={handleDownload}>
                         Download Docket
                     </Button>
-                    <Button type="dashed"
-                    onClick={
-                        () => confirmReset(() => {
-                            resetDocket();
-                            form.resetFields();
-                            
-                            // Re-apply defaults if new mode
-                            if (mode === 'new') {
-                                loadDefaults();
-                            } else {
-                                setCurrency('AUD');
-                                setDataSource(generateInitialRows(20, defaultUnit));
-                                formValuesRef.current = {};
-                            }
-                        })
-                    }>
-                        Reset Form
-                    </Button>
+                    
+                    {/* Grouped Reset & Create New buttons */}
+                    <Space size="middle">
+                        <Button type="dashed"
+                        onClick={
+                            () => confirmReset(() => {
+                                resetDocket();
+                                form.resetFields();
+                                
+                                // Re-apply defaults if new mode
+                                if (mode === 'new') {
+                                    loadDefaults();
+                                } else {
+                                    setCurrency('AUD');
+                                    setDataSource(generateInitialRows(20, defaultUnit));
+                                    formValuesRef.current = {};
+                                }
+                            })
+                        }>
+                            Reset Form
+                        </Button>
+
+                        {mode === 'edit' && (
+                            <Button 
+                                type="primary"
+                                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                                onClick={() => {
+                                    // Clear session ID to ensure a fresh docket is created
+                                    sessionStorage.removeItem("scrdktID");
+                                    navigate('/new-docket');
+                                }}
+                            >
+                                Create New Docket
+                            </Button>
+                        )}
+                    </Space>
                 </div>
             </Form>
         </div>
