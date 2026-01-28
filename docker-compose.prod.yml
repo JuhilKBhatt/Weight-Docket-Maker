@@ -1,0 +1,46 @@
+# docker-compose.prod.yml
+services:
+  # 1. Database (Same as dev)
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. Backend
+  backend:
+    build: 
+      context: ./backend
+    # Production command (removed --reload for better performance)
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
+      - ./backend/print_spool:/app/print_spool
+      - ./backups:/backups
+    ports:
+      - "8000:8000" # Crucial: Exposes API to your hardcoded frontend calls
+    depends_on:
+      - db
+    environment:
+      TZ: "Australia/Sydney"
+
+  # 3. Frontend (Production Build)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod # Uses the production file you created
+    restart: unless-stopped
+    ports:
+      - "80:80" # Serve app on standard HTTP port
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

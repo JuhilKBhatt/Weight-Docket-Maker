@@ -1,170 +1,206 @@
-docker system prune -a --volumes -f
 
-docker compose up --build -d
+# Weight Docket Maker
 
-docker compose exec backend alembic stamp head
-
-Update Google Drive path in .env file
-
-**Printer - Mac/Linux**
-
-Add Printer via settings
-
-lpstat -p
-
-lpoptions -d <Your_Printer_Name>
-
-lpstat -p
-
-chmod +x backend/run_printer.sh
-
-backend/run_printer.sh
-
-VISUAL=nano crontab -e
-
-@reboot {Full System Path}/backend/run_printer.sh
-
-Esc then :w
-
-:wq
-
-**Printer - Windows**
-
-Add Default Printer Via Settings and Change Printing Settings
-
-Task Scheduler
-
-Create Task (not "Create Basic Task")
-
-**To Update DB Models**
-
-docker compose exec backend python manage_db.py
-
-**To Import .csv Data**
-
-docker compose exec backend python app/utilities/import_data.py "file"
-
-**To Import console.log Data**
-
-docker compose exec backend python app/utilities/import_console_log.py "file"
-
-**To Import List Data**
-
-docker compose exec backend python app/utilities/seed_lists.py
-
-**To Add Email Support**
-
-Go to Settings -> Email Config
+A application for managing weight dockets and invoices, featuring automated printing and email integration.
 
 ---
 
-# 1 - How to Setup
+# 1 - Environment Setup
 
-## 1.1 - Setup Environment
+Before running the application, you must configure your environment variables.
 
-### 1.1.1 - Import .env at ./
+### 1.1 - Root Environment Variables
 
-```
-# Docker Environment Variables for Weight Docket Maker
-#./env
+Create a file named `.env` in the root directory `./`:
+
+```ini
+# ./env
 
 # Database Credentials
-POSTGRES_USER=
-POSTGRES_PASSWORD=
-POSTGRES_DB=
-DATABASE_URL=
+POSTGRES_USER=your_user
+POSTGRES_PASSWORD=your_password
+POSTGRES_DB=weight_docket_db
+DATABASE_URL=postgresql://your_user:your_password@db:5432/weight_docket_db
 
-# Host Paths (Your Google Drive)
-GOOGLE_DRIVE_PATH=
+# Host Paths (For Google Drive Sync)
+GOOGLE_DRIVE_PATH=/path/to/your/google/drive
 ```
 
-### 1.1.2 - Import .env at ./backend
+### 1.2 - Backend Environment Variables
 
 ```
 # ./backend/.env
 
-DATABASE_URL=""
+# Should match the URL in the root .env
+DATABASE_URL=postgresql://your_user:your_password@db:5432/weight_docket_db
 
 # ---------------- Backup Configuration ----------------
-CONTAINER_NAME=""
-DB_USER=""
-DB_NAME=""
-BACKUP_DIR=""
+CONTAINER_NAME=weight-docket-backend
+DB_USER=your_user
+DB_NAME=weight_docket_db
+BACKUP_DIR=/backups
 ```
 
-### 1.1.3 - Import console.log and Customer Details.csv
+---
 
-### 1.1.4 - Setup Google Drive
+# 2 - Start Application
 
-1. Install & Setup Google Drive Desktop Application
-2. Add the Weight-Docket-Maker folder as sync floder
+### 2.1 - Development
 
-## 1.2 - Start Application
+Run the application eith hot reloading enabled
 
-1) Install & Setup Docker Application
-2) Make Sure Docker Application Open at login/restart (via task scheduler)
-3) Open Terminal at /Weight-Docket-Maker
-4) docker compose up --build -d
-5) docker compose exec backend alembic stamp head
-   docker compose exec backend alembic upgrade head
-6) Update the Models: docker compose exec backend python manage_db.py
-7) docker compose exec backend python app/utilities/seed_lists.py
+```
+docker compose up --build -d
+```
 
-Option 2: Use Task Scheduler for "Highest Privileges"** **
+### 2.2 - Production
 
-Standard startup apps often wait for other background processes. Task Scheduler can trigger Docker earlier and with more authority.** **
+Run the optimised production build
 
-1. **Open Task Scheduler:** **Search for it in the Start menu.**
-2. **Create Task:** **Click** **Create Task** **(not Basic Task).**
-3. **General Tab:**
-   * **Name it "Docker High Priority".**
-   * **Check**  **"Run with highest privileges"** **.**
-4. **Triggers Tab:** **Set to**  **"At log on"** **.**
-5. **Actions Tab:**
-   * **Action:** **Start a program.**
-   * **Program/script:** `cmd.exe`
-   * **Add arguments:** `/c start "" /high "C:\Program Files\Docker\Docker\Docker Desktop.exe"`.
-6. **Settings Tab:** **Uncheck "Stop the task if it runs longer than 3 days" to ensure Docker stays open.**
+```
+# First, ensure the standard containers are down if switching modes
+docker compose down
 
-## 1.3 - Start Printer File
+# Run using the production compose file
+docker-compose -f docker-compose.prod.yml up --build -d
+```
 
-Add default printer via settings and setup print format defaults
+**Note for Windows Users:** Standard startup apps often wait for other background processes. To ensure Docker starts early and with authority:
 
-### 1.3.1 - Linux/Mac
+1. Open **Task Scheduler** .
+2. Click **Create Task** .
+3. **General:** Name it "Docker High Priority" and check **Run with highest privileges** .
+4. **Triggers:** Set to **At log on** .
+5. **Actions:** - Program: `cmd.exe`
+   * Arguments: `/c start "" /high "C:\Program Files\Docker\Docker\Docker Desktop.exe"`
+6. **Settings:** Uncheck "Stop the task if it runs longer than 3 days".
 
-Run Commands from ./
+### 2.3 - Database Initialisation (Only For First Run)
 
-1. lpstat -p
-2. lpoptions -d <Your_Printer_Name>
-3. lpstat -p
-4. chmod +x backend/run_printer.sh
-5. backend/run_printer.sh
-6. VISUAL=nano crontab -e
-7. @reboot {Full System Path}/backend/run_printer.sh
-8. Esc then :w
-9. :wq
+After starting the containers for the first time, you must initialise the database schema.
 
-### 1.3.2 - Windows
+```
+# 1. Sync Alembic migrations
+docker compose exec backend alembic stamp head
 
-1. Turn off Allow Windows to manage my default printer
-2. Select printer and set as default also add printer name in .bat file
-3. Open Task Scheduler
-4. Create Task (not "Create Basic Task")
-5. Give Name & Description
-6. Run user is logged on & Run with highest privileges
-7. Go to Triggers & Click New
-8. Change Begin the task to At Startup & At Log On
-9. Go to Actions & Click New
-10. Click on Browse & select the run_printer.bat
-    Edit Conditions & Settings
-11. Click Ok/Done
-12. Right click on task and click run
+# 2. Update/Create Database Models
+docker compose exec backend python manage_db.py
 
-## 1.4 - Setup Runtime Vars
+# 3. Seed Default Lists (Currencies/Units)
+docker compose exec backend python app/utilities/seed_lists.py
 
-Go To: localhost:5173
+# 4. Apply final migrations
+docker compose exec backend alembic upgrade head
+```
 
-1. Add Company In Bill Form Invoice
-2. Add Bank Accounts
-3. Add Email Server Config & Email Template
-4. Setup Settings Defaults
+---
+
+# 3 - Printer Configuration
+
+Set up the automated printing service based on your operating system.
+
+### 3.1 - Linux / Mac
+
+1. **Add Printer:** Add your printer via System Settings.
+2. **Get Printer Name:**
+
+   ```
+   lpstat -p
+   ```
+3. **Set Default Printer:**
+
+   ```
+   lpoptions -d <Your_Printer_Name>
+   ```
+4. **Configure Startup Script:**
+
+   ```
+   # Make the script executable
+   chmod +x backend/run_printer.sh
+
+   # Run once to test
+   ./backend/run_printer.sh
+   ```
+5. **Automate with Cron:**
+
+   ```
+   VISUAL=nano crontab -e
+   ```
+
+   Add the following line to the bottom of the file:
+
+   ```
+   @reboot /full/system/path/to/Weight-Docket-Maker/backend/run_printer.sh
+   ```
+
+   *Save and exit (Ctrl+O, Enter, Ctrl+X).*
+
+### 3.2 - Windows
+
+1. **Printer Settings:** - Turn off "Allow Windows to manage my default printer".
+   * Set your desired printer as **Default** .
+   * Edit `backend/run_printer.bat` and ensure it references the correct printer name if required by the script logic.
+2. **Task Scheduler:**
+   * Create a **New Task** .
+   * **General:** "Run only when user is logged on" & "Run with highest privileges".
+   * **Triggers:** New -> Begin the task: ****At Startup** &** **At Log on** .
+   * **Actions:** New -> Start a program -> Browse and select `backend/run_printer.bat`.
+   * Click OK to save.
+   * Right-click the new task and select **Run** to start it immediately.
+
+---
+
+# 4 - Data Management
+
+Commands to import data or manage the database manually.
+
+**Import CSV Data:**
+
+```
+docker compose exec backend python app/utilities/import_data.py "path/to/file.csv"
+```
+
+**Import Console Logs:**
+
+```
+docker compose exec backend python app/utilities/import_console_log.py "path/to/logfile.log"
+```
+
+**Seed Default Lists:**
+
+```
+docker compose exec backend python app/utilities/seed_lists.py
+```
+
+**Update DB Models (Manual Trigger):**
+
+```
+docker compose exec backend python manage_db.py
+```
+
+---
+
+# 5 - Runtime Configuration
+
+Once the application is running, navigate to **`http://localhost:5173` (or** `http://localhost` in Prod) and configure the following in the UI:
+
+1. **Settings -> Bill From:** Add your company details.
+2. **Settings -> Bank Accounts:** Add your banking details.
+3. **Settings -> Email Config:** Setup SMTP server details and email templates.
+4. **Settings -> Defaults:** Configure default units, currency, and tax settings.
+
+---
+
+# 6 - Maintenance & Troubleshooting
+
+**Clean Docker System (Destructive):** If you need to completely reset Docker (removes all stopped containers, networks, and images):
+
+```
+docker system prune -a --volumes -f
+```
+
+**Reset Database Migrations:** If Alembic gets out of sync:
+
+```
+docker compose exec backend alembic stamp head
+```

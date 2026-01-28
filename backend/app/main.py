@@ -10,10 +10,17 @@ from .utilities.backup_manager import start_backup_scheduler
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:5173", # Dev
+    "http://localhost:80",   # Prod
+    "http://localhost",      # (Standard)
+    "http://127.0.0.1"
+]
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # frontend URL
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
