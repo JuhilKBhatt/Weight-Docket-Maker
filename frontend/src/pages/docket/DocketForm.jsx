@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Form, Button, Row, Col, Input, InputNumber, Space, Divider, Checkbox, Typography, App } from 'antd'; 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; 
 import dayjs from 'dayjs';
 
 // Components
@@ -30,6 +30,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const { message } = App.useApp(); 
     const [form] = Form.useForm();
     const navigate = useNavigate();
+    const location = useLocation(); 
     const confirmReset = useConfirmReset();
     
     const { savedCompaniesFrom } = useInvoiceSelectors();
@@ -55,6 +56,50 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const handleValuesChange = (_, allValues) => {
         formValuesRef.current = allValues;
     };
+
+    // --- REUSABLE POLLING FUNCTION ---
+    const startPrintPolling = (filename, qty) => {
+        setPrinting(true);
+        message.info('Sending to printer, please wait...');
+        
+        let attempts = 0;
+        const maxRetries = 10;
+        
+        const pollInterval = setInterval(async () => {
+            attempts++;
+            const status = await CheckPrintStatus(filename);
+
+            if (status === 'completed') {
+                clearInterval(pollInterval);
+                setPrinting(false);
+                message.success(`Printing Started (${qty} copies)`);
+                
+            } else if (attempts >= maxRetries) {
+                clearInterval(pollInterval);
+                setPrinting(false);
+                message.warning("Sent to queue, but printer script seems slow or offline.");
+            }
+        }, 1000);
+    };
+
+    // --- EFFECT: RESUME STATE AFTER REDIRECT ---
+    useEffect(() => {
+        // 1. Resume Printing if needed
+        if (location.state?.printFilename) {
+            const { printFilename, printQty } = location.state;
+            startPrintPolling(printFilename, printQty || 1);
+        }
+
+        // 2. Restore Scroll Position if passed
+        if (location.state?.scrollPos) {
+            window.scrollTo(0, location.state.scrollPos);
+        }
+
+        // Clear state to prevent re-triggering on refresh
+        if (location.state) {
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     const generateInitialRows = (count, unit = 'kg') => {
         return Array.from({ length: count }, (_, index) => ({
@@ -354,12 +399,9 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const handleSave = async () => {
         try {
             const values = await form.validateFields();
-            
-            // Get correct symbol from options
             const currentOption = currencyOptions.find(c => c.code === currency);
             const symbol = currentOption ? currentOption.symbol : '$';
 
-            // Backend returns the Saved docket ID
             const result = await SaveDocket({
                 scrdktID,
                 status: "Saved", 
@@ -375,9 +417,12 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             message.success('Docket saved successfully!');
             
             if (mode === 'new' && result.id) {
-                // Remove the "reserved" ID from session storage since we are now editing a real record
                 sessionStorage.removeItem("scrdktID");
-                navigate(`/edit-docket/${result.id}`, { replace: true });
+                // Navigate to edit page with scroll position preserved
+                navigate(`/edit-docket/${result.id}`, { 
+                    replace: true,
+                    state: { scrollPos: window.scrollY }
+                });
             }
 
         } catch (error) { console.error(error); message.error('Failed to save docket.'); }
@@ -386,8 +431,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const handleDownload = async () => {
         try {
             const values = await form.validateFields();
-            
-            // Get correct symbol from options
             const currentOption = currencyOptions.find(c => c.code === currency);
             const symbol = currentOption ? currentOption.symbol : '$';
 
@@ -409,7 +452,11 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             
             if (mode === 'new' && result.id) {
                 sessionStorage.removeItem("scrdktID");
-                navigate(`/edit-docket/${result.id}`, { replace: true });
+                // Navigate to edit page with scroll position preserved
+                navigate(`/edit-docket/${result.id}`, { 
+                    replace: true,
+                    state: { scrollPos: window.scrollY }
+                });
             }
 
         } catch (error) {
@@ -424,8 +471,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             message.info('Preparing docket for printing...');
             const values = await form.validateFields();
             const qty = values.printQty || 1;
-
-            // Get correct symbol from options
             const currentOption = currencyOptions.find(c => c.code === currency);
             const symbol = currentOption ? currentOption.symbol : '$';
 
@@ -447,7 +492,16 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
             if (mode === 'new' && result.id) {
                 sessionStorage.removeItem("scrdktID");
-                navigate(`/edit-docket/${result.id}`, { replace: true });
+                navigate(`/edit-docket/${result.id}`, { 
+                    replace: true,
+                    // Pass print state AND scroll position
+                    state: { 
+                        printFilename: filename, 
+                        printQty: qty,
+                        scrollPos: window.scrollY
+                    } 
+                });
+                return; // Stop execution here, let the new page instance handle the rest
             }
 
             if (!filename) {
@@ -456,25 +510,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 return;
             }
 
-            const maxRetries = 10; 
-            let attempts = 0;
-            
-            message.info('Sending to printer, please wait...');
-            const pollInterval = setInterval(async () => {
-                attempts++;
-                const status = await CheckPrintStatus(filename);
-
-                if (status === 'completed') {
-                    clearInterval(pollInterval);
-                    setPrinting(false);
-                    message.success(`Printing Started (${qty} copies)`);
-                    
-                } else if (attempts >= maxRetries) {
-                    clearInterval(pollInterval);
-                    setPrinting(false);
-                    message.warning("Sent to queue, but printer script seems slow or offline.");
-                }
-            }, 1000); 
+            startPrintPolling(filename, qty);
 
         } catch (error) {
             console.error(error);
