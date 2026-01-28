@@ -31,3 +31,5 @@ postgres_data/
 .env
 /backups/on_update
 backups/daily/scheduled_backup_2026-01-28_110000.sql
+backups/on_update/last_updated_backup.sql
+backups/daily/scheduled_backup_2026-01-28_110000.sql
