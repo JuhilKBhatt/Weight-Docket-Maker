@@ -38,9 +38,15 @@ export default function NetWeightSummary({ items, form }) {
 
     // --- FILTER PRICES LIST ---
     const filteredPriceList = useMemo(() => {
-        if (!searchText) return priceList;
+        // 1. Filter out items with no price (0, null, undefined)
+        // This ensures the list only shows actual history
+        const hasHistory = priceList.filter(item => item.price && item.price > 0);
+
+        // 2. Apply Search Filter if exists
+        if (!searchText) return hasHistory;
+        
         const lowerSearch = searchText.toLowerCase();
-        return priceList.filter(item => 
+        return hasHistory.filter(item => 
             (item.label || '').toLowerCase().includes(lowerSearch)
         );
     }, [priceList, searchText]);
@@ -188,7 +194,7 @@ export default function NetWeightSummary({ items, form }) {
                             dataIndex: 'price', 
                             key: 'price', 
                             align: 'right',
-                            render: (val) => val ? `$${Number(val).toFixed(2)}` : <span style={{color:'#ccc'}}>No History</span>
+                            render: (val) => `$${Number(val).toFixed(2)}`
                         }
                     ]}
                 />

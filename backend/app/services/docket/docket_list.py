@@ -1,7 +1,7 @@
 # app/services/docket/docket_list.py
 
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import or_, and_, func
+from sqlalchemy import or_, and_, func, desc
 from datetime import date
 from app.models.docketModels import Docket, DocketItem
 
@@ -51,6 +51,7 @@ def get_dockets_paginated(
     total = query.count()
 
     # 4. Apply Sorting, Pagination & Optimization
+    # joinedload prevents N+1 problem by fetching items in the same query
     dockets = query.order_by(Docket.id.desc())\
                    .options(joinedload(Docket.items), joinedload(Docket.deductions))\
                    .offset(skip)\
@@ -59,25 +60,21 @@ def get_dockets_paginated(
 
     results = []
 
-    # 5. Process results
+    # 5. Process only the fetched page (e.g., 10 items)
     for dkt in dockets:
-        # Filter out invalid drafts if needed (optional)
         if not dkt.scrdkt_number: continue
 
-        # --- Calculate Totals ---
         items_total = 0
         for item in dkt.items:
             gross = item.gross or 0
             tare = item.tare or 0
             price = item.price or 0
-            # Allow negative net weight
             net = gross - tare 
             items_total += (net * price)
 
         pre_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "pre"])
         post_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "post"])
 
-        # Allow negative totals
         gross_total = items_total - pre_deductions
         
         gst_amount = 0
@@ -101,7 +98,6 @@ def get_dockets_paginated(
             "notes": dkt.notes,
         })
 
-    # Return structure for Table
     return {
         "data": results,
         "total": total,
@@ -111,18 +107,18 @@ def get_dockets_paginated(
 
 def get_unique_customers(db: Session, search: str = None):
     """
-    OPTIMIZED: Returns unique customers based on search.
-    Filters by Name, ABN, PayID, or License No efficiently.
+    Returns unique customers based on search.
+    Consolidates 'Taqi', 'TAQI', 'taqi ' into a single entry (latest used).
     """
-    # 1. First, find distinct customer names matching the criteria.
-    # We group by customer name to avoid fetching thousands of duplicate rows.
-    name_query = db.query(Docket.customer_name)\
+    # 1. Subquery: Group by LOWER(TRIM(name)) to find unique entities
+    # We select MAX(id) to get the most recent record for that normalized name
+    subquery = db.query(func.max(Docket.id).label("max_id"))\
         .filter(Docket.is_saved == True)\
         .filter(Docket.customer_name != None, Docket.customer_name != "")
 
     if search:
         search_term = f"%{search}%"
-        name_query = name_query.filter(
+        subquery = subquery.filter(
             or_(
                 Docket.customer_name.ilike(search_term),
                 Docket.customer_abn.ilike(search_term),
@@ -131,82 +127,95 @@ def get_unique_customers(db: Session, search: str = None):
             )
         )
     
-    # Get top 10 distinct names, ordered by most recently used (Max ID)
-    matching_names_rows = name_query.group_by(Docket.customer_name)\
-        .order_by(func.max(Docket.id).desc())\
-        .limit(10).all()
+    # Group by the normalized name to merge duplicates
+    subquery = subquery.group_by(func.lower(func.trim(Docket.customer_name)))
+    
+    # 2. Main Query: Fetch full details for those specific latest IDs
+    # This ensures we get the exact casing (e.g. "Taqi") used in the latest record
+    latest_ids = subquery.limit(10).all() # Limit results for speed
+    
+    if not latest_ids:
+        return []
+
+    # Flatten list of IDs
+    ids = [r[0] for r in latest_ids]
+
+    dockets = db.query(Docket).filter(Docket.id.in_(ids)).order_by(Docket.id.desc()).all()
     
     results = []
     
-    # 2. For each unique name, fetch the *LATEST* docket details.
-    for row in matching_names_rows:
-        name = row[0]
-        
-        # Fast lookup for the latest record of this customer
-        d = db.query(Docket).filter(
-            Docket.customer_name == name,
-            Docket.is_saved == True
-        ).order_by(Docket.id.desc()).first()
-        
-        if d:
-            results.append({
-                "value": name,
-                "label": name,
-                "customer_details": {
-                    "name": d.customer_name,
-                    "address": d.customer_address,
-                    "phone": d.customer_phone,
-                    "abn": d.customer_abn,
-                    "licenseNo": d.customer_license_no,
-                    "regoNo": d.customer_rego_no,
-                    "dob": d.customer_dob,
-                    "payId": d.customer_pay_id,
-                    "bsb": d.bank_bsb,
-                    "accNo": d.bank_account_number
-                }
-            })
+    for d in dockets:
+        results.append({
+            "value": d.customer_name, 
+            "label": d.customer_name,
+            "customer_details": {
+                "name": d.customer_name,
+                "address": d.customer_address,
+                "phone": d.customer_phone,
+                "abn": d.customer_abn,
+                "licenseNo": d.customer_license_no,
+                "regoNo": d.customer_rego_no,
+                "dob": d.customer_dob,
+                "payId": d.customer_pay_id,
+                "bsb": d.bank_bsb,
+                "accNo": d.bank_account_number
+            }
+        })
             
     return results
 
 def get_unique_metals(db: Session, search: str = None, customer_name: str = None):
     """
     Returns unique metals matching the search.
-    If 'customer_name' is provided, the price returned is the latest price 
-    for that specific customer.
+    Consolidates casing and whitespace for metals too.
+    Sorts price history by DATE, not ID, to handle imported data correctly.
     """
-    # 1. Find distinct metals, prioritizing recently used ones
-    # Joined with Docket to ensure we only look at relevant/saved data if needed,
-    # and to use Docket.id for recency sorting.
-    query = db.query(DocketItem.metal)\
+    # 1. Normalize metal names in the query
+    normalized_metal = func.lower(func.trim(DocketItem.metal))
+    
+    # Select the MAX ID for each normalized metal to find the most recent usage
+    query = db.query(func.max(DocketItem.id))\
         .join(Docket)\
         .filter(DocketItem.metal.isnot(None), DocketItem.metal != "")
 
     if search:
         query = query.filter(DocketItem.metal.ilike(f"%{search}%"))
     
-    # Group by metal and order by the latest Docket ID (most recent first)
-    # This ensures the dropdown shows metals we actually use often/recently
-    unique_metals_rows = query.group_by(DocketItem.metal)\
-        .order_by(func.max(Docket.id).desc())\
-        .limit(6)\
+    # Group by normalized metal name
+    # Order by MAX(Docket.id) to prioritize metals used in recent dockets
+    latest_metal_ids_rows = query.group_by(normalized_metal)\
+        .order_by(func.max(DocketItem.id).desc())\
+        .limit(4)\
         .all()
     
+    if not latest_metal_ids_rows:
+        return []
+
+    ids = [r[0] for r in latest_metal_ids_rows]
+    
+    # 2. Fetch the actual metal strings using the IDs found
+    # This gives us the "Copper" casing instead of "copper" if "Copper" was last used
+    latest_items = db.query(DocketItem).filter(DocketItem.id.in_(ids)).all()
+    
+    # Sort them alphabetically
+    latest_items.sort(key=lambda x: x.metal)
+
     results = []
     
-    for row in unique_metals_rows:
-        metal_name = row[0]
+    for item in latest_items:
+        metal_name = item.metal
         price = 0.0
         
-        # 2. If a customer is selected, fetch their specific last price for this metal
+        # 3. If customer selected, find their specific last price for this normalized metal
         if customer_name:
             last_price_row = db.query(DocketItem.price)\
                 .join(Docket)\
                 .filter(
-                    DocketItem.metal == metal_name,
-                    Docket.customer_name == customer_name,
+                    func.lower(func.trim(DocketItem.metal)) == metal_name.strip().lower(),
+                    func.lower(func.trim(Docket.customer_name)) == customer_name.strip().lower(),
                     Docket.is_saved == True
                 )\
-                .order_by(Docket.id.desc())\
+                .order_by(Docket.docket_date.desc(), Docket.id.desc())\
                 .first()
             
             if last_price_row:
