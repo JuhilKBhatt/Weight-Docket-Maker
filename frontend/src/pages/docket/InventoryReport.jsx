@@ -1,13 +1,14 @@
 // src/pages/docket/InventoryReport.jsx
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Table, DatePicker, Input, Card, Typography, Row, Col, App } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Table, DatePicker, Input, Card, Typography, Row, Col, App, Select } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { getInventoryReport } from '../../services/inventoryService';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
+const { Option } = Select;
 
 export default function InventoryReport() {
     const { message } = App.useApp(); 
@@ -22,8 +23,11 @@ export default function InventoryReport() {
     ]);
     const [metalSearch, setMetalSearch] = useState('');
     
+    // NEW: State for Docket Type
+    const [docketType, setDocketType] = useState('All');
+    
     // Fetch Report Data
-    const fetchReport = async (dates, search, isBackground = false) => {
+    const fetchReport = async (dates, search, type, isBackground = false) => {
         if (!dates || !dates[0] || !dates[1]) return;
 
         if (!isBackground) setLoading(true);
@@ -32,7 +36,8 @@ export default function InventoryReport() {
             const startDate = dates[0].format('YYYY-MM-DD');
             const endDate = dates[1].format('YYYY-MM-DD');
             
-            const response = await getInventoryReport(startDate, endDate, search);
+            // Pass docketType to service
+            const response = await getInventoryReport(startDate, endDate, search, type);
             
             setData(response.data);
             setGrandTotals(response.grandTotals);
@@ -48,12 +53,14 @@ export default function InventoryReport() {
 
     // Initial Load & Polling
     useEffect(() => {
-        fetchReport(dateRange, metalSearch);
+        fetchReport(dateRange, metalSearch, docketType);
+        
         const intervalId = setInterval(() => {
-            fetchReport(dateRange, metalSearch, true); 
+            fetchReport(dateRange, metalSearch, docketType, true); 
         }, 5000);
+        
         return () => clearInterval(intervalId);
-    }, [dateRange, metalSearch]); 
+    }, [dateRange, metalSearch, docketType]); 
 
     // Handle Search
     const handleSearchChange = (e) => {
@@ -111,6 +118,19 @@ export default function InventoryReport() {
                                 format="DD/MM/YYYY"
                             />
                         </Col>
+                        
+                        <Col>
+                            <Select 
+                                value={docketType} 
+                                onChange={setDocketType} 
+                                style={{ width: 150 }}
+                            >
+                                <Option value="All">All Types</Option>
+                                <Option value="Customer">Customer</Option>
+                                <Option value="Weight">Weight</Option>
+                            </Select>
+                        </Col>
+
                         <Col>
                             <Input 
                                 placeholder="Search Metal..." 

@@ -5,16 +5,15 @@ from sqlalchemy import func
 from datetime import date
 from app.models.docketModels import Docket, DocketItem
 
-def get_inventory_report(db: Session, start_date: date, end_date: date, metal_search: str = None):
+# Added docket_type parameter
+def get_inventory_report(db: Session, start_date: date, end_date: date, metal_search: str = None, docket_type: str = None):
     # 1. Define the "Net Weight" expression for SQL
-    # Net = Gross - Tare. Use greatest(0, ...) to ensure no negative weights mess up totals
     net_weight_expr = func.greatest(0, DocketItem.gross - DocketItem.tare)
     
     # 2. Define Value expression (Net * Price)
     value_expr = net_weight_expr * DocketItem.price
 
     # 3. Build the Aggregate Query
-    # Group by Metal, Unit, and Currency
     query = db.query(
         DocketItem.metal,
         DocketItem.unit,
@@ -34,6 +33,10 @@ def get_inventory_report(db: Session, start_date: date, end_date: date, metal_se
     if metal_search:
         filters.append(DocketItem.metal.ilike(f"%{metal_search}%"))
 
+    # --- NEW: Filter by Docket Type ---
+    if docket_type and docket_type != "All":
+        filters.append(Docket.docket_type == docket_type)
+
     # Apply all filters
     query = query.filter(*filters)
 
@@ -51,8 +54,6 @@ def get_inventory_report(db: Session, start_date: date, end_date: date, metal_se
     # 7. Format results
     report_data = []
     
-    # Totals are now dictionaries to handle multiple units/currencies
-    # Example: weights: {'kg': 1000, 't': 50}, values: {'AUD': {'amount': 500, 'symbol': '$'}}
     grand_totals_weight = {} 
     grand_totals_value = {}
 

@@ -30,10 +30,11 @@ def save_docket(data: DocketCreate, db: Session = Depends(get_db)):
 def get_inventory_report(
     start_date: date, 
     end_date: date, 
-    metal: Optional[str] = None, 
+    metal: Optional[str] = None,
+    docket_type: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    return inventory_service.get_inventory_report(db, start_date, end_date, metal)
+    return inventory_service.get_inventory_report(db, start_date, end_date, metal, docket_type)
 
 # --- READ / LIST ---
 @router.get("/customers/unique")
