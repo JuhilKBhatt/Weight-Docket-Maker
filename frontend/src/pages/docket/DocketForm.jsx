@@ -42,14 +42,56 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const [unitOptions, setUnitOptions] = useState([]);
     const [defaultUnit, setDefaultUnit] = useState('kg');
 
-    const [dataSource, setDataSource] = useState([]); 
+    // --- 1. INITIALIZE STATES SYNCHRONOUSLY (Fixes Scroll/Height Issues) ---
     
-    const [gstEnabled, setGstEnabled] = useState(false);
-    const [gstPercentage, setGstPercentage] = useState(10);
-    const [currency, setCurrency] = useState('AUD');
+    const [gstEnabled, setGstEnabled] = useState(existingDocket ? existingDocket.include_gst : false);
+    const [gstPercentage, setGstPercentage] = useState(existingDocket ? existingDocket.gst_percentage : 10);
+    const [currency, setCurrency] = useState(existingDocket?.currency || 'AUD');
     
-    const [preGstDeductions, setPreGstDeductions] = useState([]);
-    const [postGstDeductions, setPostGstDeductions] = useState([]);
+    const [preGstDeductions, setPreGstDeductions] = useState(
+        existingDocket?.deductions?.filter(d => d.type === 'pre') || []
+    );
+    const [postGstDeductions, setPostGstDeductions] = useState(
+        existingDocket?.deductions?.filter(d => d.type === 'post') || []
+    );
+
+    // Initialize Items with Padding logic here, not in Effect
+    const [dataSource, setDataSource] = useState(() => {
+        if (mode === 'edit' && existingDocket) {
+            const items = existingDocket.items.map(i => ({
+                key: i.key || i.id,
+                metal: i.metal || '',
+                notes: i.notes || '',
+                gross: i.gross,
+                tare: i.tare,
+                net: (i.gross || 0) - (i.tare || 0),
+                price: i.price,
+                total: 0,
+                unit: i.unit || 'kg'
+            }));
+
+            // Pad to minimum 20 rows
+            if (items.length < 20) {
+                const rowsToAdd = 20 - items.length;
+                const timestamp = Date.now();
+                for (let i = 0; i < rowsToAdd; i++) {
+                    items.push({
+                        key: `pad-${timestamp}-${i}`,
+                        metal: '',
+                        notes: '',
+                        gross: null,
+                        tare: null,
+                        net: 0,
+                        price: null,
+                        total: 0,
+                        unit: 'kg'
+                    });
+                }
+            }
+            return items;
+        }
+        return []; // New mode will trigger loadDefaults to fill this
+    });
 
     const formValuesRef = useRef({});
 
@@ -84,18 +126,15 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
     // --- EFFECT: RESUME STATE AFTER REDIRECT ---
     useEffect(() => {
-        // 1. Resume Printing if needed
         if (location.state?.printFilename) {
             const { printFilename, printQty } = location.state;
             startPrintPolling(printFilename, printQty || 1);
         }
 
-        // 2. Restore Scroll Position if passed
         if (location.state?.scrollPos) {
             window.scrollTo(0, location.state.scrollPos);
         }
 
-        // Clear state to prevent re-triggering on refresh
         if (location.state) {
             window.history.replaceState({}, document.title);
         }
@@ -216,28 +255,13 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         }
     }, [mode, savedCompaniesFrom]); 
 
+    // --- FORM FIELD POPULATION EFFECT ---
     useEffect(() => {
         if (mode === 'edit' && existingDocket) {
             message.info('Docket loaded for editing.', 0.8);
-            setCurrency(existingDocket.currency || 'AUD');
-            setGstEnabled(existingDocket.include_gst);
-            setGstPercentage(existingDocket.gst_percentage);
             
-            const items = existingDocket.items.map(i => ({
-                key: i.key || i.id,
-                metal: i.metal || '',
-                notes: i.notes || '',
-                gross: i.gross,
-                tare: i.tare,
-                net: (i.gross || 0) - (i.tare || 0),
-                price: i.price,
-                total: 0,
-                unit: i.unit || 'kg'
-            }));
-            setDataSource(items);
-            
-            setPreGstDeductions(existingDocket.deductions?.filter(d => d.type === 'pre') || []);
-            setPostGstDeductions(existingDocket.deductions?.filter(d => d.type === 'post') || []);
+            // Note: State (items, currency, gst) is already initialized synchronously above.
+            // We only need to populate Form fields here.
 
             const initialValues = {
                 docketType: existingDocket.docket_type,
@@ -418,7 +442,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             
             if (mode === 'new' && result.id) {
                 sessionStorage.removeItem("scrdktID");
-                // Navigate to edit page with scroll position preserved
                 navigate(`/edit-docket/${result.id}`, { 
                     replace: true,
                     state: { scrollPos: window.scrollY }
@@ -452,7 +475,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             
             if (mode === 'new' && result.id) {
                 sessionStorage.removeItem("scrdktID");
-                // Navigate to edit page with scroll position preserved
                 navigate(`/edit-docket/${result.id}`, { 
                     replace: true,
                     state: { scrollPos: window.scrollY }
@@ -494,14 +516,13 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 sessionStorage.removeItem("scrdktID");
                 navigate(`/edit-docket/${result.id}`, { 
                     replace: true,
-                    // Pass print state AND scroll position
                     state: { 
                         printFilename: filename, 
                         printQty: qty,
                         scrollPos: window.scrollY
                     } 
                 });
-                return; // Stop execution here, let the new page instance handle the rest
+                return; 
             }
 
             if (!filename) {
