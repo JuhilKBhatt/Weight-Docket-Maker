@@ -5,6 +5,7 @@ import sys
 import os
 import re
 from datetime import datetime
+from sqlalchemy import func
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -15,7 +16,6 @@ from app.utilities.scrdkt_generator import generate_next_scrdkt
 
 def parse_date(date_str):
     if not date_str: return None
-    # Add formats matching your logs (e.g. 17-1-2026)
     formats = ['%d-%m-%Y', '%Y-%m-%d', '%d/%m/%Y', '%Y/%m/%d']
     for fmt in formats:
         try:
@@ -35,7 +35,6 @@ def parse_time(time_str):
             return None
 
 def extract_general_notes(other_info_str):
-    """Extracts text after 'Notes: ' from the pipe-separated string"""
     if not other_info_str: return ""
     match = re.search(r'Notes:\s*(.*)', other_info_str)
     if match:
@@ -46,25 +45,20 @@ def extract_general_notes(other_info_str):
 def import_logs(file_path):
     print(f"Reading logs from {file_path}...")
     
-    # --- STEP 1: READ & PARSE INTO MEMORY ---
     unique_entries = {}
     
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
         for line in f:
             try:
-                # Extract JSON part
                 json_start = line.find('{')
                 if json_start == -1: continue
                 
                 json_str = line[json_start:].strip()
                 data = json.loads(json_str)
                 
-                # Validation
-                if "0" not in data or not isinstance(data["0"], list):
-                    continue
+                if "0" not in data or not isinstance(data["0"], list): continue
                 
                 meta = data["0"]
-                # Structure: [Name, Date, Time, gst, otherInfo, Type, Save, DetailsObj, PrintNum]
                 if len(meta) < 8: continue
 
                 name = meta[0]
@@ -80,8 +74,12 @@ def import_logs(file_path):
                 
                 timestamp = datetime.combine(d_obj, t_obj)
 
-                # Deduplication Key: Name + Date (Time ignored for grouping)
-                key = f"{name.lower().strip()}_{d_obj}"
+                # --- NORMALIZE NAME (Remove extra spaces) ---
+                # "  Taqi   " -> "Taqi"
+                clean_name = " ".join(name.split())
+
+                # Key is lowercased to ensure uniqueness in memory
+                key = f"{clean_name.lower()}_{d_obj}"
 
                 if key not in unique_entries:
                     unique_entries[key] = {
@@ -89,17 +87,18 @@ def import_logs(file_path):
                         "data": data,
                         "meta": meta,
                         "d_obj": d_obj,
-                        "t_obj": t_obj
+                        "t_obj": t_obj,
+                        "clean_name": clean_name # Store the clean name
                     }
                 else:
-                    # Keep only the LATEST entry for that day
                     if timestamp > unique_entries[key]["timestamp"]:
                         unique_entries[key] = {
                             "timestamp": timestamp,
                             "data": data,
                             "meta": meta,
                             "d_obj": d_obj,
-                            "t_obj": t_obj
+                            "t_obj": t_obj,
+                            "clean_name": clean_name
                         }
             except json.JSONDecodeError:
                 continue
@@ -108,10 +107,9 @@ def import_logs(file_path):
 
     print(f"Consolidated logs into {len(unique_entries)} unique daily records.")
 
-    # --- STEP 2: INSERT INTO DB ---
     db = SessionLocal()
     imported_count = 0
-    skipped_count = 0
+    updated_count = 0
 
     try:
         sorted_entries = sorted(unique_entries.values(), key=lambda x: x['timestamp'])
@@ -121,22 +119,26 @@ def import_logs(file_path):
             meta = entry["meta"]
             d_obj = entry["d_obj"]
             
-            customer_name = meta[0]
+            # Use the normalized name calculated earlier
+            customer_name = entry["clean_name"]
 
-            # Check for duplicates in DB (Same Name + Same Date = Duplicate)
-            exists = db.query(Docket).filter(
-                Docket.customer_name == customer_name,
+            # --- 1. CHECK FOR EXISTING DOCKET (Case Insensitive + Trimmed) ---
+            # func.trim ensures database values with trailing spaces match clean input
+            existing_docket = db.query(Docket).filter(
+                func.lower(func.trim(Docket.customer_name)) == customer_name.lower(),
                 Docket.docket_date == d_obj
             ).first()
 
-            if exists:
-                skipped_count += 1
-                continue
-
             cust_details = meta[7] if isinstance(meta[7], dict) else {}
             
-            # --- GST LOGIC ---
-            # Index 3 is gstValue (boolean true/false)
+            # Helper: Only return new value if it's not empty/null
+            def get_val(key, fallback):
+                new_val = cust_details.get(key)
+                if new_val and str(new_val).strip():
+                    return new_val
+                return fallback
+
+            # Calculate GST
             raw_gst = meta[3]
             include_gst = False
             if isinstance(raw_gst, bool):
@@ -144,40 +146,76 @@ def import_logs(file_path):
             elif isinstance(raw_gst, str):
                 include_gst = raw_gst.lower() == 'true'
 
-            # Generate new ID
-            scrdkt = generate_next_scrdkt(db)
+            docket = None
 
-            docket = Docket(
-                scrdkt_number=scrdkt,
-                docket_date=d_obj,
-                docket_time=meta[2], 
-                status="Imported",
-                is_saved=True,
-                docket_type=meta[5] if len(meta) > 5 else "Customer",
+            if existing_docket:
+                # --- UPDATE MODE ---
+                docket = existing_docket
                 
-                # Financials
-                include_gst=include_gst,
-                gst_percentage=10.0 if include_gst else 0.0,
+                # SAFE UPDATES: Only overwrite if log has data
+                docket.customer_address = get_val("Address", docket.customer_address)
+                docket.customer_phone = get_val("PhoneNo", docket.customer_phone)
+                docket.customer_abn = get_val("ABN", docket.customer_abn)
+                docket.customer_pay_id = get_val("PayID", docket.customer_pay_id)
+                docket.customer_license_no = get_val("LicenseNo", docket.customer_license_no)
+                docket.customer_rego_no = get_val("RegoNo", docket.customer_rego_no)
                 
-                # Customer Details
-                customer_name=cust_details.get("Name") or customer_name,
-                customer_address=cust_details.get("Address"),
-                customer_phone=cust_details.get("PhoneNo"),
-                customer_abn=cust_details.get("ABN"),
-                customer_pay_id=cust_details.get("PayID"),
-                customer_license_no=cust_details.get("LicenseNo"),
-                customer_rego_no=cust_details.get("RegoNo"),
-                customer_dob=parse_date(cust_details.get("DOB")),
+                new_dob = parse_date(cust_details.get("DOB"))
+                if new_dob: 
+                    docket.customer_dob = new_dob
+
+                docket.bank_bsb = get_val("BSB", docket.bank_bsb)
+                docket.bank_account_number = get_val("AccNo", docket.bank_account_number)
                 
-                # Bank
-                bank_bsb=cust_details.get("BSB"),
-                bank_account_number=cust_details.get("AccNo"),
+                # Metadata updates
+                docket.docket_time = meta[2]
+                docket.notes = extract_general_notes(meta[4])
                 
-                # Notes
-                notes=extract_general_notes(meta[4])
-            )
-            db.add(docket)
-            db.flush()
+                # Clear old items to re-import
+                db.query(DocketItem).filter(DocketItem.docket_id == docket.id).delete()
+                updated_count += 1
+            else:
+                # --- INSERT MODE ---
+                
+                # 2. ENFORCE CONSISTENT CASING FROM DB (if exists)
+                existing_customer = db.query(Docket).filter(
+                    func.lower(func.trim(Docket.customer_name)) == customer_name.lower()
+                ).first()
+
+                final_name = customer_name
+                if existing_customer:
+                    # Use the name exactly as it appears in DB (e.g. "Taqi")
+                    final_name = existing_customer.customer_name
+                else:
+                    # Title Case for brand new customers (e.g. "john" -> "John")
+                    final_name = customer_name.title() 
+
+                scrdkt = generate_next_scrdkt(db)
+                docket = Docket(
+                    scrdkt_number=scrdkt,
+                    docket_date=d_obj,
+                    docket_time=meta[2], 
+                    status="Imported",
+                    is_saved=True,
+                    docket_type=meta[5] if len(meta) > 5 else "Customer",
+                    include_gst=include_gst,
+                    gst_percentage=10.0 if include_gst else 0.0,
+                    
+                    customer_name=final_name, 
+                    customer_address=cust_details.get("Address"),
+                    customer_phone=cust_details.get("PhoneNo"),
+                    customer_abn=cust_details.get("ABN"),
+                    customer_pay_id=cust_details.get("PayID"),
+                    customer_license_no=cust_details.get("LicenseNo"),
+                    customer_rego_no=cust_details.get("RegoNo"),
+                    customer_dob=parse_date(cust_details.get("DOB")),
+                    bank_bsb=cust_details.get("BSB"),
+                    bank_account_number=cust_details.get("AccNo"),
+                    notes=extract_general_notes(meta[4])
+                )
+                db.add(docket)
+                db.flush() 
+                imported_count += 1
 
             # Process Items
             for k, v in data.items():
@@ -205,12 +243,11 @@ def import_logs(file_path):
                     continue
             
             db.commit()
-            imported_count += 1
             
-            if imported_count % 50 == 0:
-                print(f"Imported {imported_count}...")
+            if (imported_count + updated_count) % 50 == 0:
+                print(f"Processed {imported_count + updated_count} records...")
 
-        print(f"✅ Finished! Imported: {imported_count}. Skipped (Already in DB): {skipped_count}.")
+        print(f"✅ Finished! Created: {imported_count}. Updated: {updated_count}.")
 
     except Exception as e:
         print(f"❌ Critical Error: {e}")

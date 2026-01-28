@@ -30,3 +30,4 @@ backend/*.csv
 postgres_data/
 .env
 /backups/on_update
+backups/daily/scheduled_backup_2026-01-28_110000.sql
