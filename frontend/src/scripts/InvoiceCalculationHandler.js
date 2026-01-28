@@ -1,4 +1,4 @@
-// ./frontend/src/scripts/InvoiceCalculationHandler.js
+// src/scripts/InvoiceCalculationHandler.js
 
 export default class InvoiceCalculationHandler {
   constructor({
@@ -18,8 +18,10 @@ export default class InvoiceCalculationHandler {
   }
 
   safeNumber(value) {
-    const num = Number(value);
-    return Number.isNaN(num) ? 0 : num;
+    // Optimization: fast return if already a number
+    if (typeof value === 'number') return value;
+    const num = parseFloat(value);
+    return Number.isFinite(num) ? num : 0;
   }
 
   round(value) {
@@ -29,10 +31,16 @@ export default class InvoiceCalculationHandler {
   // ---------- ITEMS ----------
   calculateItemTotals() {
     return this.items.map(item => {
-      // CHANGED: weight -> quantity
       const qty = this.safeNumber(item.quantity);
       const price = this.safeNumber(item.price);
+      
       const total = this.round(qty * price);
+
+      // Optimization: If total hasn't changed, return the original object
+      // This helps React.memo avoid re-renders
+      if (item.total === total) {
+          return item;
+      }
 
       return {
         ...item,
@@ -44,10 +52,9 @@ export default class InvoiceCalculationHandler {
   // ---------- TRANSPORT ----------
   calculateTransportTotal() {
     return this.transportItems.reduce((sum, t) => {
-      // CHANGED: NumOfCTR -> numOfCtr, PricePreCTR -> pricePerCtr
       const count = this.safeNumber(t.numOfCtr);
       const price = this.safeNumber(t.pricePerCtr);
-      return sum + count * price;
+      return sum + (count * price);
     }, 0);
   }
 
@@ -60,7 +67,12 @@ export default class InvoiceCalculationHandler {
 
   // ---------- MAIN ----------
   getCalculations() {
+    // 1. Calculate Rows (or re-use if passed in constructor)
+    // Note: In the optimized hook, we pass items that already have .total,
+    // but calculating simple multiplication again is negligible cost compared to React render cycles.
     const itemsWithTotals = this.calculateItemTotals();
+    
+    // 2. Sum Items
     const itemsTotal = itemsWithTotals.reduce(
       (sum, item) => sum + this.safeNumber(item.total),
       0
@@ -69,11 +81,14 @@ export default class InvoiceCalculationHandler {
     const transportTotal = this.calculateTransportTotal();
     const preGstDeductionTotal = this.calculateDeductionsTotal(this.preGstDeductions);
 
+    // 3. Calculate Gross
     const grossTotal = this.round(itemsTotal + transportTotal - preGstDeductionTotal);
     
+    // 4. Calculate GST
     const gstRate = this.gstPercentage / 100;
     const gstAmount = this.includeGST ? this.round(grossTotal * gstRate) : 0;
     
+    // 5. Calculate Final
     const postGstDeductionTotal = this.includeGST ? this.calculateDeductionsTotal(this.postGstDeductions) : 0;
     const finalTotal = this.round(grossTotal + gstAmount - postGstDeductionTotal);
 
