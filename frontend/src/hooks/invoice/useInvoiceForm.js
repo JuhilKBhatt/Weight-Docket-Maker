@@ -1,4 +1,4 @@
-// src/hooks/invoice/useInvoiceForm.js
+// ./frontend/src/hooks/invoice/useInvoiceForm.js
 
 import { useState, useRef, useEffect } from 'react';
 import invoiceNewSCRIDService from '../../services/invoiceService';
@@ -72,8 +72,7 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
       return existingInvoice.pre_gst_deductions.map(d => ({
         key: d.key || uid(),
         label: d.label || '',
-        // UPDATED: Convert 0 to null so input is empty
-        amount: d.amount === 0 ? null : d.amount
+        amount: d.amount || 0
       }));
     }
     return [];
@@ -84,8 +83,7 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
       return existingInvoice.post_gst_deductions.map(d => ({
         key: d.key || uid(),
         label: d.label || '',
-        // UPDATED: Convert 0 to null so input is empty
-        amount: d.amount === 0 ? null : d.amount
+        amount: d.amount || 0
       }));
     }
     return [];
@@ -107,8 +105,7 @@ export default function useInvoiceForm(mode = 'new', existingInvoice = null) {
   const handleTransportChange = (key, field, value) => setTransportItems(prev => prev.map(item => item.key === key ? { ...item, [field]: value } : item));
 
   const addDeduction = type => {
-    // UPDATED: Initialize amount as null instead of 0
-    const deduction = { key: uid(), label: '', amount: null };
+    const deduction = { key: uid(), label: '', amount: 0 };
     type === 'pre' ? setPreGstDeductions(prev => [...prev, deduction]) : setPostGstDeductions(prev => [...prev, deduction]);
   };
   const removeDeduction = (type, key) => type === 'pre' ? setPreGstDeductions(prev => prev.filter(d => d.key !== key)) : setPostGstDeductions(prev => prev.filter(d => d.key !== key));
