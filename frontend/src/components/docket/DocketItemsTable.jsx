@@ -114,14 +114,14 @@ export default function DocketItemsTable({
         { 
             title: '#', 
             key: 'serial', 
-            width: 10,
+            width: '1%', // Percentage Width
             align: 'center', 
             render: (_, __, index) => <Text strong style={{ fontSize: '18px' }}>{index + 1}</Text> 
         },
         { 
             title: 'Metal', 
             dataIndex: 'metal', 
-            width: '12%', 
+            width: '15%', // Percentage Width
             render: (_, record) => (
                 <MetalCell 
                     value={record.metal}
@@ -133,7 +133,7 @@ export default function DocketItemsTable({
         { 
             title: 'Notes', 
             dataIndex: 'notes', 
-            width: '12%', 
+            width: '10%', // Percentage Width
             render: (_, record) => (
                 <Input 
                     value={record.notes} 
@@ -145,7 +145,7 @@ export default function DocketItemsTable({
         { 
             title: 'Gross', 
             dataIndex: 'gross', 
-            width: 80, 
+            width: '15%', // Percentage Width
             render: (_, record) => (
                 <Input 
                     style={{ width: '100%' }} 
@@ -157,7 +157,7 @@ export default function DocketItemsTable({
         { 
             title: 'Tare', 
             dataIndex: 'tare', 
-            width: 80, 
+            width: '15%', // Percentage Width
             render: (_, record) => (
                 <Input 
                     style={{ width: '100%' }} 
@@ -169,7 +169,7 @@ export default function DocketItemsTable({
         {
             title: 'Net Weight',
             dataIndex: 'net',
-            width: 100, 
+            width: '13%', // Percentage Width
             render: (text, record) => {
                 const val = Number(text);
                 const isNegative = !isNaN(val) && val < 0;
@@ -183,7 +183,6 @@ export default function DocketItemsTable({
                         addonAfter={
                             <Select
                                 value={record.unit || 'kg'}
-                                style={{ width: 80, margin: '-5px 0' }} 
                                 popupMatchSelectWidth={false}
                                 showSearch
                                 optionFilterProp="children"
@@ -207,13 +206,12 @@ export default function DocketItemsTable({
         {
             title: 'Price / unit',
             dataIndex: 'price',
-            width: 100, 
+            width: '12%', // Percentage Width
             render: (_, record) => (
                 <Input 
                     addonBefore={
                         <Select
                             value={currency} 
-                            style={{ width: 100, margin: '-5px 0' }}
                             popupMatchSelectWidth={false}
                             showSearch
                             optionFilterProp="children"
@@ -233,15 +231,15 @@ export default function DocketItemsTable({
         {
             title: 'Total',
             dataIndex: 'total',
-            width: 125, 
+            width: '18%', // Percentage Width
             render: (text) => (
                 <Input prefix={currentSymbolLabel} value={audFormatterFixed(text)} readOnly style={{ textAlign: 'right' }} />
             )
         },
         {
             key: 'action',
-            width: 1,
-            render: (_, record) => <Button type="text" style={{ width: 10, marginRight:-10}} danger icon={<DeleteOutlined />} onClick={() => removeRow(record.key)} />
+            width: '1%', // Percentage Width
+            render: (_, record) => <Button type="text" style={{ width: '100%' }} danger icon={<DeleteOutlined />} onClick={() => removeRow(record.key)} />
         }
     ], [currency, activeCurrencies, activeUnits, currentSymbolLabel, items]); 
 
@@ -261,7 +259,6 @@ export default function DocketItemsTable({
                 pagination={false}
                 bordered
                 size="middle"
-                scroll={{ x: 'max-content' }} 
             />
             <Row gutter={8} style={{ marginTop: 8 }}>
                 <Col flex="auto"><Button type="dashed" onClick={() => addRow(rowsToAdd)} style={{ width: '100%' }} icon={<PlusOutlined />}>Add Rows</Button></Col>

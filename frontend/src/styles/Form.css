@@ -79,16 +79,19 @@
 /* Table styling */
 .ant-table {
   border: 1px solid #cccccc;
+  font-size: 24px; /* Add this (Default is usually 14px) */
 }
 
 .ant-table th {
   background-color: #f2f2f2;
   color: #000000;
   font-weight: 600;
+  font-size: 24px; /* Add this */
 }
 
 .ant-table td {
   background-color: #ffffff;
+  font-size: 24px; /* Add this */
 }
 
 .ant-table-thead > tr > th:nth-child(odd) {
@@ -104,6 +107,38 @@
 .ant-table-tbody > tr > td:nth-child(even) {
   background-color: rgb(238, 238, 238) !important;
   color: rgb(0, 0, 0) !important; /* black text for readability */
+}
+
+.ant-table .ant-input,
+.ant-table .ant-input-number-input,
+.ant-table .ant-select-selector,
+.ant-table .ant-select-selection-item {
+    font-size: 22px !important; /* Larger text inside inputs */
+    height: 40px !important;    /* Taller inputs (Standard is 32px) */ 
+}
+
+/* Fix vertical alignment for Select dropdowns (like Currency/Units) */
+.ant-table .ant-select-selector {
+    display: flex;
+    align-items: center;
+}
+
+/* Ensure the wrapper for InputNumber matches the new height */
+.ant-table .ant-input-number {
+    height: 40px !important;
+    width: 100%;
+}
+
+.ant-table .ant-input-group-addon,
+.ant-table .ant-input-group-addon .ant-select-selector,
+.ant-table .ant-input-group-addon .ant-select-selection-item,
+.ant-table .ant-input-group-addon .ant-typography {
+    font-size: 18px !important; /* Smaller than the 16px main input */
+}
+
+/* Optional: Reduce the width of the addon padding so it looks more compact */
+.ant-table .ant-input-group-addon {
+    padding: 2px !important;
 }
 
 .ant-table .ant-input-number-group-addon {
