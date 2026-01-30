@@ -179,6 +179,7 @@ export default function DocketItemsTable({
                 return (
                     <Input 
                         value={displayVal} 
+                        className={isNegative ? 'negative-net-weight' : ''}
                         addonAfter={
                             <Select
                                 value={record.unit || 'kg'}
@@ -195,13 +196,9 @@ export default function DocketItemsTable({
                         }
                         readOnly 
                         style={{ 
-                            backgroundColor: isNegative ? '#e52b2b' : '#f0f0f0', 
-                            color: isNegative ? 'red' : undefined, 
-                            borderColor: isNegative ? 'red' : undefined,
                             textAlign: 'right', 
                             fontWeight: 'bold',
                             opacity: 1, 
-                            WebkitTextFillColor: isNegative ? 'red' : undefined
                         }} 
                     />
                 );
