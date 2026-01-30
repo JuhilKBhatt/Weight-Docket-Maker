@@ -25,7 +25,7 @@
 .ant-table .ant-table-tbody > tr.selected-row:hover > td {
     background-color: #aad8ad !important; /* highlight */
     color: #000000 !important; /* Ensure text is black (overrides white text from striping) */
-    transition: background-color 0.3s;
+    transition: background-color 0s;
 }
 
 /* Ensure inputs inside the selected row blend in */
@@ -179,4 +179,25 @@
   color: #000000 !important;
   border-color: #999999 !important;
   opacity: 1 !important;
+}
+
+/* Since the Input has an addon, the className applies to the wrapper. 
+   We must target the .ant-input inside it. */
+.negative-net-weight .ant-input {
+    background-color: #e52b2b !important; /* Force Red Background */
+    color: #ffffff !important;           /* White text for readability */
+    border-color: #e52b2b !important;
+    -webkit-text-fill-color: #ffffff !important; /* Override Safari/Chrome text fill if needed */
+}
+
+/* Ensure the wrapper itself doesn't show white gaps if padding exists */
+.negative-net-weight.ant-input-group-wrapper {
+    background-color: #e52b2b !important;
+}
+
+/* Ensure the addon (unit selector) remains distinct if desired, 
+   or remove this if you want that red too */
+.negative-net-weight .ant-input-group-addon {
+    background-color: #ffffff;
+    border-color: #999999;
 }
