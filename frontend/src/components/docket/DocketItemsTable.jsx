@@ -114,7 +114,7 @@ export default function DocketItemsTable({
         { 
             title: '#', 
             key: 'serial', 
-            width: '1%', // Percentage Width
+            width: '3%', // Percentage Width
             align: 'center', 
             render: (_, __, index) => <Text strong style={{ fontSize: '18px' }}>{index + 1}</Text> 
         },
@@ -231,7 +231,7 @@ export default function DocketItemsTable({
         {
             title: 'Total',
             dataIndex: 'total',
-            width: '18%', // Percentage Width
+            width: '16%', // Percentage Width
             render: (text) => (
                 <Input prefix={currentSymbolLabel} value={audFormatterFixed(text)} readOnly style={{ textAlign: 'right' }} />
             )
