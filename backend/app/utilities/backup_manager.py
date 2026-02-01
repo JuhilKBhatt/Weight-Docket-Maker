@@ -73,16 +73,38 @@ def create_scheduled_backup():
     cleanup_old_files(monthly_dir, days=365)
 
 def create_on_update_backup():
-    """Triggered whenever the database is successfully updated. Replaces the previous version."""
+    """Triggered whenever the database is successfully updated. Keeps the last 10 copies."""
     update_dir = os.path.join(BACKUP_ROOT, "on_update")
     os.makedirs(update_dir, exist_ok=True)
     
-    # Static filename so new backups replace the old one
-    filename = "last_updated_backup.sql"
+    # 1. Create unique filename with timestamp
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    filename = f"update_backup_{timestamp}.sql"
     target_path = os.path.join(update_dir, filename)
     
     if run_pg_dump(target_path):
         logger.info(f"💾 On-Update backup saved: {filename}")
+
+        # 2. Cleanup logic: Keep only the last 10 files
+        try:
+            # Get list of full paths for .sql files in the directory
+            files = [
+                os.path.join(update_dir, f) 
+                for f in os.listdir(update_dir) 
+                if f.endswith('.sql')
+            ]
+            
+            # Sort files by modification time (oldest first)
+            files.sort(key=os.path.getmtime)
+            
+            # Remove oldest files until we have 10 or fewer
+            while len(files) > 10:
+                oldest_file = files.pop(0) # Remove first item from list (the oldest)
+                os.remove(oldest_file)     # Delete file from disk
+                logger.info(f"🗑️ Deleted old update backup: {os.path.basename(oldest_file)}")
+                
+        except Exception as e:
+            logger.error(f"⚠️ Failed to cleanup old update backups: {e}")
 
 def cleanup_old_files(directory, days):
     """Deletes SQL files in a directory older than a certain number of days."""
