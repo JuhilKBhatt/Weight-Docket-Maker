@@ -1,7 +1,8 @@
-# ./backend/manage_db.py
+# backend/manage_db.py
 import os
 import sys
 import subprocess
+from app.utilities import reset_tables  # Import the module, don't run it
 
 BACKUP_ROOT = "/backups"
 
@@ -26,7 +27,7 @@ def main():
     print("========================================")
     print("1. Detect changes & Create migration file")
     print("2. Apply migration to Database")
-    print("3. Reset Database (DELETE ALL DATA)")
+    print("3. Reset Database (DELETE DATA)")
     print("4. Restore from Backup file")
     print("0. Exit")
     
@@ -37,7 +38,6 @@ def main():
         if not msg:
             print("Message required.")
             return
-        # This compares your models.py to the actual DB
         print(f"\nGenerating migration script: {msg}...")
         run_command(f'alembic revision --autogenerate -m "{msg}"')
         print("\n✅ Migration file created in /alembic/versions/")
@@ -49,10 +49,40 @@ def main():
         print("\n✅ Database updated successfully!")
 
     elif choice == '3':
-        confirm = input("⚠️  ARE YOU SURE? This will DELETE ALL DATA. (yes/no): ")
+        print("\n--- RESET SELECTION ---")
+        print("1. DELETE EVERYTHING (All Tables)")
+        print("2. Dockets Only (Dockets, Items, Deductions)")
+        print("3. Invoices Only (Invoices, Items, Transport, Saved Bills/Accounts)")
+        print("4. Settings Only (Global, Currency, Units)")
+        print("0. Cancel")
+        
+        sub_choice = input("\nSelect what to reset: ")
+        
+        if sub_choice == '0':
+            print("Cancelled.")
+            return
+
+        # Map choice to reset_tables arguments
+        groups = None
+        target_name = "ALL DATA"
+        
+        if sub_choice == '2':
+            groups = ['dockets']
+            target_name = "DOCKETS"
+        elif sub_choice == '3':
+            groups = ['invoices']
+            target_name = "INVOICES"
+        elif sub_choice == '4':
+            groups = ['settings']
+            target_name = "SETTINGS"
+        elif sub_choice != '1':
+            print("Invalid choice.")
+            return
+
+        confirm = input(f"⚠️  ARE YOU SURE? This will DELETE {target_name}. (yes/no): ")
         if confirm.lower() == 'yes':
-            # Runs your original reset script
-            from app.utilities import reset_tables
+            # Call the function from the imported module
+            reset_tables.reset_database(groups)
         else:
             print("Cancelled.")
 
@@ -72,14 +102,10 @@ def main():
                 target = backups[int(pick)-1]
                 confirm = input(f"RESTORE {target}? Current data will be OVERWRITTEN. (yes/no): ")
                 if confirm.lower() == 'yes':
-                    # Load credentials from environment variables
                     db_user = os.getenv("POSTGRES_USER", "user")
                     db_name = os.getenv("POSTGRES_DB", "weight_docket_db")
-                    
-                    # Set the PGPASSWORD environment variable to bypass the manual prompt
                     os.environ["PGPASSWORD"] = os.getenv("POSTGRES_PASSWORD", "password")
 
-                    # Command to restore using the provided target file path
                     cmd = f"psql -h db -U {db_user} -d {db_name} -f {target}"
                     
                     print(f"Restoring {db_name}...")
