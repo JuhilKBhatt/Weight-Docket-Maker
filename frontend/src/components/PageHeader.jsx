@@ -45,7 +45,7 @@ export default function PageHeader() {
             type="text" 
             icon={<ArrowLeftOutlined />} 
             onClick={handleBack}
-            style={{ fontSize: '16px', fontWeight: 'bold' }}
+            style={{ fontSize: '20px', fontWeight: 'bold' }}
           >
             Back
           </Button>
@@ -59,7 +59,7 @@ export default function PageHeader() {
             type="text"
             icon={<SettingOutlined />}
             onClick={() => navigate('/settings')}
-            style={{ fontSize: '16px' }}
+            style={{ fontSize: '20px' }}
           >
             Settings
           </Button>

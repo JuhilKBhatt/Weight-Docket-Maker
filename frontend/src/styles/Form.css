@@ -51,18 +51,37 @@
   font-weight: 700;
 }
 
-/* Form labels */
+/* --- UPDATED: Form Labels --- */
 .ant-form-item-label > label {
   font-weight: 600;
   color: #000000;
+  font-size: 20px !important; /* Bigger Labels */
 }
 
-/* Inputs */
+/* --- UPDATED: General Inputs (Customer Details, etc.) --- */
 .ant-input,
 .ant-input-number,
-.ant-select-selector {
+.ant-select-selector,
+.ant-picker {
   border-radius: 4px;
   border-color: #999999;
+  font-size: 20px !important; /* Bigger Input Text */
+}
+
+/* Fix vertical alignment for Select dropdown text */
+.ant-select-single .ant-select-selector .ant-select-selection-item,
+.ant-select-single .ant-select-selector .ant-select-selection-placeholder {
+    font-size: 20px !important;
+}
+
+/* Fix DatePicker input text size */
+.ant-picker-input > input {
+    font-size: 20px !important;
+}
+
+/* Resize the search icon in inputs if needed */
+.ant-input-suffix .anticon {
+    font-size: 20px;
 }
 
 .ant-input:disabled,
@@ -71,7 +90,7 @@
   color: #555555;
 }
 
-/* Date picker */
+/* Date picker width */
 .ant-picker {
   width: 100%;
 }
@@ -79,51 +98,49 @@
 /* Table styling */
 .ant-table {
   border: 1px solid #cccccc;
-  font-size: 24px; /* Add this (Default is usually 14px) */
+  font-size: 24px; 
 }
 
 .ant-table th {
   background-color: #f2f2f2;
   color: #000000;
   font-weight: 600;
-  font-size: 24px; /* Add this */
+  font-size: 24px; 
 }
 
 .ant-table td {
   background-color: #ffffff;
-  font-size: 24px; /* Add this */
+  font-size: 24px; 
 }
 
 .ant-table-thead > tr > th:nth-child(odd) {
   background-color: rgb(182, 42, 42) !important;
-  color: white !important;  /* white text for contrast */
+  color: white !important;  
 }
 
 .ant-table-thead > tr > th:nth-child(even) {
   background-color: rgb(54, 54, 54) !important;
-  color: white !important; /* black text for readability */
+  color: white !important; 
 }
 
 .ant-table-tbody > tr > td:nth-child(even) {
   background-color: rgb(238, 238, 238) !important;
-  color: rgb(0, 0, 0) !important; /* black text for readability */
+  color: rgb(0, 0, 0) !important; 
 }
 
+/* Table Inputs specific overrides */
 .ant-table .ant-input,
 .ant-table .ant-input-number-input,
 .ant-table .ant-select-selector,
 .ant-table .ant-select-selection-item {
-    font-size: 22px !important; /* Larger text inside inputs */
-    height: 40px !important;    /* Taller inputs (Standard is 32px) */ 
+    font-size: 22px !important; 
 }
 
-/* Fix vertical alignment for Select dropdowns (like Currency/Units) */
 .ant-table .ant-select-selector {
     display: flex;
     align-items: center;
 }
 
-/* Ensure the wrapper for InputNumber matches the new height */
 .ant-table .ant-input-number {
     height: 40px !important;
     width: 100%;
@@ -133,10 +150,9 @@
 .ant-table .ant-input-group-addon .ant-select-selector,
 .ant-table .ant-input-group-addon .ant-select-selection-item,
 .ant-table .ant-input-group-addon .ant-typography {
-    font-size: 18px !important; /* Smaller than the 16px main input */
+    font-size: 18px !important; 
 }
 
-/* Optional: Reduce the width of the addon padding so it looks more compact */
 .ant-table .ant-input-group-addon {
     padding: 2px !important;
 }
@@ -196,19 +212,18 @@
 
 /* Make disabled InputNumber look like normal ones */
 .ant-input-number.ant-input-number-disabled {
-  background-color: #ffffff !important; /* white background */
-  border-color: #999999 !important;     /* normal border */
-  opacity: 1 !important;                /* remove faded look */
+  background-color: #ffffff !important; 
+  border-color: #999999 !important;     
+  opacity: 1 !important;                
   cursor: default !important;
 }
 
 .ant-input-number.ant-input-number-disabled .ant-input-number-input {
-  color: #000000 !important;            /* normal text color */
-  -webkit-text-fill-color: #000000 !important; /* Safari fix */
+  color: #000000 !important;            
+  -webkit-text-fill-color: #000000 !important; 
   opacity: 1 !important;
 }
 
-/* Also fix the prefix/suffix addons for disabled InputNumber */
 .ant-input-number-group-wrapper-disabled .ant-input-number-group-addon {
   background-color: #ffffff !important;
   color: #000000 !important;
@@ -216,22 +231,18 @@
   opacity: 1 !important;
 }
 
-/* Since the Input has an addon, the className applies to the wrapper. 
-   We must target the .ant-input inside it. */
+/* Negative Net Weight Styling */
 .negative-net-weight .ant-input {
-    background-color: #e52b2b !important; /* Force Red Background */
-    color: #ffffff !important;           /* White text for readability */
+    background-color: #e52b2b !important; 
+    color: #ffffff !important;           
     border-color: #e52b2b !important;
-    -webkit-text-fill-color: #ffffff !important; /* Override Safari/Chrome text fill if needed */
+    -webkit-text-fill-color: #ffffff !important; 
 }
 
-/* Ensure the wrapper itself doesn't show white gaps if padding exists */
 .negative-net-weight.ant-input-group-wrapper {
     background-color: #e52b2b !important;
 }
 
-/* Ensure the addon (unit selector) remains distinct if desired, 
-   or remove this if you want that red too */
 .negative-net-weight .ant-input-group-addon {
     background-color: #ffffff;
     border-color: #999999;

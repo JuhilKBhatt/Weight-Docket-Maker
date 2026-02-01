@@ -48,7 +48,7 @@ export default function DocketHeader() {
                 <Col>
                     <Space size="middle">
                         <Form.Item name="docketType" initialValue="Customer" noStyle>
-                            <Select size="large" style={{ width: 180, fontSize: '18px' }}>
+                            <Select size="large" style={{ width: 180, fontSize: '22px' }}>
                                 <Option value="Customer">Customer</Option>
                                 <Option value="Weight">Weight</Option>
                             </Select>

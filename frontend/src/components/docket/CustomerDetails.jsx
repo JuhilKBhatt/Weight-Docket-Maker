@@ -69,7 +69,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
                             label: (
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                                     <span style={{ fontWeight: 'bold' }}>{mainText}</span>
-                                    <span style={{ fontSize: '12px', color: '#888' }}>{subText}</span>
+                                    <span style={{ fontSize: '20px', color: '#888' }}>{subText}</span>
                                 </div>
                             ),
                             customer_details: d

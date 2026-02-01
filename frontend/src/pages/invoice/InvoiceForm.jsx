@@ -335,6 +335,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
           <div style={{ marginTop: 20 }}>
             <Checkbox
               checked={invoice.showTransport}
+              style={{ fontSize: '22px' }}
               onChange={(e) => invoice.setShowTransport(e.target.checked)}
             >
               Add Transport
