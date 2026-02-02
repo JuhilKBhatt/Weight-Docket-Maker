@@ -147,7 +147,7 @@ export default function DocketList() {
         dataIndex: 'customer_name',
         key: 'customer_name',
       },
-      {
+      /*{
         title: 'Status',
         dataIndex: 'status',
         key: 'status',
@@ -166,7 +166,7 @@ export default function DocketList() {
                 </Tag>
             );
         }
-      },
+      },*/
       {
         title: 'Total Value',
         dataIndex: 'total_amount',
