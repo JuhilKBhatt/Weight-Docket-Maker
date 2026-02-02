@@ -42,6 +42,8 @@ def render_docket_html(db: Session, docket_id: int):
     
     # Use Decimal accumulator for precision
     items_total = Decimal("0.00")
+    total_gross_weight = Decimal("0.00")
+    total_net_weight = Decimal("0.00")
 
     for item in dkt.items:
         # Convert to Decimal
@@ -53,6 +55,8 @@ def render_docket_html(db: Session, docket_id: int):
         total = net * price
         
         items_total += total
+        total_gross_weight += gross
+        total_net_weight += net
         
         items_data.append({
             "metal": item.metal,
@@ -143,7 +147,9 @@ def render_docket_html(db: Session, docket_id: int):
             "grossTotal": gross_total,
             "gstAmount": gst_amount,
             "totalIncGst": total_inc_gst,
-            "finalTotal": final_total  
+            "finalTotal": final_total,
+            "totalGrossWeight": format_weight(total_gross_weight),
+            "totalNetWeight": format_weight(total_net_weight)
         },
         formatted_date=formatted_date,
         formatted_dob=formatted_dob,
