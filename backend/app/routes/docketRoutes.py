@@ -60,6 +60,10 @@ def get_dockets(
 def get_docket(docket_id: int, db: Session = Depends(get_db)):
     return docket_crud.get_docket_by_id(db, docket_id)
 
+@router.get("/prices/history")
+def get_price_history_route(customer: str, db: Session = Depends(get_db)):
+    return docket_list.get_customer_price_list(db, customer)
+
 @router.get("/print-status/{filename}")
 def check_print_status(filename: str):
     return docket_printer.check_print_status(filename)

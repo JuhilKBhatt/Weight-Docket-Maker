@@ -69,8 +69,7 @@ export default function NetWeightSummary({ items, form }) {
         setSearchText(''); // Reset search on open
 
         try {
-            // Fetch metals specifically for this customer
-            const data = await docketService.getUniqueMetals('', name);
+            const data = await docketService.getCustomerPriceHistory(name);
             setPriceList(data);
         } catch (error) {
             console.error("Failed to load prices", error);

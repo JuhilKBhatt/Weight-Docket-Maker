@@ -229,6 +229,47 @@ def get_unique_metals(db: Session, search: str = None, customer_name: str = None
     
     return results
 
+def get_customer_price_list(db: Session, customer_name: str):
+    """
+    Fetches the last price used for EVERY metal for a specific customer.
+    Optimized for list views (no limit, just distinct metals).
+    """
+    if not customer_name:
+        return []
+
+    # 1. Fetch all items for this customer, ordered by newest first
+    # We allow the DB to just dump the rows, and we filter in Python for speed
+    items = db.query(DocketItem.metal, DocketItem.price)\
+        .join(Docket)\
+        .filter(
+            func.lower(func.trim(Docket.customer_name)) == customer_name.strip().lower(),
+            Docket.is_saved == True,
+            DocketItem.metal.isnot(None), 
+            DocketItem.metal != ""
+        )\
+        .order_by(Docket.docket_date.desc(), Docket.id.desc())\
+        .all()
+    
+    # 2. Deduplicate in Python (Keep only the first occurrence -> latest date)
+    seen_metals = set()
+    results = []
+    
+    for metal, price in items:
+        # Normalize for check, but return original casing
+        norm_metal = metal.strip().lower()
+        
+        if norm_metal not in seen_metals:
+            seen_metals.add(norm_metal)
+            results.append({
+                "label": metal, # Keep the original casing of the latest usage
+                "price": price
+            })
+            
+    # 3. Sort alphabetically for the user
+    results.sort(key=lambda x: x['label'])
+    
+    return results
+
 def delete_docket(db: Session, docket_id: int):
     docket = db.query(Docket).filter(Docket.id == docket_id).first()
     if not docket:

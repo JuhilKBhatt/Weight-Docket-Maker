@@ -27,6 +27,16 @@ const docketService = {
     };
     const res = await axios.get(`${API}/metals/unique`, { params });
     return res.data;
+  },
+
+  getCustomerPriceHistory: async (customerName) => {
+    const params = { 
+        customer: customerName,
+        _t: new Date().getTime() // Prevent caching
+    };
+    // Ensure this matches the route you created in your Python API
+    const res = await axios.get(`${API}/prices/history`, { params });
+    return res.data;
   }
 };
 
