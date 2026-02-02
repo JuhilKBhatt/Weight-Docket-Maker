@@ -23,7 +23,7 @@ export default function InventoryReport() {
     ]);
     const [metalSearch, setMetalSearch] = useState('');
     
-    // NEW: State for Docket Type
+    // State for Docket Type
     const [docketType, setDocketType] = useState('All');
     
     // Fetch Report Data
@@ -91,7 +91,7 @@ export default function InventoryReport() {
             align: 'right',
             render: (_, record) => (
                 <Text>
-                    {record.currency}{record.currencySymbol} {record.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    {record.currency}{record.currencySymbol} {record.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Text>
             ),
             sorter: (a, b) => a.value - b.value,
@@ -173,7 +173,7 @@ export default function InventoryReport() {
                                     {Object.entries(grandTotals.values).map(([curr, { amount, symbol }]) => (
                                         <div key={curr}>
                                             <Text strong style={{ fontSize: '22px' }}>
-                                                {curr}{symbol} {amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                                {curr}{symbol} {amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </Text>
                                         </div>
                                     ))}
