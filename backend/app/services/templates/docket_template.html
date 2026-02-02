@@ -31,20 +31,32 @@
         <tr>
             <td colspan="2">
                 <div class="company-block-container">
-                    {% if recycling_icon %}
+                    {% if docket.company_name == 'SAFARI COPPER RECYCLING PTY LTD' and safari_logo %}
+                        <div>
+                            <img src="data:image/png;base64,{{ safari_logo }}" class="company-logo" alt="Safari Logo" />
+                        </div>
+                        <div class="company-text">
+                            <div class="sub-info">
+                                Address: {{ docket.company_address or "" }} <br>
+                                ABN: {{ docket.company_abn or "" }} | 
+                                Phone No: {{ docket.company_phone or "" }} <br> 
+                                Email: {{ docket.company_email or "" }}
+                            </div>
+                        </div>
+                    {% elif recycling_icon %}
                         <div>
                             <img src="data:image/png;base64,{{ recycling_icon }}" class="company-logo" alt="Logo" />
                         </div>
-                    {% endif %}
-
-                    <div class="company-text">
-                        <h2>{{ docket.company_name or "" }}</h2>
-                        <div class="sub-info">
-                            Address: {{ docket.company_address or "" }} <br>
-                            ABN: {{ docket.company_abn or "" }} | Phone No: {{ docket.company_phone or "" }} | 
-                            Email: {{ docket.company_email or "" }}
+                        
+                        <div class="company-text">
+                            <h2>{{ docket.company_name or "" }}</h2>
+                            <div class="sub-info">
+                                Address: {{ docket.company_address or "" }} <br>
+                                ABN: {{ docket.company_abn or "" }} | Phone No: {{ docket.company_phone or "" }} | 
+                                Email: {{ docket.company_email or "" }}
+                            </div>
                         </div>
-                    </div>
+                    {% endif %}
                 </div>
             </td>
         </tr>

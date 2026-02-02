@@ -130,6 +130,8 @@ def render_docket_html(db: Session, docket_id: int):
     # --- Load Icon ---
     icon_path = os.path.join(template_dir, "Recycling_Icon.png")
     recycling_icon_b64 = get_file_base64(icon_path)
+    safari_logo_path = os.path.join(template_dir, "safari_copper_recycling_logo.png")
+    safari_logo_b64 = get_file_base64(safari_logo_path)
 
     # --- FORMAT DATES (DD/MM/YYYY) ---
     formatted_date = dkt.docket_date.strftime("%d/%m/%Y") if dkt.docket_date else "N/A"
@@ -155,6 +157,7 @@ def render_docket_html(db: Session, docket_id: int):
         formatted_dob=formatted_dob,
         css_content=css_content,
         recycling_icon=recycling_icon_b64,
+        safari_logo=safari_logo_b64,
         currency_label=currency_label 
     )
 

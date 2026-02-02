@@ -16,7 +16,7 @@ body { font-family: 'Lexend', Helvetica, Arial, sans-serif; padding: 0px; margin
 .sub-info { font-size: 10pt; }
 
 .company-block-container { display: flex; align-items: center; justify-content: center; gap: 20px; }
-.company-logo { display: block; max-height: 40px; width: auto; }
+.company-logo { display: block; max-height: 90px; width: auto; }
 .company-text h2 { margin: 0 0 0px 0; font-size: 10pt; font-weight: bold; text-align: center; }
 .company-text .sub-info { font-size: 8pt; line-height: 1.4; text-align: center; }
 
