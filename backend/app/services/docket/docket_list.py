@@ -215,7 +215,7 @@ def get_unique_metals(db: Session, search: str = None, customer_name: str = None
                     func.lower(func.trim(Docket.customer_name)) == customer_name.strip().lower(),
                     Docket.is_saved == True
                 )\
-                .order_by(Docket.docket_date.desc(), Docket.id.desc())\
+                .order_by(DocketItem.id.desc())\
                 .first()
             
             if last_price_row:
