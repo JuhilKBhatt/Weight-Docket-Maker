@@ -57,7 +57,7 @@ export default function InventoryReport() {
         
         const intervalId = setInterval(() => {
             fetchReport(dateRange, metalSearch, docketType, true); 
-        }, 5000);
+        }, 300);
         
         return () => clearInterval(intervalId);
     }, [dateRange, metalSearch, docketType]); 

@@ -32,12 +32,14 @@ export default function TotalsSummary({
   };
 
   return (
-    <Col span={12}>
+    // CHANGE 1: Use xs={24} to take full width on mobile, md={12} for side-by-side on desktop
+    <Col xs={24} md={12} className="totals-summary-container">
       <Typography.Title level={5}>Deductions (Before GST)</Typography.Title>
 
       {preGstDeductions.map(d => (
-        <Row gutter={10} key={d.key} style={{ marginBottom: 5 }}>
-          <Col span={12}>
+        // CHANGE 2: Add vertical gutter [10, 10] so they space out when stacked
+        <Row gutter={[10, 10]} key={d.key} style={{ marginBottom: 10 }}>
+          <Col xs={24} sm={12}>
             <Input
               placeholder="Reason"
               maxLength={25}
@@ -47,7 +49,7 @@ export default function TotalsSummary({
               }
             />
           </Col>
-          <Col span={8}>
+          <Col xs={18} sm={8}>
             <Input
               addonBefore={'-'+symbolLabel}
               style={{ width: '100%' }}
@@ -56,7 +58,7 @@ export default function TotalsSummary({
               onChange={(e) => onAmountChange('pre', d.key, e)}
             />
           </Col>
-          <Col span={4}>
+          <Col xs={6} sm={4}>
             <Button
               danger
               type="link"
@@ -130,8 +132,9 @@ export default function TotalsSummary({
           </Typography.Title>
 
           {postGstDeductions.map(d => (
-            <Row gutter={10} key={d.key} style={{ marginBottom: 5 }}>
-              <Col span={12}>
+            // CHANGE 3: Add vertical gutter [10, 10]
+            <Row gutter={[10, 10]} key={d.key} style={{ marginBottom: 10 }}>
+              <Col xs={24} sm={12}>
                 <Input
                   placeholder="Reason"
                   maxLength={25}
@@ -141,7 +144,7 @@ export default function TotalsSummary({
                   }
                 />
               </Col>
-              <Col span={8}>
+              <Col xs={18} sm={8}>
                 <Input
                   addonBefore={'-'+symbolLabel}
                   style={{ width: '100%' }}
@@ -150,7 +153,7 @@ export default function TotalsSummary({
                   onChange={(e) => onAmountChange('post', d.key, e)}
                 />
               </Col>
-              <Col span={4}>
+              <Col xs={6} sm={4}>
                 <Button
                   danger
                   type="link"

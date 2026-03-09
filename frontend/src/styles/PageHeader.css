@@ -3,3 +3,10 @@
 .ant-btn-link {
     font-size: 24px;
 }
+
+/* For mobile specifically, you might want them to stretch full width */
+@media screen and (max-width: 768px) {
+    .ant-btn-link {
+        font-size: 18px;
+    }
+}

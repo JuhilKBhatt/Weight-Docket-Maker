@@ -560,7 +560,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 />
 
                 <Row gutter={24} style={{ marginTop: 20 }}>
-                    <Col span={12}>
+                    <Col xs={24} md={12}>
                         <Form.Item label="Docket Notes" name="paperNotes">
                             <Input.TextArea rows={4} maxLength={280} placeholder="Additional notes..." />
                         </Form.Item>
@@ -583,17 +583,19 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 </Row>
                 <Divider />
                 
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 0', gap: '30px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 0', gap: '30px', width: '100%' }}>
                     <Space>
                         <Form.Item name="saveDocket" valuePropName="checked" noStyle initialValue={true}>
                             <Checkbox style={{ fontSize: '24px', transform: 'scale(1.5)' }}>Save Docket?</Checkbox>
                         </Form.Item>
                     </Space>
 
-                    <div style={{ width: '400px', borderBottom: '2px solid #f0f0f0' }}></div>
+                    {/* FIX 1: Change width to 100% with a maxWidth */}
+                    <div style={{ width: '100%', maxWidth: '400px', borderBottom: '2px solid #f0f0f0' }}></div>
 
-                    <Space size="large" align="center">
-                        <Space size="small">
+                    {/* FIX 2: Add 'wrap' and 'justifyContent: center' to the print section */}
+                    <Space size="large" align="center" wrap style={{ justifyContent: 'center' }}>
+                        <Space size="small" wrap style={{ justifyContent: 'center' }}>
                             <Text style={{ fontSize: '24px' }}>Printing:</Text>
                             <Form.Item name="printQty" noStyle initialValue={2}>
                                 <InputNumber min={1} max={10} size="large" style={{ width: 80, fontSize: '24px', height: '45px', paddingTop: '4px' }} />
@@ -613,17 +615,21 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                         </Button>
                     </Space>
 
-                    <div style={{ width: '400px', borderBottom: '2px solid #f0f0f0' }}></div>
+                    {/* FIX 3: Change width to 100% with a maxWidth */}
+                    <div style={{ width: '100%', maxWidth: '400px', borderBottom: '2px solid #f0f0f0' }}></div>
                     
-                    <Button onClick={handleSave}>
-                        Save Docket
-                    </Button>
-                    <Button onClick={handleDownload}>
-                        Download Docket
-                    </Button>
+                    {/* FIX 4: Group Save/Download in a wrap Space so they don't stretch too far */}
+                    <Space size="middle" wrap style={{ justifyContent: 'center', width: '100%' }}>
+                        <Button onClick={handleSave} style={{ minWidth: '150px' }}>
+                            Save Docket
+                        </Button>
+                        <Button onClick={handleDownload} style={{ minWidth: '150px' }}>
+                            Download Docket
+                        </Button>
+                    </Space>
                     
-                    {/* Grouped Reset & Create New buttons */}
-                    <Space size="middle">
+                    {/* FIX 5: Add 'wrap' to the bottom buttons */}
+                    <Space size="middle" wrap style={{ justifyContent: 'center', width: '100%' }}>
                         <Button type="dashed"
                         onClick={
                             () => confirmReset(() => {
@@ -648,7 +654,6 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                                 type="primary"
                                 style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
                                 onClick={() => {
-                                    // Clear session ID to ensure a fresh docket is created
                                     sessionStorage.removeItem("scrdktID");
                                     navigate('/new-docket');
                                 }}
@@ -657,6 +662,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                             </Button>
                         )}
                     </Space>
+                    <Divider />
+                    <Divider />
                 </div>
             </Form>
         </div>

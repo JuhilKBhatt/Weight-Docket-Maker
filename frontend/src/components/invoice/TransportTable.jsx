@@ -1,7 +1,9 @@
 // ./frontend/src/components/invoice/TransportTable.jsx
 
-import { Table, Input, InputNumber, Typography } from 'antd';
+import { Table, Input, InputNumber, Typography, Grid } from 'antd';
 import { audFormatter, audParser, audFormatterFixed, isValidInput } from '../../scripts/utilities/AUDFormatters';
+
+const { useBreakpoint } = Grid;
 
 export default function TransportTable({
   invoiceType,
@@ -12,6 +14,7 @@ export default function TransportTable({
 }) {
   const isContainer = invoiceType === 'Container';
   const unitLabel = isContainer ? 'CNT' : 'Trip';
+  const screens = useBreakpoint();
   
   const symbolLabel = currencyOptions.find(c => c.code === currency)?.label || `${currency}$`;
 
@@ -86,7 +89,7 @@ export default function TransportTable({
   return (
     <>
       <Typography.Title level={5} style={{ marginTop: 20 }}>Transport Charges</Typography.Title>
-      <Table columns={columns} dataSource={mappedItems} pagination={false} bordered />
+      <Table columns={columns} dataSource={mappedItems} pagination={false} bordered scroll={screens.md ? undefined : { x: 'max-content' }} />
     </>
   );
 }

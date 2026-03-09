@@ -1,13 +1,14 @@
 // ./frontend/src/components/docket/DocketItemsTable.jsx
 
 import React, { useState, useRef, useMemo } from 'react';
-import { Table, Input, InputNumber, Typography, Button, Row, Col, Select, AutoComplete, Form } from 'antd'; 
+import { Table, Input, InputNumber, Typography, Button, Row, Col, Select, AutoComplete, Form, Grid } from 'antd'; 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { audFormatter, audParser, audFormatterFixed, isValidInput } from '../../scripts/utilities/AUDFormatters';
 import docketService from '../../services/docketService';
 
 const { Text } = Typography;
 const { Option } = Select;
+const { useBreakpoint } = Grid;
 
 // --- Helper Component for the Metal Cell ---
 const MetalCell = ({ value, onChange, onPriceUpdate }) => {
@@ -86,6 +87,7 @@ export default function DocketItemsTable({
     
     const [rowsToAdd, setRowsToAdd] = useState(1);
     const [selectedRowKey, setSelectedRowKey] = useState(null);
+    const screens = useBreakpoint();
 
     // Memoize options
     const activeCurrencies = useMemo(() => 
@@ -259,6 +261,7 @@ export default function DocketItemsTable({
                 pagination={false}
                 bordered
                 size="middle"
+                scroll={screens.md ? undefined : { x: 'max-content' }}
             />
             <Row gutter={8} style={{ marginTop: 8 }}>
                 <Col flex="auto"><Button type="dashed" onClick={() => addRow(rowsToAdd)} style={{ width: '100%' }} icon={<PlusOutlined />}>Add Rows</Button></Col>

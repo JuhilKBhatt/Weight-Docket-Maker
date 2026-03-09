@@ -247,3 +247,95 @@
     background-color: #ffffff;
     border-color: #999999;
 }
+
+/* --- SMALL SCREEN OVERRIDES --- */
+@media screen and (max-width: 768px) {
+    /* 1. Force the Customer Details to have smaller fonts */
+    .ant-form-item-label > label {
+        font-size: 14px !important;
+        white-space: normal; /* Prevents long labels from cutting off */
+    }
+
+    /* 2. Fix the Table Layout */
+    .ant-table-wrapper .ant-table-cell {
+        padding: 4px !important; /* Minimum padding */
+    }
+
+    /* 3. Make inputs inside the table manageable */
+    .ant-table-wrapper .ant-input-number,
+    .ant-table-wrapper .ant-select-selector {
+        min-width: 70px !important; /* Prevents columns from completely collapsing */
+        width: 100% !important;
+        height: 30px !important;
+    }
+
+    .ant-table-wrapper .ant-input-number-input,
+    .ant-table-wrapper .ant-input {
+        font-size: 13px !important;
+        padding: 0 4px !important;
+    }
+
+    /* 4. Shrink the 'kg' addon box so it doesn't waste space */
+    .ant-table-wrapper .ant-input-number-group-addon {
+        padding: 0 4px !important;
+        font-size: 12px !important;
+    }
+
+    /* 5. Docket Header Layout Fixes */
+    
+    /* Make the Left Side title and select shrink slightly */
+    .docket-header-left h1.ant-typography {
+        font-size: 24px !important;
+    }
+    .docket-type-select {
+        width: 130px !important;
+    }
+
+    /* Force the Right Side to align left on mobile instead of pushing to the edge */
+    .docket-header-right .ant-space-vertical {
+        align-items: flex-start !important;
+        margin-top: 16px;
+    }
+
+    /* Make the labels smaller so they fit next to the inputs */
+    .header-label {
+        font-size: 16px !important;
+        width: 90px; /* Aligns all labels perfectly */
+    }
+
+    /* Ensure inputs stretch to fill remaining space but never overflow */
+    .header-field-row {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+    .header-input {
+        width: 100% !important;
+        flex: 1;
+    }
+    /* --- INVOICE SPECIFIC MOBILE FONTS --- */
+    
+    /* Shrink the black Bill To / Bill From headers */
+    .ant-typography h4 {
+        font-size: 16px !important;
+        padding: 6px !important; /* Reduces the chunky padding */
+    }
+
+    /* Shrink the Deductions Headers */
+    .ant-typography h5 {
+        font-size: 15px !important;
+    }
+
+    /* Shrink the Totals Summary & Deduction Inputs */
+    .totals-summary-container .ant-typography,
+    .totals-summary-container .ant-input,
+    .totals-summary-container .ant-input-number-input,
+    .totals-summary-container .ant-input-group-addon {
+        font-size: 14px !important;
+    }
+
+    /* Fix the totals text layout */
+    .totals-summary-container .ant-row {
+        flex-wrap: nowrap; /* Prevents the 'Total:' text from separating from the number */
+    }
+}

@@ -24,3 +24,17 @@
   height: auto;         /* let padding control height */
   border-radius: 8px;   /* slightly more rounded */
 }
+
+/* For mobile specifically, you might want them to stretch full width */
+@media screen and (max-width: 768px) {
+    .home-buttons {
+        flex-direction: column; /* Stacks them vertically */
+        align-items: stretch; /* Makes buttons full-width for easy tapping */
+        padding: 0 20px; /* Gives a little breathing room on the sides */
+    }
+
+    .home-buttons .ant-btn {
+        width: 100%; /* Ensures Ant Design buttons fill the new vertical space */
+        margin-bottom: 10px;
+    }
+}

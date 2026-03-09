@@ -18,11 +18,9 @@ export default function DocketHeader() {
 
     // 2. Handle selection
     const handleCompanyChange = (value) => {
-        // Find the full company object based on the name selected
         const selectedCompany = savedCompaniesFrom.find(c => c.name === value);
         
         if (selectedCompany) {
-            // Populate hidden fields
             form.setFieldsValue({
                 companyAddress: selectedCompany.address,
                 companyPhone: selectedCompany.phone,
@@ -30,7 +28,6 @@ export default function DocketHeader() {
                 companyABN: selectedCompany.abn
             });
         } else {
-            // Clear if cleared
             form.setFieldsValue({
                 companyAddress: '',
                 companyPhone: '',
@@ -42,13 +39,14 @@ export default function DocketHeader() {
 
     return (
         <Card style={{ marginBottom: 20 }}>
-            <Row justify="space-between" align="middle">
+            {/* Added gutter so they space out when stacked on mobile */}
+            <Row justify="space-between" align="middle" gutter={[16, 16]}>
                 
-                {/* LEFT SIDE */}
-                <Col>
-                    <Space size="middle">
+                {/* LEFT SIDE - Takes 100% width on mobile (xs=24) */}
+                <Col xs={24} md={12}>
+                    <Space size="middle" className="docket-header-left">
                         <Form.Item name="docketType" initialValue="Customer" noStyle>
-                            <Select size="large" style={{ width: 180, fontSize: '22px' }}>
+                            <Select className="docket-type-select" size="large" style={{ width: 180, fontSize: '22px' }}>
                                 <Option value="Customer">Customer</Option>
                                 <Option value="Weight">Weight</Option>
                             </Select>
@@ -57,13 +55,12 @@ export default function DocketHeader() {
                     </Space>
                 </Col>
 
-                {/* RIGHT SIDE */}
-                <Col>
-                    <Space direction="vertical" align="end" size={0}>
-                        <Space align="center" style={{ marginBottom: 8 }}>
-                            <Title level={4} style={{ margin: 0 }}>Company:</Title>
+                {/* RIGHT SIDE - Takes 100% width on mobile (xs=24) */}
+                <Col xs={24} md={12} className="docket-header-right">
+                    <Space direction="vertical" align="end" size={0} style={{ width: '100%' }}>
+                        <Space align="center" style={{ marginBottom: 8 }} className="header-field-row">
+                            <Title level={4} style={{ margin: 0 }} className="header-label">Company:</Title>
                             
-                            {/* Hidden fields to store the details for saving */}
                             <Form.Item name="companyAddress" hidden><Input /></Form.Item>
                             <Form.Item name="companyPhone" hidden><Input /></Form.Item>
                             <Form.Item name="companyEmail" hidden><Input /></Form.Item>
@@ -76,6 +73,7 @@ export default function DocketHeader() {
                                     placeholder="Select Company"
                                     onChange={handleCompanyChange}
                                     showSearch
+                                    className="header-input"
                                 >
                                     {savedCompaniesFrom.map((c, idx) => (
                                         <Option key={idx} value={c.name}>{c.name}</Option>
@@ -84,24 +82,24 @@ export default function DocketHeader() {
                             </Form.Item>
                         </Space>
 
-                        <Space align="center">
-                            <Title level={4} style={{ margin: 0 }}>Docket #:</Title>
+                        <Space align="center" className="header-field-row">
+                            <Title level={4} style={{ margin: 0 }} className="header-label">Docket #:</Title>
                             <Form.Item name="docketNumber" noStyle>
-                                <Input size="large" readOnly style={{ width: 200, fontWeight: 'bold' }} placeholder="#" />
+                                <Input size="large" readOnly style={{ width: 200, fontWeight: 'bold' }} placeholder="#" className="header-input" />
                             </Form.Item>
                         </Space>
 
-                        <Space align="center">
-                            <Title level={4} style={{ margin: 0 }}>Date :</Title>
+                        <Space align="center" className="header-field-row">
+                            <Title level={4} style={{ margin: 0 }} className="header-label">Date :</Title>
                             <Form.Item name="date" initialValue={dayjs()} noStyle>
-                                <DatePicker size="large" format={dateFormat} style={{ width: 200 }} />
+                                <DatePicker size="large" format={dateFormat} style={{ width: 200 }} className="header-input" />
                             </Form.Item>
                         </Space>
                         
-                        <Space align="center">
-                            <Title level={4} style={{ margin: 0 }}>Time :</Title>
+                        <Space align="center" className="header-field-row">
+                            <Title level={4} style={{ margin: 0 }} className="header-label">Time :</Title>
                             <Form.Item name="time" initialValue={dayjs()} noStyle>
-                                <TimePicker size="large" format={timeFormat} needConfirm={false} style={{ width: 200 }} />
+                                <TimePicker size="large" format={timeFormat} needConfirm={false} style={{ width: 200 }} className="header-input" />
                             </Form.Item>
                         </Space>
                     </Space>

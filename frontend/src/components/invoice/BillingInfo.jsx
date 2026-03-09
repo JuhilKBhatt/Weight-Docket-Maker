@@ -32,7 +32,7 @@ export default function BillingInfo({
   return (
     <Row gutter={24}>
       {/* Bill From */}
-      <Col span={8}>
+      <Col xs={24} md={8}>
         <Typography.Title
           level={4}
           style={{ backgroundColor: '#2c2c2cff', color: '#ffffff', padding: '10px' }}
@@ -123,7 +123,7 @@ export default function BillingInfo({
       </Col>
 
       {/* Bill To */}
-      <Col span={8}>
+      <Col xs={24} md={8}>
         <Typography.Title
           level={4}
           style={{ backgroundColor: '#2c2c2cff', color: '#ffffff', padding: '10px' }}
@@ -213,7 +213,7 @@ export default function BillingInfo({
       </Col>
 
       {/* Invoice Details */}
-      <Col span={8}>
+      <Col xs={24} md={8}>
         <Typography.Title
           level={4}
           style={{ backgroundColor: '#2c2c2cff', color: '#ffffff', padding: '10px' }}

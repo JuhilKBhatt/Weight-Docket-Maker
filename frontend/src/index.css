@@ -13,3 +13,28 @@
 .ant-layout, .ant-layout-content, .ant-layout-header, .ant-layout-sider {
   background: transparent;
 }
+
+/* --- SMALL SCREEN SUPPORT --- */
+@media screen and (max-width: 768px) {
+    /* 1. Shrink table headers and cells */
+    .ant-table-wrapper .ant-table-cell, 
+    .ant-table-wrapper .ant-table-thead > tr > th {
+        font-size: 12px !important;
+        padding: 4px 6px !important; /* Drastically reduces wasted space */
+    }
+
+    /* 2. Shrink inputs, selects, and number fields inside tables */
+    .ant-table-wrapper .ant-input,
+    .ant-table-wrapper .ant-select-selector,
+    .ant-table-wrapper .ant-input-number,
+    .ant-table-wrapper .ant-input-number-input {
+        font-size: 12px !important;
+        height: 28px !important; /* Shorter inputs */
+        padding: 0 4px !important;
+    }
+
+    /* 3. Make total summary text slightly smaller */
+    .ant-table-summary .ant-typography {
+        font-size: 14px !important;
+    }
+}

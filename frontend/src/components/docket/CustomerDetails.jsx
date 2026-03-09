@@ -115,7 +115,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
     return (
         <Card title="Customer Details" size="large" style={{ marginBottom: 20 }}>
             <Row gutter={16}>
-                <Col span={12}>
+                <Col xs={24} md={12}>
                     <Form.Item label="Name" name="name">
                         <AutoComplete
                             options={nameOptions}
@@ -128,7 +128,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
                         </AutoComplete>
                     </Form.Item>
                 </Col>
-                <Col span={6}>
+                <Col xs={24} md={12}>
                     <Form.Item label="License No." name="licenseNo">
                         <AutoComplete
                             options={licOptions}
@@ -141,18 +141,18 @@ export default function CustomerDetails({ onCustomerSelect }) {
                         </AutoComplete>
                     </Form.Item>
                 </Col>
-                <Col span={6}>
+                <Col xs={24} md={12}>
                     <Form.Item label="Rego No." name="regoNo">
                         <Input maxLength={49} placeholder="Rego No." />
                     </Form.Item>
                 </Col>
                 
-                <Col span={8}>
+                <Col xs={24} md={12}>
                     <Form.Item label="Date of Birth" name="dob">
                         <DatePicker format={dateFormat} style={{ width: '100%' }} />
                     </Form.Item>
                 </Col>
-                <Col span={8}>
+                <Col xs={24} md={12}>
                     <Form.Item label="PayID" name="payId">
                         <AutoComplete
                             options={payIdOptions}
@@ -165,7 +165,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
                         </AutoComplete>
                     </Form.Item>
                 </Col>
-                <Col span={8}>
+                <Col xs={24} md={12}>
                     <Form.Item
                         label="Phone No."
                         name="phone"
@@ -175,7 +175,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
                     </Form.Item>
                 </Col>
                 
-                <Col span={4}>
+                <Col xs={24} md={12}>
                     <Form.Item
                         label="BSB"
                         name="bsb"
@@ -187,7 +187,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
                         <Input maxLength={6} placeholder="BSB" />
                     </Form.Item>
                 </Col>
-                <Col span={4}>
+                <Col xs={24} md={12}>
                     <Form.Item
                         label="Account No."
                         name="accNo"
@@ -196,7 +196,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
                         <Input maxLength={254} placeholder="Account No." />
                     </Form.Item>
                 </Col>
-                <Col span={6}>
+                <Col xs={24} md={12}>
                     <Form.Item
                         label="ABN"
                         name="abn"
@@ -215,7 +215,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
                         </AutoComplete>
                     </Form.Item>
                 </Col>
-                <Col span={10}>
+                <Col xs={24} md={12}>
                     <Form.Item label="Address" name="address">
                         <Input maxLength={254} placeholder="Address" />
                     </Form.Item>

@@ -1,10 +1,11 @@
 // src/components/invoice/InvoiceItemsTable.jsx
 
 import React, { useState, useMemo } from 'react'; // Added useMemo
-import { Table, Input, InputNumber, Button, Popconfirm, Typography, Select } from 'antd';
+import { Table, Input, InputNumber, Button, Popconfirm, Typography, Select, Grid } from 'antd';
 import { audFormatter, audParser, audFormatterFixed, isValidInput } from '../../scripts/utilities/AUDFormatters';
 
 const { Option } = Select;
+const { useBreakpoint } = Grid;
 
 export default function InvoiceItemsTable({
   invoiceType,
@@ -19,6 +20,7 @@ export default function InvoiceItemsTable({
 }) {
 
   const [selectedRowKey, setSelectedRowKey] = useState(null);
+  const screens = useBreakpoint();
 
   const currentSymbolLabel = useMemo(() => 
     currencyOptions.find(c => c.code === currency)?.label || `${currency}$`,
@@ -184,7 +186,7 @@ export default function InvoiceItemsTable({
               setSelectedRowKey(record.key);
           },
       })}
-      columns={columns} dataSource={items} pagination={false} bordered />
+      columns={columns} dataSource={items} pagination={false} bordered scroll={screens.md ? undefined : { x: 'max-content' }} />
       <Button type="dashed" onClick={addRow} style={{ marginTop: 10 }}>+ Add Row</Button>
     </>
   );

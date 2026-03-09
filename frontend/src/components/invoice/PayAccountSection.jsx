@@ -13,7 +13,7 @@ export default function PayAccountSection({
       </Typography.Title>
 
       <Row gutter={24}>
-        <Col span={8}>
+        <Col xs={24} md={12}>
           <Form.Item label="Saved Accounts" name="savedAccount">
             <Select
               allowClear
