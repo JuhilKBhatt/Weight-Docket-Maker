@@ -1,9 +1,9 @@
 // frontend/src/services/settingsService.js
 import axios from 'axios';
 
-const API_INVOICE = 'http://localhost:8000/api/invoices';
-const API_SETTINGS = 'http://localhost:8000/api/settings';
-const API_DOCKET = 'http://localhost:8000/api/dockets';
+const API_INVOICE = '/api/invoices';
+const API_SETTINGS = '/api/settings';
+const API_DOCKET = '/api/dockets';
 
 // Existing Selector Delete
 export const deleteSelector = async (type, id) => {

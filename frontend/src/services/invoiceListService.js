@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/invoices';
+const API_URL = '/api/invoices';
 
 // Get all invoices
 export const getAllInvoices = async (page = 1, limit = 10, search = '', startDate = null, endDate = null) => {

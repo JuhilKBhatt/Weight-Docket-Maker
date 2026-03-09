@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API = 'http://localhost:8000/api/invoices';
+const API = '/api/invoices';
 
 const invoiceNewSCRIDService = {
   createNewInvoice: async () => {

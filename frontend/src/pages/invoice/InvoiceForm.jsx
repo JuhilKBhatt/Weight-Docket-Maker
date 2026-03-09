@@ -201,7 +201,7 @@ export default function InvoiceForm({ mode = 'new', existingInvoice = null }) {
           const invID = savedInvoice.scrinv_number || 'DRAFT';
 
           // Get PDF Blob
-          const pdfResponse = await axios.get(`http://localhost:8000/api/invoices/${savedInvoice.id}/download`, {
+          const pdfResponse = await axios.get(`/api/invoices/${savedInvoice.id}/download`, {
               responseType: 'blob',
           });
           const pdfUrl = window.URL.createObjectURL(new Blob([pdfResponse.data], { type: 'application/pdf' }));

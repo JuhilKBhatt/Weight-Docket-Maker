@@ -371,7 +371,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 ]
             };
 
-            const API_URL = 'http://localhost:8000/api/dockets/saveDocket';
+            const API_URL = '/api/dockets/saveDocket';
             fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

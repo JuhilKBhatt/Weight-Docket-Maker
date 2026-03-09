@@ -6,7 +6,7 @@ import { App } from 'antd';
 import axios from 'axios';
 import InvoiceForm from './InvoiceForm';
 
-const API = 'http://localhost:8000/api/invoices';
+const API = '/api/invoices';
 
 export default function EditInvoice() {
   const { message } = App.useApp();

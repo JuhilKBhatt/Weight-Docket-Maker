@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API = 'http://localhost:8000/api/dockets';
+const API = '/api/dockets';
 
 const docketService = {
   createNewDocket: async () => {

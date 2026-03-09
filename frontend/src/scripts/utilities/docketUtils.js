@@ -3,7 +3,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 
-const API = 'http://localhost:8000/api/dockets';
+const API = '/api/dockets';
 
 export const SaveDocket = async ({
   scrdktID,

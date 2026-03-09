@@ -91,7 +91,7 @@ export const saveDraftInvoice = async ({
 
   try {
     console.log("Saving invoice with payload:", payload);
-    const res = await axios.post("http://localhost:8000/api/invoices/saveDraft", payload);
+    const res = await axios.post("/api/invoices/saveDraft", payload);
     return res.data;
   } catch (err) {
     console.error("Error saving invoice:", err);
@@ -101,7 +101,7 @@ export const saveDraftInvoice = async ({
 
 export const selectorData = async () => {
   try {
-    const res = await axios.get("http://localhost:8000/api/invoices/selectorsData");
+    const res = await axios.get("/api/invoices/selectorsData");
     return res.data;
   } catch (err) {
     console.error("Error fetching selector data:", err);
@@ -112,7 +112,7 @@ export const selectorData = async () => {
 export const DownloadPDFInvoice = async (id, scrinvNumber) => {
   try {
     // Use the ID for the URL to satisfy the backend requirement (int)
-    const response = await axios.get(`http://localhost:8000/api/invoices/${id}/download`, {
+    const response = await axios.get(`/api/invoices/${id}/download`, {
       responseType: 'blob', 
     });
 

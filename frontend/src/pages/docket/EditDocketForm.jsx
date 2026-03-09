@@ -6,7 +6,7 @@ import axios from 'axios';
 import DocketForm from './DocketForm';
 import dayjs from 'dayjs';
 
-const API = 'http://localhost:8000/api/dockets';
+const API = '/api/dockets';
 
 export default function EditDocketForm() {
   const { id } = useParams();

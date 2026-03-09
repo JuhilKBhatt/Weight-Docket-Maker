@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/dockets';
+const API_URL = '/api/dockets';
 
 export const getAllDockets = async (page = 1, limit = 10, search = '', startDate = null, endDate = null) => {
   const params = {

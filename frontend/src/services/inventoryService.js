@@ -1,7 +1,7 @@
 // src/services/inventoryService.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/dockets';
+const API_URL = '/api/dockets';
 
 export const getInventoryReport = async (startDate, endDate, metalSearch, docketType) => {
   const params = {
