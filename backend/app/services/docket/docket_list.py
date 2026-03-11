@@ -113,7 +113,6 @@ def get_unique_customers(db: Session, search: str = None):
     # 1. Subquery: Group by LOWER(TRIM(name)) to find unique entities
     # We select MAX(id) to get the most recent record for that normalized name
     subquery = db.query(func.max(Docket.id).label("max_id"))\
-        .filter(Docket.is_saved == True)\
         .filter(Docket.customer_name != None, Docket.customer_name != "")
 
     if search:
@@ -212,8 +211,7 @@ def get_unique_metals(db: Session, search: str = None, customer_name: str = None
                 .join(Docket)\
                 .filter(
                     func.lower(func.trim(DocketItem.metal)) == metal_name.strip().lower(),
-                    func.lower(func.trim(Docket.customer_name)) == customer_name.strip().lower(),
-                    Docket.is_saved == True
+                    func.lower(func.trim(Docket.customer_name)) == customer_name.strip().lower()
                 )\
                 .order_by(Docket.docket_date.desc().nullslast(), DocketItem.id.desc())\
                 .first()
@@ -243,7 +241,6 @@ def get_customer_price_list(db: Session, customer_name: str):
         .join(Docket)\
         .filter(
             func.lower(func.trim(Docket.customer_name)) == customer_name.strip().lower(),
-            Docket.is_saved == True,
             DocketItem.metal.isnot(None), 
             DocketItem.metal != ""
         )\

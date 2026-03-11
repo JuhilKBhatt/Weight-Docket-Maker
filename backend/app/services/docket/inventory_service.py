@@ -24,7 +24,7 @@ def get_inventory_report(db: Session, start_date: date, end_date: date, metal_se
     ).join(Docket, Docket.id == DocketItem.docket_id)
 
     # 4. Apply Filters
-    filters = [Docket.is_saved == True]
+    filters = []
     
     if start_date and end_date:
         filters.append(Docket.docket_date >= start_date)
