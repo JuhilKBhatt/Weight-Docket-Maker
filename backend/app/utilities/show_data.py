@@ -36,7 +36,8 @@ for inv in invoices:
     print("-" * 40)
 
 for dkt in dockets:
-    print(f"Docket: {dkt.scrdkt_number}")
+    prefix = "SCR" if dkt.scrdkt_number.startswith("SCR") else "UNDKT" if dkt.scrdkt_number.startswith("UNDKT") else "OTHER"
+    print(f"Docket [{prefix}]: {dkt.scrdkt_number}")
     print(f"  ID: {dkt.id}")
     print(f"  Is Saved: {dkt.is_saved}")
     print(f"  Date: {dkt.docket_date}, Type: {dkt.docket_type}, Status: {dkt.status}")

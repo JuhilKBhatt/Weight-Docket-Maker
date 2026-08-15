@@ -36,7 +36,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const { savedCompaniesFrom } = useInvoiceSelectors();
 
     const [printing, setPrinting] = useState(false);
-    const { scrdktID, resetDocket } = useDocketForm(mode, existingDocket);
+    const { scrdktID, expectedScrdktID, resetDocket } = useDocketForm(mode, existingDocket);
+    const saveDocketValue = Form.useWatch('saveDocket', form);
 
     const [currencyOptions, setCurrencyOptions] = useState([]);
     const [unitOptions, setUnitOptions] = useState([]);
@@ -184,10 +185,13 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
 
     useEffect(() => {
         if (scrdktID) {
-            form.setFieldsValue({ docketNumber: scrdktID });
-            formValuesRef.current = { ...form.getFieldsValue(), docketNumber: scrdktID };
+            const isSaving = saveDocketValue ?? true;
+            const displayId = (isSaving && expectedScrdktID) ? expectedScrdktID : scrdktID;
+            
+            form.setFieldsValue({ docketNumber: displayId });
+            formValuesRef.current = { ...form.getFieldsValue(), docketNumber: displayId };
         }
-    }, [scrdktID, form]);
+    }, [scrdktID, expectedScrdktID, saveDocketValue, form]);
 
     const loadDefaults = async () => {
         try {
@@ -438,9 +442,12 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     replace: true,
                     state: { 
                         scrollPos: window.scrollY,
-                        fromNew: true // Flag to tell PageHeader to go back to DocketHome
+                        fromNew: true 
                     }
                 });
+            } else if (mode === 'edit' && result.scrdkt_number && result.scrdkt_number !== scrdktID) {
+                // If the ID was upgraded from UNDKT to SCR while editing, reload to fetch fresh data
+                window.location.reload();
             }
 
         } catch (error) { console.error(error); message.error('Failed to save docket.'); }
@@ -465,7 +472,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 currencySymbol: symbol
             });
 
-            await DownloadPDFDocket(result.id, scrdktID);
+            await DownloadPDFDocket(result.id, result.scrdkt_number || scrdktID);
             message.success('Download initiated!');
             
             if (mode === 'new' && result.id) {
@@ -474,9 +481,12 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     replace: true,
                     state: { 
                         scrollPos: window.scrollY,
-                        fromNew: true // Flag
+                        fromNew: true 
                     }
                 });
+            } else if (mode === 'edit' && result.scrdkt_number && result.scrdkt_number !== scrdktID) {
+                // If upgraded to SCR, reload page to reflect new state
+                window.location.reload();
             }
 
         } catch (error) {
@@ -518,10 +528,14 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                         printFilename: filename, 
                         printQty: qty,
                         scrollPos: window.scrollY,
-                        fromNew: true // Flag
+                        fromNew: true 
                     } 
                 });
                 return; 
+            } else if (mode === 'edit' && result.scrdkt_number && result.scrdkt_number !== scrdktID) {
+                // If upgraded to SCR, reload page to reflect new state
+                window.location.reload();
+                return;
             }
 
             if (!filename) {

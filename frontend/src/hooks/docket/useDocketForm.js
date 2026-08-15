@@ -10,27 +10,36 @@ export default function useDocketForm(mode = 'new', existingDocket = null) {
     return sessionStorage.getItem("scrdktID") || null;
   });
 
+  const [expectedScrdktID, setExpectedScrdktID] = useState(() => {
+    return sessionStorage.getItem("expectedScrdktID") || null;
+  });
+
   const called = useRef(false);
 
   // Fetch new ID only once on mount
   useEffect(() => {
-    if (mode === 'new' && !called.current && !scrdktID) {
+    if (mode === 'new' && !called.current && (!scrdktID || !expectedScrdktID)) {
       called.current = true;
-      docketService.createNewDocket().then(id => {
-        setScrdktID(id);
-        sessionStorage.setItem("scrdktID", id);
+      docketService.createNewDocket().then(data => {
+        setScrdktID(data.scrdkt_id);
+        setExpectedScrdktID(data.expected_scrdkt_id);
+        sessionStorage.setItem("scrdktID", data.scrdkt_id);
+        sessionStorage.setItem("expectedScrdktID", data.expected_scrdkt_id);
       });
     }
-  }, [mode, scrdktID]);
+  }, [mode, scrdktID, expectedScrdktID]);
 
   const resetDocket = () => {
     sessionStorage.removeItem("scrdktID");
+    sessionStorage.removeItem("expectedScrdktID");
     setScrdktID(null);
+    setExpectedScrdktID(null);
     called.current = false;
   };
 
   return {
     scrdktID,
+    expectedScrdktID,
     resetDocket
   };
 }
