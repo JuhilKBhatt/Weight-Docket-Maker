@@ -106,18 +106,10 @@ def main():
                     db_name = os.getenv("POSTGRES_DB", "weight_docket_db")
                     os.environ["PGPASSWORD"] = os.getenv("POSTGRES_PASSWORD", "password")
 
-                    # Step 1: Drop ALL tables so the backup's CREATE TABLE statements work cleanly
-                    print(f"Dropping all existing tables in {db_name}...")
-                    drop_cmd = (
-                        f"psql -h db -U {db_user} -d {db_name} -c "
-                        f"\"DROP SCHEMA public CASCADE; CREATE SCHEMA public;\""
-                    )
-                    subprocess.run(drop_cmd, shell=True, check=True)
-
-                    # Step 2: Restore from backup file
-                    restore_cmd = f"psql -h db -U {db_user} -d {db_name} -f {target}"
-                    print(f"Restoring {db_name} from backup...")
-                    subprocess.run(restore_cmd, shell=True, check=True)
+                    cmd = f"psql -h db -U {db_user} -d {db_name} -f {target}"
+                    
+                    print(f"Restoring {db_name}...")
+                    subprocess.run(cmd, shell=True, check=True)
                     print("\n✅ Restore complete!")
             except IndexError:
                 print("Invalid selection.")
