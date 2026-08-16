@@ -36,7 +36,27 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     const { savedCompaniesFrom } = useInvoiceSelectors();
 
     const [printing, setPrinting] = useState(false);
-    const { scrdktID, resetDocket } = useDocketForm(mode, existingDocket);
+    const { scrdktID, undktID, resetDocket } = useDocketForm(mode, existingDocket);
+    
+    const saveDocketValue = Form.useWatch('saveDocket', form);
+    
+    const getDynamicId = () => {
+        if (!scrdktID) return null;
+        const isSaved = saveDocketValue ?? (existingDocket ? existingDocket.is_saved : true);
+        
+        if (mode === 'new') {
+            return isSaved ? scrdktID : (undktID || scrdktID);
+        } else {
+            // In edit mode, if they toggle, we just swap the prefix like before (since we don't have a pre-fetched alternate ID)
+            // Or just keep the original ID. We will swap prefix to visually indicate the change.
+            let baseId = scrdktID;
+            if (baseId.startsWith('SCR')) baseId = baseId.substring(3);
+            else if (baseId.startsWith('UN')) baseId = baseId.substring(2);
+            return isSaved ? `SCR${baseId}` : `UN${baseId}`;
+        }
+    };
+    
+    const dynamicScrdktID = getDynamicId();
 
     const [currencyOptions, setCurrencyOptions] = useState([]);
     const [unitOptions, setUnitOptions] = useState([]);
@@ -183,11 +203,11 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     };
 
     useEffect(() => {
-        if (scrdktID) {
-            form.setFieldsValue({ docketNumber: scrdktID });
-            formValuesRef.current = { ...form.getFieldsValue(), docketNumber: scrdktID };
+        if (dynamicScrdktID) {
+            form.setFieldsValue({ docketNumber: dynamicScrdktID });
+            formValuesRef.current = { ...form.getFieldsValue(), docketNumber: dynamicScrdktID };
         }
-    }, [scrdktID, form]);
+    }, [dynamicScrdktID, form]);
 
     const loadDefaults = async () => {
         try {
@@ -293,11 +313,11 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     });
 
     // --- AUTOSAVE LOGIC ---
-    const stateRef = useRef({ scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency });
+    const stateRef = useRef({ scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency, dynamicScrdktID });
     
     useEffect(() => { 
-        stateRef.current = { scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency }; 
-    }, [scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency]);
+        stateRef.current = { scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency, dynamicScrdktID }; 
+    }, [scrdktID, itemsWithTotals, preGstDeductions, postGstDeductions, gstEnabled, gstPercentage, currency, dynamicScrdktID]);
 
     useEffect(() => {
         const performAutoSave = () => {
@@ -321,7 +341,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             if (values.dob && dayjs.isDayjs(values.dob)) dobStr = values.dob.format('YYYY-MM-DD');
 
             const payload = {
-                scrdkt_number: state.scrdktID,
+                scrdkt_number: state.dynamicScrdktID || state.scrdktID,
+                original_scrdkt_number: state.scrdktID,
                 docket_date: dateStr,
                 docket_time: timeStr,
                 status: "Draft", 
@@ -419,7 +440,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             const symbol = currentOption ? currentOption.symbol : '$';
 
             const result = await SaveDocket({
-                scrdktID,
+                scrdktID: dynamicScrdktID || scrdktID,
+                originalScrdktID: scrdktID,
                 status: "Saved", 
                 values,
                 items: itemsWithTotals.filter(item => item.gross > 0 || item.metal),
@@ -453,7 +475,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             const symbol = currentOption ? currentOption.symbol : '$';
 
             const result = await SaveDocket({
-                scrdktID,
+                scrdktID: dynamicScrdktID || scrdktID,
+                originalScrdktID: scrdktID,
                 status: "Downloaded", 
                 values,
                 items: itemsWithTotals.filter(item => item.gross > 0 || item.metal),
@@ -465,7 +488,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                 currencySymbol: symbol
             });
 
-            await DownloadPDFDocket(result.id, scrdktID);
+            await DownloadPDFDocket(result.id, dynamicScrdktID || scrdktID);
             message.success('Download initiated!');
             
             if (mode === 'new' && result.id) {
@@ -495,7 +518,8 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             const symbol = currentOption ? currentOption.symbol : '$';
 
             const result = await SaveDocket({
-                scrdktID,
+                scrdktID: dynamicScrdktID || scrdktID,
+                originalScrdktID: scrdktID,
                 status: "Printed", 
                 values,
                 items: itemsWithTotals.filter(item => item.gross > 0 || item.metal),

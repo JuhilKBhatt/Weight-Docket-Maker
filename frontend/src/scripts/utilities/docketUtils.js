@@ -7,6 +7,7 @@ const API = '/api/dockets';
 
 export const SaveDocket = async ({
   scrdktID,
+  originalScrdktID,
   status,
   values,
   items,
@@ -40,6 +41,7 @@ export const SaveDocket = async ({
   // Map Frontend Form -> Backend Schema
   const payload = {
     scrdkt_number: scrdktID,
+    original_scrdkt_number: originalScrdktID,
     docket_date: formattedDate,
     docket_time: formattedTime,
     status: status || "Draft",

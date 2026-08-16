@@ -4,38 +4,52 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.models.docketModels import Docket
 
-def generate_next_scrdkt(db: Session) -> str:
-    # 1. Start with the next predicted ID based on the table's max ID
-    max_id = db.query(func.max(Docket.id)).scalar()
-    # Start at 1 if DB is empty, otherwise continue from last ID
-    next_idx = (max_id or 0) + 1
+def get_next_idx_from_string(scrdkt: str) -> int:
+    if not scrdkt:
+        return 0
+    prefix = "SCR" if scrdkt.startswith("SCR") else "UN" if scrdkt.startswith("UN") else ""
+    if not prefix: return 0
+    
+    rest = scrdkt[len(prefix):]
+    if len(rest) < 6: return 0
+    
+    try:
+        leading_digit = int(rest[0])
+        letter_part = rest[1]
+        digits_part = int(rest[2:])
+        
+        letter_val = ord(letter_part) - 65
+        remainder_for_letter = (leading_digit - 1) * 26 + letter_val
+        return remainder_for_letter * 10000 + digits_part
+    except:
+        return 0
+
+def generate_next_scrdkt(db: Session, prefix: str = "SCR") -> str:
+    dockets = db.query(Docket.scrdkt_number).filter(Docket.scrdkt_number.like(f"{prefix}%")).all()
+    
+    max_idx = 0
+    for d in dockets:
+        if d[0]:
+            idx = get_next_idx_from_string(d[0])
+            if idx > max_idx:
+                max_idx = idx
+                
+    next_idx = max_idx + 1
 
     while True:
-        # 1. Last 4 Digits (0000-9999)
         digits_part = next_idx % 10000
-        
-        # 2. Letter (A-Z)
         remainder_for_letter = next_idx // 10000
         letter_val = remainder_for_letter % 26
         letter_part = chr(65 + letter_val)
-
-        # 3. Leading Digit (1-9)
         leading_digit = (remainder_for_letter // 26) + 1
 
-        # Check for Exhaustion (if we go past 9Z9999)
         if leading_digit > 9:
-            raise ValueError("SCRDKT range exhausted (Limit 9Z9999 reached)")
+            raise ValueError(f"{prefix} range exhausted (Limit 9Z9999 reached)")
 
-        # --- FORMATTING ---
-        # Format: SCR + 1 + A + 0001
-        candidate_scrdkt = f"SCR{leading_digit}{letter_part}{digits_part:04d}"
+        candidate_scrdkt = f"{prefix}{leading_digit}{letter_part}{digits_part:04d}"
 
-        # --- COLLISION CHECK ---
         exists = db.query(Docket).filter(Docket.scrdkt_number == candidate_scrdkt).first()
-
         if not exists:
-            # Found a unique number!
             return candidate_scrdkt
         
-        # 4. If taken, increment and try again
         next_idx += 1

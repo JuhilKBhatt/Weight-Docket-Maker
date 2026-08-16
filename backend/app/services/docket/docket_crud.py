@@ -7,23 +7,30 @@ from app.schema.docketSchema import DocketCreate
 from app.utilities.scrdkt_generator import generate_next_scrdkt
 
 def generate_new_docket_id(db: Session):
-    # 1. Generate the unique ID
-    scrdkt = generate_next_scrdkt(db)
+    # 1. Generate the unique IDs
+    scrdkt = generate_next_scrdkt(db, prefix="SCR")
+    undkt = generate_next_scrdkt(db, prefix="UN")
     
-    # 2. Create a placeholder record (Draft) to "reserve" it
+    # 2. Create a placeholder record (Draft) to "reserve" it with SCR
     new_docket = Docket(scrdkt_number=scrdkt, status="Draft")
     db.add(new_docket)
     db.commit()
     
-    # 3. Return it to the frontend
-    return {"scrdkt_id": f"{scrdkt}"}
+    # 3. Return both to the frontend
+    return {"scrdkt_id": f"{scrdkt}", "undkt_id": f"{undkt}"}
 
 def upsert_docket(db: Session, data: DocketCreate):
+    lookup_num = data.original_scrdkt_number if data.original_scrdkt_number else data.scrdkt_number
+
     # Check if exists
-    docket = db.query(Docket).filter(Docket.scrdkt_number == data.scrdkt_number).first()
+    docket = db.query(Docket).filter(
+        (Docket.scrdkt_number == lookup_num) | 
+        (Docket.scrdkt_number == data.scrdkt_number)
+    ).first()
 
     if docket:
         # --- UPDATE EXISTING ---
+        docket.scrdkt_number = data.scrdkt_number
         docket.docket_date = data.docket_date
         docket.docket_time = data.docket_time
         docket.status = data.status

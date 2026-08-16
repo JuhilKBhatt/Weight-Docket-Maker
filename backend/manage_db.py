@@ -2,7 +2,11 @@
 import os
 import sys
 import subprocess
-from app.utilities import reset_tables  # Import the module, don't run it
+from urllib.parse import urlparse
+from dotenv import load_dotenv
+from app.utilities import reset_tables
+
+load_dotenv()
 
 BACKUP_ROOT = "/backups"
 
@@ -15,6 +19,8 @@ def run_command(command):
 
 def list_backups():
     all_backups = []
+    if not os.path.exists(BACKUP_ROOT):
+        return all_backups
     for root, dirs, files in os.walk(BACKUP_ROOT):
         for f in files:
             if f.endswith(".sql"):
@@ -89,7 +95,7 @@ def main():
     elif choice == '4':
         backups = list_backups()
         if not backups:
-            print("No backups found in /backups")
+            print(f"No backups found in {BACKUP_ROOT}")
             return
         
         print("\nAvailable Backups:")
@@ -102,12 +108,26 @@ def main():
                 target = backups[int(pick)-1]
                 confirm = input(f"RESTORE {target}? Current data will be OVERWRITTEN. (yes/no): ")
                 if confirm.lower() == 'yes':
-                    db_user = os.getenv("POSTGRES_USER", "user")
-                    db_name = os.getenv("POSTGRES_DB", "weight_docket_db")
-                    os.environ["PGPASSWORD"] = os.getenv("POSTGRES_PASSWORD", "password")
-
-                    cmd = f"psql -h db -U {db_user} -d {db_name} -f {target}"
+                    print("\nWiping existing database schema to ensure a clean restore...")
                     
+                    db_url = os.getenv("DATABASE_URL")
+                    if db_url:
+                        parsed = urlparse(db_url)
+                        db_user = parsed.username or "user"
+                        db_name = parsed.path.lstrip("/") or "weight_docket_db"
+                        db_host = parsed.hostname or "db"
+                        db_port = parsed.port or 5432
+                        os.environ["PGPASSWORD"] = parsed.password or "password"
+                        drop_cmd = f"psql -h {db_host} -p {db_port} -U {db_user} -d {db_name} -c \"DROP SCHEMA public CASCADE; CREATE SCHEMA public;\""
+                        cmd = f"psql -h {db_host} -p {db_port} -U {db_user} -d {db_name} -f \"{target}\""
+                    else:
+                        db_user = os.getenv("POSTGRES_USER", "user")
+                        db_name = os.getenv("POSTGRES_DB", "weight_docket_db")
+                        os.environ["PGPASSWORD"] = os.getenv("POSTGRES_PASSWORD", "password")
+                        drop_cmd = f"psql -h db -U {db_user} -d {db_name} -c \"DROP SCHEMA public CASCADE; CREATE SCHEMA public;\""
+                        cmd = f"psql -h db -U {db_user} -d {db_name} -f \"{target}\""
+                    
+                    subprocess.run(drop_cmd, shell=True, check=True)
                     print(f"Restoring {db_name}...")
                     subprocess.run(cmd, shell=True, check=True)
                     print("\n✅ Restore complete!")

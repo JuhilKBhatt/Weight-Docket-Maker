@@ -26,6 +26,7 @@ class DocketDeductionSchema(BaseModel):
 # --- CREATE / UPDATE SCHEMA ---
 class DocketCreate(BaseModel):
     scrdkt_number: Optional[str] = None
+    original_scrdkt_number: Optional[str] = None
     docket_date: Optional[date] = None
     docket_time: Optional[str] = None
     status: Optional[str] = "Draft"
