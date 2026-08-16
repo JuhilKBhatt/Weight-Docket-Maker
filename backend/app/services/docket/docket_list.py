@@ -69,8 +69,9 @@ def get_dockets_paginated(
             gross = item.gross or 0
             tare = item.tare or 0
             price = item.price or 0
-            net = gross - tare 
-            items_total += (net * price)
+            net = round(gross - tare, 3)
+            item_total = round(net * price, 2)
+            items_total += item_total
 
         pre_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "pre"])
         post_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "post"])

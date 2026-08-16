@@ -51,8 +51,8 @@ def render_docket_html(db: Session, docket_id: int):
         tare = to_decimal(item.tare)
         price = to_decimal(item.price)
         
-        net = gross - tare
-        total = net * price
+        net = round(gross - tare, 3)
+        total = round(net * price, 2)
         
         items_total += total
         total_gross_weight += gross

@@ -68,7 +68,7 @@ def get_invoices_paginated(
 
     # --- 6. CALCULATE TOTALS ---
     for inv in invoices:
-        items_total = sum([(i.quantity or 0) * (i.price or 0) for i in inv.items])
+        items_total = sum([round((i.quantity or 0) * (i.price or 0), 2) for i in inv.items])
         transport_total = sum([(t.num_of_ctr or 0) * (t.price_per_ctr or 0) for t in inv.transport_items])
         
         pre_deductions = sum([d.amount or 0 for d in inv.deductions if d.type == "pre"])

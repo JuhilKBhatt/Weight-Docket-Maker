@@ -75,7 +75,10 @@ def render_invoice_html(db: Session, invoice_id: int):
     for i in inv_dict['line_items']:
         qty = to_decimal(i.get('quantity', 0))
         price = to_decimal(i.get('price', 0))
-        items_total += (qty * price)
+        
+        # Round the line total to 2 decimal places before summing
+        line_total = round(qty * price, 2)
+        items_total += line_total
         
         # [NEW] Add formatted quantity string to the item dictionary
         i['qty_formatted'] = format_qty(qty)
