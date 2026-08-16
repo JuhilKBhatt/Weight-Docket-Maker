@@ -5,9 +5,10 @@ from sqlalchemy import func
 from app.models.docketModels import Docket
 
 def generate_next_scrdkt(db: Session) -> str:
-    # 1. Start with the next predicted ID based on the count of existing SCR dockets
-    count = db.query(Docket).filter(Docket.scrdkt_number.like("SCR%")).count()
-    next_idx = count + 1
+    # 1. Start with the next predicted ID based on the table's max ID
+    max_id = db.query(func.max(Docket.id)).scalar()
+    # Start at 1 if DB is empty, otherwise continue from last ID
+    next_idx = (max_id or 0) + 1
 
     while True:
         # 1. Last 4 Digits (0000-9999)
