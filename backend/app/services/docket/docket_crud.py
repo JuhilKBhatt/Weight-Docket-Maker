@@ -7,21 +7,16 @@ from app.schema.docketSchema import DocketCreate
 from app.utilities.scrdkt_generator import generate_next_scrdkt
 
 def generate_new_docket_id(db: Session):
-    # 1. Generate the unique ID (starts as UNDKT to not waste SCR numbers)
-    from app.utilities.undkt_generator import generate_next_undkt
-    scrdkt = generate_next_undkt(db)
+    # 1. Generate the unique ID
+    scrdkt = generate_next_scrdkt(db)
     
     # 2. Create a placeholder record (Draft) to "reserve" it
     new_docket = Docket(scrdkt_number=scrdkt, status="Draft")
     db.add(new_docket)
     db.commit()
     
-    # 3. Predict the next SCR ID for the UI to display if "Save Docket?" is checked
-    from app.utilities.scrdkt_generator import generate_next_scrdkt
-    expected_scrdkt = generate_next_scrdkt(db)
-    
-    # 4. Return it to the frontend
-    return {"scrdkt_id": f"{scrdkt}", "expected_scrdkt_id": expected_scrdkt}
+    # 3. Return it to the frontend
+    return {"scrdkt_id": f"{scrdkt}"}
 
 def upsert_docket(db: Session, data: DocketCreate):
     # Check if exists
@@ -29,17 +24,6 @@ def upsert_docket(db: Session, data: DocketCreate):
 
     if docket:
         # --- UPDATE EXISTING ---
-        if docket.scrdkt_number.startswith("UNDKT") and data.status != "Draft" and data.is_saved:
-            from app.utilities.scrdkt_generator import generate_next_scrdkt
-            new_scrdkt = generate_next_scrdkt(db)
-            docket.scrdkt_number = new_scrdkt
-            
-        # If it's an SCR number but they explicitly un-saved it, downgrade it back to UNDKT
-        elif docket.scrdkt_number.startswith("SCR") and data.is_saved == False:
-            from app.utilities.undkt_generator import generate_next_undkt
-            new_undkt = generate_next_undkt(db)
-            docket.scrdkt_number = new_undkt
-
         docket.docket_date = data.docket_date
         docket.docket_time = data.docket_time
         docket.status = data.status
@@ -80,14 +64,8 @@ def upsert_docket(db: Session, data: DocketCreate):
     
     else:
         # --- CREATE NEW ---
-        # If it's a UNDKT being explicitly saved as a real docket, upgrade it
-        new_scrdkt = data.scrdkt_number
-        if new_scrdkt.startswith("UNDKT") and data.status != "Draft" and data.is_saved:
-            from app.utilities.scrdkt_generator import generate_next_scrdkt
-            new_scrdkt = generate_next_scrdkt(db)
-
         docket = Docket(
-            scrdkt_number=new_scrdkt,
+            scrdkt_number=data.scrdkt_number,
             docket_date=data.docket_date,
             docket_time=data.docket_time,
             status=data.status,
@@ -142,7 +120,7 @@ def upsert_docket(db: Session, data: DocketCreate):
         ))
 
     db.commit()
-    return {"message": "docket saved", "id": docket.id, "scrdkt_number": docket.scrdkt_number}
+    return {"message": "docket saved", "id": docket.id}
 
 def get_docket_by_id(db: Session, docket_id: int):
     docket = db.query(Docket).filter(Docket.id == docket_id).first()

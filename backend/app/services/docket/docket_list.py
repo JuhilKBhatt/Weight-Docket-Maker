@@ -19,8 +19,8 @@ def get_dockets_paginated(
     # Base Query
     query = db.query(Docket)
 
-    # --- FILTER: ONLY SHOW SAVED DOCKETS (SCR numbers) ---
-    query = query.filter(Docket.scrdkt_number.like("SCR%"))
+    # --- FILTER: ONLY SHOW SAVED DOCKETS ---
+    query = query.filter(Docket.is_saved == True)
 
     # --- FILTER EMPTY DOCKETS ---
     query = query.filter(
