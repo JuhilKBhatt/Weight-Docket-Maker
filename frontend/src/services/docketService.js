@@ -7,7 +7,7 @@ const API = '/api/dockets';
 const docketService = {
   createNewDocket: async () => {
     const res = await axios.post(`${API}/new`);
-    return res.data.scrdkt_id;
+    return res.data;
   },
 
   getUniqueCustomers: async (search = '') => {

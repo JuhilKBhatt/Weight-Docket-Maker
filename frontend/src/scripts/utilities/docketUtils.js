@@ -43,7 +43,7 @@ export const SaveDocket = async ({
     docket_date: formattedDate,
     docket_time: formattedTime,
     status: status || "Draft",
-    is_saved: values.saveDocket,
+    is_saved: values.saveDocket ?? true,
     print_qty: Number(values.printQty),
     
     // Header Data
