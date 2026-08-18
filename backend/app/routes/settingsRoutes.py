@@ -12,6 +12,11 @@ router = APIRouter(
 )
 
 # --- GLOBAL SETTINGS ---
+@router.get("/version")
+def get_version():
+    # Hardcoded backend version
+    return {"version": "1.0.0"}
+
 @router.get("/defaults")
 def get_defaults(db: Session = Depends(get_db)):
     return settings_service.get_all_settings(db)

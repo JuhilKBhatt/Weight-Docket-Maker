@@ -11,6 +11,12 @@ export const deleteSelector = async (type, id) => {
   return response.data;
 };
 
+// --- Version ---
+export const getBackendVersion = async () => {
+    const res = await axios.get(`${API_SETTINGS}/version`);
+    return res.data;
+};
+
 // --- Defaults ---
 export const getDefaults = async () => {
     const res = await axios.get(`${API_SETTINGS}/defaults`);
