@@ -340,6 +340,30 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             let dobStr = null;
             if (values.dob && dayjs.isDayjs(values.dob)) dobStr = values.dob.format('YYYY-MM-DD');
 
+            // Skip auto-save if no meaningful data is entered (ignore auto-filled company details)
+            const hasItems = state.itemsWithTotals.some(i => i.gross > 0 || (i.metal && i.metal.trim() !== ""));
+            
+            const hasCustomerDetails = !!(
+                (values.name && values.name.trim() !== "") ||
+                (values.address && values.address.trim() !== "") ||
+                (values.phone && values.phone.trim() !== "") ||
+                (values.abn && values.abn.trim() !== "") ||
+                (values.licenseNo && values.licenseNo.trim() !== "") ||
+                (values.regoNo && values.regoNo.trim() !== "") ||
+                values.dob ||
+                (values.payId && values.payId.trim() !== "")
+            );
+            
+            const hasNotes = !!(values.paperNotes && values.paperNotes.trim() !== "");
+            
+            const hasDeductions = 
+                state.preGstDeductions.some(d => (d.label && d.label.trim() !== "") || d.amount > 0) ||
+                state.postGstDeductions.some(d => (d.label && d.label.trim() !== "") || d.amount > 0);
+            
+            if (!hasItems && !hasCustomerDetails && !hasNotes && !hasDeductions) {
+                return;
+            }
+
             const payload = {
                 scrdkt_number: state.dynamicScrdktID || state.scrdktID,
                 original_scrdkt_number: state.scrdktID,
