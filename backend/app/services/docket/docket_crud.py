@@ -11,11 +11,6 @@ def generate_new_docket_id(db: Session):
     scrdkt = generate_next_scrdkt(db, prefix="SCR")
     undkt = generate_next_scrdkt(db, prefix="UN")
     
-    # 2. Create a placeholder record (Draft) to "reserve" it with SCR
-    new_docket = Docket(scrdkt_number=scrdkt, status="Draft")
-    db.add(new_docket)
-    db.commit()
-    
     # 3. Return both to the frontend
     return {"scrdkt_id": f"{scrdkt}", "undkt_id": f"{undkt}"}
 
