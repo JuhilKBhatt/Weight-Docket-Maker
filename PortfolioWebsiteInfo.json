@@ -1,0 +1,14 @@
+{
+ "title": "Weight Docker Maker",
+ "description": "A tool that allows users to create dockets and invoices with ease. The tool provides a user friendly interface to input the necessary information and generates a well-structured docket in a matter of seconds.",
+ "language": ["Python", "JavaScript", "React+Vite", "CSS"],
+ "liveDemo": "",
+ "images": [
+   ""
+ ],
+ "videoDemo": "",
+ "Priority": 1,
+ "type": "Solo",
+ "version": "Prod",
+ "Visibilty": true
+}
