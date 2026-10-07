@@ -1,21 +1,51 @@
 {
- "title": "Weight Docker Maker",
- "description": "A tool that allows users to create dockets and invoices with ease. The tool provides a user friendly interface to input the necessary information and generates a well-structured docket in a matter of seconds.",
- "language": ["Python", "JavaScript", "React+Vite", "CSS"],
- "liveDemo": "",
- "images": [
-   "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106152/Weight-Docket-Maker-img-1_ddj4kb.png",
-   "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106154/Weight-Docket-Maker-img-2_rdplom.png",
-   "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106154/Weight-Docket-Maker-img-3_j0yf5l.png",
-   "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106156/Weight-Docket-Maker-img-4_ffk750.png",
-   "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106158/Weight-Docket-Maker-img-5_xnwhgu.png",
-   "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106159/Weight-Docket-Maker-img-6_y5tjr1.png",
-   "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106161/Weight-Docket-Maker-img-7_fvqnep.png",
-   "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106163/Weight-Docket-Maker-img-8_z7ts7z.png"
- ],
- "videoDemo": "",
- "Priority": 1,
- "type": "Solo",
- "version": "Prod",
- "Visibilty": true
+  "title": "Weight Docket Maker",
+  "description": "A full-stack application for managing weight dockets and invoices, featuring automated background printing, email integration, and PDF report generation.",
+  "techStack": {
+    "Frontend": [
+      "React",
+      "Vite",
+      "Ant Design",
+      "CSS"
+    ],
+    "Backend": [
+      "Python",
+      "PostgreSQL"
+    ],
+    "AI": [],
+    "DevSecOps": [
+      "Docker",
+      "Github"
+    ],
+    "Test Automation": [
+      "Vitest",
+      "React Testing Library",
+      "Pytest"
+    ]
+  },
+  "liveDemo": "",
+  "images": [
+    "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106152/Weight-Docket-Maker-img-1_ddj4kb.png",
+    "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106154/Weight-Docket-Maker-img-2_rdplom.png",
+    "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106154/Weight-Docket-Maker-img-3_j0yf5l.png",
+    "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106156/Weight-Docket-Maker-img-4_ffk750.png",
+    "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106158/Weight-Docket-Maker-img-5_xnwhgu.png",
+    "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106159/Weight-Docket-Maker-img-6_y5tjr1.png",
+    "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106161/Weight-Docket-Maker-img-7_fvqnep.png",
+    "https://res.cloudinary.com/dmj4ggkjq/image/upload/v1787106163/Weight-Docket-Maker-img-8_z7ts7z.png"
+  ],
+  "videoDemo": "",
+  "Priority": 1,
+  "category": "Web App",
+  "type": "Solo",
+  "version": "Prod",
+  "versionNumber": "2.2.5",
+  "Highlights": [
+    "Automated cross-platform printing service supporting both Windows and Unix spooling pipelines",
+    "Dynamic HTML-to-PDF invoice and weight docket generation powered by WeasyPrint and Jinja2 templating",
+    "Automated background database backup scheduler with integrated Google Drive cloud synchronization",
+    "Robust relational data architecture with PostgreSQL, SQLAlchemy ORM, and Alembic database versioning",
+    "Comprehensive SMTP email delivery service with customizable notification templates and attachments"
+  ],
+  "Visibilty": true
 }
