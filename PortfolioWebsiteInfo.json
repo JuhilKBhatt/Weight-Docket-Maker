@@ -12,7 +12,9 @@
       "Python",
       "PostgreSQL"
     ],
-    "AI": [],
+    "AI": [
+      "Claude API"
+    ],
     "DevSecOps": [
       "Docker",
       "Github"
