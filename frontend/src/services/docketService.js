@@ -10,9 +10,10 @@ const docketService = {
     return res.data;
   },
 
-  getUniqueCustomers: async (search = '') => {
+  getUniqueCustomers: async (search = '', field = '') => {
     const params = { 
       q: search || '', 
+      ...(field ? { field } : {}),
       _t: new Date().getTime() 
     };
     const res = await axios.get(`${API}/customers/unique`, { params });

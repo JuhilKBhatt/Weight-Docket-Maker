@@ -38,8 +38,12 @@ def get_inventory_report(
 
 # --- READ / LIST ---
 @router.get("/customers/unique")
-def get_unique_customers_route(q: Optional[str] = None, db: Session = Depends(get_db)):
-    return docket_list.get_unique_customers(db, search=q)
+def get_unique_customers_route(
+    q: Optional[str] = None,
+    field: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    return docket_list.get_unique_customers(db, search=q, field=field)
 
 @router.get("/metals/unique")
 def get_unique_metals_route( q: Optional[str] = None, customer: Optional[str] = None, db: Session = Depends(get_db)):
