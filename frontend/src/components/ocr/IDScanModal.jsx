@@ -307,13 +307,6 @@ export default function IDScanModal({ open, onCancel, onApplyCustomerId }) {
           )
         }
       >
-        <Alert
-          type="info"
-          showIcon
-          style={{ marginBottom: 14 }}
-          message="Privacy by Design — In-Memory Processing Only"
-          description="Supports Australian Driver's Licences (NSW, VIC, QLD, WA, SA, TAS, ACT, NT), Photo Cards, and Passports. ID photos are never saved to disk."
-        />
 
         {errorMsg && (
           <Alert

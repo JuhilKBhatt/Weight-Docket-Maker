@@ -33,7 +33,7 @@ export default function OCRProgressModal({
           {currentStepTitle}
         </h3>
         <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-          High-speed AI vision extraction in progress (~1.5–2.5s)
+          Extraction In Progress, Please Wait... (This may take a few seconds)
         </Text>
         <Progress
           percent={progressPercent}

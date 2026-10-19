@@ -784,7 +784,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                             padding: '0 24px',
                         }}
                     >
-                        Scan Docket (AI OCR)
+                        Scan Paper Docket
                     </Button>
                 </div>
                 <DocketItemsTable 

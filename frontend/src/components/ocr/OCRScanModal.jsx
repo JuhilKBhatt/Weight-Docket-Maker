@@ -202,12 +202,13 @@ export default function OCRScanModal({
           stopCamera();
           onCancel();
         }}
-        width={780}
+        width={900}
+        style={{ maxWidth: '96vw' }}
         title={
           <Space>
             <ScanOutlined style={{ color: '#1b5e20', fontSize: 22 }} />
             <span style={{ fontSize: 20, fontWeight: 700 }}>
-              Scan Handwritten Weight Docket (AI OCR)
+              Scan Handwritten Weight Docket
             </span>
           </Space>
         }
@@ -261,14 +262,6 @@ export default function OCRScanModal({
               addFilesToPages(e.target.files, replaceTargetIdx);
             }
           }}
-        />
-
-        <Alert
-          type="info"
-          showIcon
-          style={{ marginBottom: 16 }}
-          message="Multi-Page & Double-Sided Support"
-          description="Take a clear photo of Page 1 (Front). If the docket continues on the back or across multiple sheets, click '+ Add Page' to include them all in one scan."
         />
 
         {errorMessage && (
@@ -366,7 +359,7 @@ export default function OCRScanModal({
                   : `+ Click or drop to add Page ${pages.length + 1} (Back / Continuation Sheet)`}
               </p>
               <p className="ant-upload-hint" style={{ fontSize: 13 }}>
-                Supports JPG, PNG, WebP. High-resolution phone photos are automatically optimized.
+                Supports JPG, PNG, WebP
               </p>
             </Dragger>
 
@@ -391,12 +384,14 @@ export default function OCRScanModal({
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center',
+                alignItems: 'baseline',
+                flexWrap: 'wrap',
+                gap: 8,
                 marginTop: 8,
               }}
             >
-              <Title level={5} style={{ margin: 0, color: '#1f1f1f' }}>
-                Pre-Flight Page Inspection ({pages.length}{' '}
+              <Title level={5} style={{ margin: 0, color: '#1f1f1f', fontSize: 17 }}>
+                Pre-Send Page Inspection ({pages.length}{' '}
                 {pages.length === 1 ? 'Page' : 'Pages'} Queued)
               </Title>
               <Text type="secondary" style={{ fontSize: 13 }}>
@@ -415,13 +410,19 @@ export default function OCRScanModal({
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
+                      gap: 4,
                     }}
                   >
-                    <Tag color={index === 0 ? 'green' : 'blue'}>
+                    <Tag
+                      color={index === 0 ? 'green' : 'blue'}
+                      style={{ margin: 0, fontSize: 13 }}
+                    >
                       {page.label}
                     </Tag>
                     {page.rotation > 0 && (
-                      <Tag color="orange">{page.rotation}°</Tag>
+                      <Tag color="orange" style={{ margin: 0, fontSize: 12 }}>
+                        {page.rotation}°
+                      </Tag>
                     )}
                   </div>
 
@@ -439,19 +440,13 @@ export default function OCRScanModal({
                     />
                   </div>
 
-                  <div
-                    style={{
-                      padding: 8,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      gap: 4,
-                    }}
-                  >
+                  <div className="ocr-page-card-actions">
                     <Tooltip title="Inspect Full Size">
                       <Button
                         size="small"
                         icon={<EyeOutlined />}
                         onClick={() => setZoomModalPage(page)}
+                        className="ocr-card-action-btn"
                       >
                         Zoom
                       </Button>
@@ -461,6 +456,7 @@ export default function OCRScanModal({
                         size="small"
                         icon={<RotateRightOutlined />}
                         onClick={() => handleRotatePage(index)}
+                        className="ocr-card-action-btn"
                       >
                         90°
                       </Button>
@@ -470,6 +466,7 @@ export default function OCRScanModal({
                         size="small"
                         icon={<ReloadOutlined />}
                         onClick={() => handleTriggerRetakeFile(index)}
+                        className="ocr-card-action-btn"
                       >
                         Retake
                       </Button>
@@ -480,6 +477,7 @@ export default function OCRScanModal({
                         danger
                         icon={<DeleteOutlined />}
                         onClick={() => handleRemovePage(index)}
+                        className="ocr-card-action-btn ocr-card-delete-btn"
                       />
                     </Tooltip>
                   </div>
@@ -487,18 +485,7 @@ export default function OCRScanModal({
               ))}
 
               {/* Progressive "+ Add Page N" Card */}
-              <div
-                className="ocr-page-card"
-                style={{
-                  borderStyle: 'dashed',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 16,
-                  minHeight: 250,
-                }}
-              >
+              <div className="ocr-page-card ocr-add-page-card">
                 <Upload
                   accept="image/*"
                   multiple
@@ -511,9 +498,12 @@ export default function OCRScanModal({
                   <Button
                     type="dashed"
                     icon={<PlusOutlined />}
-                    style={{ marginBottom: 10 }}
+                    className="ocr-add-page-btn"
                   >
-                    + Add Page {pages.length + 1} (Back / Next Sheet)
+                    <span>+ Add Page {pages.length + 1}</span>
+                    <span className="ocr-add-page-subtext">
+                      (Back / Next Sheet)
+                    </span>
                   </Button>
                 </Upload>
                 <Button
@@ -521,6 +511,7 @@ export default function OCRScanModal({
                   type="link"
                   icon={<CameraOutlined />}
                   onClick={() => startCamera(null)}
+                  style={{ fontSize: 14, marginTop: 8 }}
                 >
                   or Use Camera
                 </Button>
