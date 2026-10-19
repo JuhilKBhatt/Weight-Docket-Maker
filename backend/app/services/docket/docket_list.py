@@ -1,8 +1,24 @@
 import re
+from decimal import Decimal, ROUND_HALF_UP
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, and_, func, desc, case
 from datetime import date
 from app.models.docketModels import Docket, DocketItem
+
+
+def _to_dec(val) -> Decimal:
+    if val is None:
+        return Decimal("0")
+    return Decimal(str(val))
+
+
+def _round_curr(val: Decimal) -> Decimal:
+    return _to_dec(val).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
+def _round_wt(val: Decimal) -> Decimal:
+    return _to_dec(val).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
+
 
 def get_dockets_paginated(
     db: Session, 
@@ -63,26 +79,30 @@ def get_dockets_paginated(
     for dkt in dockets:
         if not dkt.scrdkt_number: continue
 
-        items_total = 0
+        items_total = Decimal("0.00")
         for item in dkt.items:
-            gross = item.gross or 0
-            tare = item.tare or 0
-            price = item.price or 0
-            net = round(gross - tare, 3)
-            item_total = round(net * price, 2)
+            gross = _round_wt(_to_dec(item.gross))
+            tare = _round_wt(_to_dec(item.tare))
+            price = _to_dec(item.price)
+            net = _round_wt(gross - tare)
+            item_total = _round_curr(net * price)
             items_total += item_total
 
-        pre_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "pre"])
-        post_deductions = sum([d.amount or 0 for d in dkt.deductions if d.type == "post"])
+        pre_deductions = _round_curr(sum([_to_dec(d.amount) for d in dkt.deductions if d.type == "pre"], Decimal("0.00")))
+        post_deductions = (
+            _round_curr(sum([_to_dec(d.amount) for d in dkt.deductions if d.type == "post"], Decimal("0.00")))
+            if dkt.include_gst
+            else Decimal("0.00")
+        )
 
-        gross_total = items_total - pre_deductions
+        gross_total = _round_curr(items_total - pre_deductions)
         
-        gst_amount = 0
+        gst_amount = Decimal("0.00")
         if dkt.include_gst:
-            gst_percent = (dkt.gst_percentage or 10) / 100
-            gst_amount = gross_total * gst_percent
+            gst_percent = _to_dec(dkt.gst_percentage if dkt.gst_percentage is not None else 10) / Decimal("100")
+            gst_amount = _round_curr(gross_total * gst_percent)
 
-        final_total = gross_total + gst_amount - post_deductions
+        final_total = _round_curr(gross_total + gst_amount - post_deductions)
 
         display_name = dkt.customer_name if dkt.customer_name else dkt.company_name
 
@@ -93,7 +113,7 @@ def get_dockets_paginated(
             "docket_time": dkt.docket_time,
             "customer_name": display_name,
             "docket_type": dkt.docket_type,
-            "total_amount": round(final_total, 2),
+            "total_amount": float(final_total),
             "status": dkt.status,
             "notes": dkt.notes,
         })

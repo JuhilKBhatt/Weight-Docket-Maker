@@ -22,21 +22,20 @@ export default class DocketCalculationHandler {
     return Number.isFinite(num) ? num : 0;
   }
 
-  // Currency rounding (2 decimals)
+  // Currency rounding (2 decimals, standard half-up)
   round(value) {
-    return Math.round(this.safeNumber(value) * 100) / 100;
+    const n = this.safeNumber(value);
+    return Math.round((n + Math.sign(n) * Number.EPSILON) * 100) / 100;
   }
 
   roundWeight(value) {
-    return Math.round(this.safeNumber(value) * 1000) / 1000;
+    const n = this.safeNumber(value);
+    return Math.round((n + Math.sign(n) * Number.EPSILON) * 1000) / 1000;
   }
 
   // ---------- ROW CALCULATIONS ----------
   calculateItemTotals() {
     return this.items.map(item => {
-      // Optimization: If net/total are already calculated and inputs haven't changed, skip
-      // (This requires the caller to manage state immutability carefully)
-      
       const gross = this.safeNumber(item.gross);
       const tare = this.safeNumber(item.tare);
       const price = this.safeNumber(item.price);
@@ -59,9 +58,11 @@ export default class DocketCalculationHandler {
 
   // ---------- DEDUCTIONS ----------
   calculateDeductionsTotal(deductions) {
-    return deductions.reduce((sum, d) => {
-      return sum + this.safeNumber(d.amount);
-    }, 0);
+    return this.round(
+      deductions.reduce((sum, d) => {
+        return sum + this.safeNumber(d.amount);
+      }, 0)
+    );
   }
 
   // ---------- MAIN ----------
@@ -76,18 +77,20 @@ export default class DocketCalculationHandler {
     }
     itemsTotal = this.round(itemsTotal);
 
-    // 3. Deductions
+    // 3. Deductions (Before GST)
     const preGstDeductionTotal = this.calculateDeductionsTotal(this.preGstDeductions);
 
-    // 4. Gross
+    // 4. Gross (Taxable Subtotal)
     const grossTotal = this.round(itemsTotal - preGstDeductionTotal);
     
     // 5. GST
     const gstRate = this.gstPercentage / 100;
     const gstAmount = this.includeGST ? this.round(grossTotal * gstRate) : 0;
     
-    // 6. Post Deductions
-    const postGstDeductionTotal = this.calculateDeductionsTotal(this.postGstDeductions);
+    // 6. Post-GST Deductions (only active when includeGST is enabled)
+    const postGstDeductionTotal = this.includeGST
+      ? this.calculateDeductionsTotal(this.postGstDeductions)
+      : 0;
     
     // 7. Final
     const finalTotal = this.round(grossTotal + gstAmount - postGstDeductionTotal);

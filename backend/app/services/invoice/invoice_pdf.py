@@ -3,7 +3,7 @@
 import os
 import base64
 from io import BytesIO
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from jinja2 import Environment, FileSystemLoader
@@ -13,13 +13,16 @@ from datetime import datetime, timedelta, date
 from app.services.invoice import invoice_crud
 from app.models.settingsModels import CurrencyOption
 
-# --- Helper for Decimal conversion ---
+# --- Helper for Decimal conversion & standard half-up rounding ---
 def to_decimal(val):
     if val is None:
         return Decimal("0.00")
     return Decimal(str(val))
 
-# --- NEW: Smart Quantity Formatting ---
+def round_currency(val: Decimal) -> Decimal:
+    return to_decimal(val).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+# --- Smart Quantity Formatting ---
 def format_qty(val):
     if val is None:
         return "0"
@@ -70,43 +73,46 @@ def render_invoice_html(db: Session, invoice_id: int):
         elif currency_option.symbol:
             symbol = currency_option.symbol
 
-    # 4. Calculate Totals (Using Decimal)
+    # 4. Calculate Totals (Using Decimal + ROUND_HALF_UP)
     items_total = Decimal("0.00")
     for i in inv_dict['line_items']:
         qty = to_decimal(i.get('quantity', 0))
         price = to_decimal(i.get('price', 0))
         
         # Round the line total to 2 decimal places before summing
-        line_total = round(qty * price, 2)
+        line_total = round_currency(qty * price)
         items_total += line_total
         
-        # [NEW] Add formatted quantity string to the item dictionary
+        i['line_total'] = line_total
         i['qty_formatted'] = format_qty(qty)
 
     trans_total = Decimal("0.00")
     for t in inv_dict['transport_items']:
         num = to_decimal(t.get('num_of_ctr', 0))
         price = to_decimal(t.get('price_per_ctr', 0))
-        trans_total += (num * price)
+        trans_line_total = round_currency(num * price)
+        trans_total += trans_line_total
         
-        # [NEW] Add formatted number string to the transport dictionary
+        t['line_total'] = trans_line_total
         t['num_formatted'] = format_qty(num)
 
-    gross_items_transport = items_total + trans_total
+    gross_items_transport = round_currency(items_total + trans_total)
 
-    pre_deductions = sum([to_decimal(d.get('amount', 0)) for d in inv_dict['pre_gst_deductions']])
-    post_deductions = sum([to_decimal(d.get('amount', 0)) for d in inv_dict['post_gst_deductions']])
+    pre_deductions = round_currency(sum([to_decimal(d.get('amount', 0)) for d in inv_dict['pre_gst_deductions']], Decimal("0.00")))
+    if not inv_dict.get('include_gst'):
+        inv_dict['post_gst_deductions'] = []
+    post_deductions = round_currency(sum([to_decimal(d.get('amount', 0)) for d in inv_dict['post_gst_deductions']], Decimal("0.00")))
 
     # Taxable Amount
-    subtotal = gross_items_transport - pre_deductions
+    subtotal = round_currency(gross_items_transport - pre_deductions)
     
     gst = Decimal("0.00")
     if inv_dict['include_gst']:
         gst_percent = to_decimal(inv_dict.get('gst_percentage', 10))
-        gst = subtotal * (gst_percent / Decimal("100.00"))
+        gst = round_currency(subtotal * (gst_percent / Decimal("100.00")))
 
-    total_inc_gst = subtotal + gst
-    total = total_inc_gst - post_deductions
+    total_inc_gst = round_currency(subtotal + gst)
+    total = round_currency(total_inc_gst - post_deductions)
 
     totals = {
         "grossItems": gross_items_transport,
