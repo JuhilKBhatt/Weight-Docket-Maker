@@ -248,9 +248,12 @@ export default function DocketItemsTable({
     return (
         <div style={{ marginBottom: 30 }}>
             <Table
-                rowClassName={(record) => 
-                    record.key === selectedRowKey ? 'docket-table-row selected-row' : 'docket-table-row'
-                }
+                rowClassName={(record) => {
+                    const classes = ['docket-table-row'];
+                    if (record.key === selectedRowKey) classes.push('selected-row');
+                    else if (record.ocrConfidence === 'low') classes.push('ocr-row-low-confidence');
+                    return classes.join(' ');
+                }}
                 onRow={(record) => ({
                     onClick: () => {
                         setSelectedRowKey(record.key);

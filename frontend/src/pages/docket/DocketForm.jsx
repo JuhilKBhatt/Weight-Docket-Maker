@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Form, Button, Row, Col, Input, InputNumber, Space, Divider, Checkbox, Typography, App } from 'antd'; 
+import { ScanOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom'; 
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 // Components
 import InvoiceTotalsSummary from '../../components/TotalsSummary';
@@ -11,6 +13,9 @@ import DocketItemsTable from '../../components/docket/DocketItemsTable';
 import CustomerDetails from '../../components/docket/CustomerDetails';
 import DocketHeader from '../../components/docket/DocketHeader';
 import NetWeightSummary from '../../components/docket/NetWeightSummary';
+import OCRScanModal from '../../components/ocr/OCRScanModal';
+import OCRProgressModal from '../../components/ocr/OCRProgressModal';
+import OCRExtractionReview from '../../components/ocr/OCRExtractionReview';
 
 // Hooks
 import useDocketCalculations from '../../hooks/docket/useDocketCalculations';
@@ -22,7 +27,11 @@ import useInvoiceSelectors from '../../hooks/invoice/useInvoiceSelectors';
 import { SaveDocket, DownloadPDFDocket, PrintDocket, CheckPrintStatus } from '../../scripts/utilities/docketUtils';
 import { getDefaults, getCurrencies, getUnits } from '../../services/settingsService';
 import docketService from '../../services/docketService'; 
+import ocrService from '../../services/ocrService';
 import '../../styles/Form.css'; 
+import '../../styles/ocr.css';
+
+dayjs.extend(customParseFormat);
 
 const { Text } = Typography;
 
@@ -443,8 +452,167 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
     };
 
     const removeRow = (key) => setDataSource(dataSource.filter(item => item.key !== key));
-    const handleItemsChange = (key, field, value) => setDataSource(prev => prev.map(item => item.key === key ? { ...item, [field]: value } : item));
+    const handleItemsChange = (key, field, value) => setDataSource(prev => prev.map(item => item.key === key ? { ...item, [field]: value, ocrConfidence: field === 'gross' || field === 'tare' || field === 'metal' ? 'high' : item.ocrConfidence } : item));
     
+    // --- OCR SCANNING & AUTO-POPULATION STATE ---
+    const [ocrScanOpen, setOcrScanOpen] = useState(false);
+    const [ocrProcessing, setOcrProcessing] = useState(false);
+    const [ocrProgressStep, setOcrProgressStep] = useState(0);
+    const [ocrProgressPercent, setOcrProgressPercent] = useState(25);
+    const [ocrProgressTitle, setOcrProgressTitle] = useState('Uploading docket pages...');
+    const [ocrErrorMsg, setOcrErrorMsg] = useState(null);
+    const [ocrReviewOpen, setOcrReviewOpen] = useState(false);
+    const [ocrResultData, setOcrResultData] = useState(null);
+    const [ocrCapturedPages, setOcrCapturedPages] = useState([]);
+
+    const handleProcessOcrPages = async (pages) => {
+        setOcrCapturedPages(pages);
+        setOcrErrorMsg(null);
+        setOcrProcessing(true);
+        try {
+            const result = await ocrService.scanDocket(pages, (stepIdx, pct, title) => {
+                setOcrProgressStep(stepIdx);
+                setOcrProgressPercent(pct);
+                setOcrProgressTitle(title);
+            });
+            setOcrResultData(result);
+            setOcrScanOpen(false);
+            setOcrReviewOpen(true);
+        } catch (err) {
+            const detail =
+                err?.response?.data?.detail ||
+                err?.message ||
+                'OCR service temporarily unavailable. Please enter items manually.';
+            setOcrErrorMsg(detail);
+        } finally {
+            setOcrProcessing(false);
+        }
+    };
+
+    const handleApplyOcrToForm = async ({ customer, date, entries }) => {
+        // 1. Populate customer name and docket date if present
+        const formUpdates = {};
+        if (customer) {
+            formUpdates.name = customer;
+        }
+        if (date) {
+            const parsedDate = dayjs(date, ['DD/MM/YYYY', 'D/M/YYYY', 'DD/MM/YY', 'YYYY-MM-DD'], true);
+            if (parsedDate.isValid()) {
+                formUpdates.date = parsedDate;
+            }
+        }
+
+        if (Object.keys(formUpdates).length > 0) {
+            form.setFieldsValue(formUpdates);
+            formValuesRef.current = { ...form.getFieldsValue(), ...formUpdates };
+        }
+
+        // 2. Apply OCR entries to dataSource (merging tare + extra_deduction and dynamically expanding beyond 20 rows)
+        const ocrEntries = entries || [];
+        const baseTimestamp = Date.now();
+        const totalRowsCount = Math.max(20, ocrEntries.length);
+
+        const nextRows = Array.from({ length: totalRowsCount }, (_, idx) => {
+            const existingRow = dataSource[idx];
+            const rowKey = existingRow ? existingRow.key : String(baseTimestamp + idx);
+            if (idx < ocrEntries.length) {
+                const entry = ocrEntries[idx];
+                const hasTareOrDed = entry.tare !== null && entry.tare !== undefined || (entry.extra_deduction !== null && entry.extra_deduction !== undefined);
+                const effectiveTare = (Number(entry.tare) || 0) + (Number(entry.extra_deduction) || 0);
+                const grossVal = entry.gross !== null && entry.gross !== undefined ? entry.gross : '';
+                const tareVal = hasTareOrDed ? effectiveTare : '';
+                const priceVal = entry.price !== null && entry.price !== undefined ? entry.price : null;
+
+                return {
+                    ...(existingRow || {}),
+                    key: rowKey,
+                    scrdkt_item_id: existingRow?.scrdkt_item_id || null,
+                    metal: entry.material || '',
+                    notes: existingRow?.notes || '',
+                    gross: grossVal,
+                    tare: tareVal,
+                    net: (Number(grossVal) || 0) - (Number(tareVal) || 0),
+                    price: priceVal,
+                    total: 0,
+                    unit: existingRow?.unit || defaultUnit || 'kg',
+                    ocrConfidence: entry.confidence || 'high',
+                };
+            }
+            return {
+                key: rowKey,
+                metal: '',
+                notes: '',
+                gross: null,
+                tare: null,
+                net: 0,
+                price: null,
+                total: 0,
+                unit: defaultUnit || 'kg',
+            };
+        });
+
+        setDataSource(nextRows);
+        setOcrReviewOpen(false);
+        message.success(`Loaded ${ocrEntries.length} line item(s) from OCR into Docket Form!`);
+
+        // 3. If customer name is available, attempt to match customer profile & historical metal prices
+        const activeCustomerName = customer || form.getFieldValue('name');
+        if (activeCustomerName) {
+            try {
+                // Autofill customer details if an exact customer match exists in DB
+                const custMatches = await docketService.getUniqueCustomers(activeCustomerName);
+                const exactCust = custMatches.find(
+                    c => c.customer_details?.name?.toLowerCase() === activeCustomerName.trim().toLowerCase()
+                );
+                if (exactCust?.customer_details) {
+                    const d = exactCust.customer_details;
+                    const currentVals = form.getFieldsValue();
+                    const profileUpdates = {
+                        name: d.name || activeCustomerName,
+                        licenseNo: currentVals.licenseNo || d.licenseNo || '',
+                        regoNo: currentVals.regoNo || d.regoNo || '',
+                        dob: currentVals.dob || (d.dob ? dayjs(d.dob) : null),
+                        payId: currentVals.payId || d.payId || '',
+                        phone: currentVals.phone || d.phone || '',
+                        bsb: currentVals.bsb || d.bsb || '',
+                        accNo: currentVals.accNo || d.accNo || '',
+                        abn: currentVals.abn || d.abn || '',
+                        address: currentVals.address || d.address || '',
+                    };
+                    form.setFieldsValue(profileUpdates);
+                    formValuesRef.current = { ...form.getFieldsValue(), ...profileUpdates };
+                }
+
+                // Autofill prices for OCR items that didn't have a price written on the docket
+                const rowsMissingPrice = nextRows.filter(item => item.metal && (!item.price || item.price === 0));
+                if (rowsMissingPrice.length > 0) {
+                    const updatedWithPrices = await Promise.all(
+                        rowsMissingPrice.map(async (row) => {
+                            try {
+                                const results = await docketService.getUniqueMetals(row.metal, activeCustomerName);
+                                const match = results.find(r => r.value.toLowerCase() === row.metal.toLowerCase());
+                                if (match && match.price > 0) {
+                                    return { ...row, price: match.price };
+                                }
+                            } catch (e) {
+                                console.error('Price lookup error:', e);
+                            }
+                            return row;
+                        })
+                    );
+                    setDataSource(prev =>
+                        prev.map(prevRow => {
+                            const found = updatedWithPrices.find(u => u.key === prevRow.key);
+                            return found || prevRow;
+                        })
+                    );
+                }
+            } catch (e) {
+                console.error('Customer profile lookup after OCR failed:', e);
+            }
+        }
+    };
+
     const addDeduction = (type) => {
         const newDeduction = { key: Date.now(), label: '', amount: null };
         type === 'pre' ? setPreGstDeductions([...preGstDeductions, newDeduction]) : setPostGstDeductions([...postGstDeductions, newDeduction]);
@@ -595,7 +763,30 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             <NetWeightSummary items={itemsWithTotals} form={form} />
             <Form form={form} layout="vertical" onValuesChange={handleValuesChange}>
                 <DocketHeader />
-                <CustomerDetails onCustomerSelect={handleCustomerSelect} />
+                <CustomerDetails
+                    onCustomerSelect={handleCustomerSelect}
+                    onCustomerFieldsSync={(allVals) => {
+                        formValuesRef.current = allVals;
+                    }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={<ScanOutlined />}
+                        onClick={() => setOcrScanOpen(true)}
+                        style={{
+                            backgroundColor: '#1b5e20',
+                            borderColor: '#1b5e20',
+                            height: 46,
+                            fontSize: 17,
+                            fontWeight: 700,
+                            padding: '0 24px',
+                        }}
+                    >
+                        Scan Docket (AI OCR)
+                    </Button>
+                </div>
                 <DocketItemsTable 
                     items={itemsWithTotals} 
                     onItemChange={handleItemsChange} 
@@ -714,6 +905,30 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
                     <Divider />
                 </div>
             </Form>
+
+            <OCRScanModal
+                open={ocrScanOpen}
+                onCancel={() => setOcrScanOpen(false)}
+                onProcessPages={handleProcessOcrPages}
+                errorMessage={ocrErrorMsg}
+                onClearError={() => setOcrErrorMsg(null)}
+            />
+
+            <OCRProgressModal
+                open={ocrProcessing}
+                currentStepIndex={ocrProgressStep}
+                progressPercent={ocrProgressPercent}
+                currentStepTitle={ocrProgressTitle}
+                mode="docket"
+            />
+
+            <OCRExtractionReview
+                open={ocrReviewOpen}
+                onCancel={() => setOcrReviewOpen(false)}
+                ocrResult={ocrResultData}
+                pageImages={ocrCapturedPages}
+                onApplyToForm={handleApplyOcrToForm}
+            />
         </div>
     );
 }

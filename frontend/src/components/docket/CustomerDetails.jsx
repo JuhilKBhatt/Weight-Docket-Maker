@@ -1,12 +1,16 @@
 // ./frontend/src/components/docket/CustomerDetails.jsx
 
 import React, { useState, useRef } from 'react';
-import { Card, Row, Col, Form, Input, DatePicker, AutoComplete, App } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Form, Input, DatePicker, AutoComplete, Button, App } from 'antd';
+import { SearchOutlined, IdcardOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import docketService from '../../services/docketService';
+import IDScanModal from '../ocr/IDScanModal';
 
-export default function CustomerDetails({ onCustomerSelect }) {
+dayjs.extend(customParseFormat);
+
+export default function CustomerDetails({ onCustomerSelect, onCustomerFieldsSync }) {
     const form = Form.useFormInstance(); 
     const { message } = App.useApp();
     
@@ -15,6 +19,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
     const [abnOptions, setAbnOptions] = useState([]);
     const [payIdOptions, setPayIdOptions] = useState([]);
     const [licOptions, setLicOptions] = useState([]);
+    const [idScanOpen, setIdScanOpen] = useState(false);
 
     const searchTimeout = useRef(null);
     const dateFormat = ['DD/MM/YYYY', 'D/M/YYYY'];
@@ -88,8 +93,7 @@ export default function CustomerDetails({ onCustomerSelect }) {
     const handleSelect = (setOptions) => (value, option) => {
         const details = option.customer_details;
         
-        // Force update all fields
-        form.setFieldsValue({
+        const updatedFields = {
             name: details.name || "",
             licenseNo: details.licenseNo || "",
             regoNo: details.regoNo || "",
@@ -100,7 +104,13 @@ export default function CustomerDetails({ onCustomerSelect }) {
             accNo: details.accNo || "",
             abn: details.abn || "",
             address: details.address || "",
-        });
+        };
+
+        // Force update all fields
+        form.setFieldsValue(updatedFields);
+        if (onCustomerFieldsSync) {
+            onCustomerFieldsSync(form.getFieldsValue());
+        }
         
         message.success("Customer details autofilled");
         
@@ -112,8 +122,47 @@ export default function CustomerDetails({ onCustomerSelect }) {
         }
     };
 
+    const handleApplyCustomerIdOcr = (idData) => {
+        let parsedDob = null;
+        if (idData.dob) {
+            const candidate = dayjs(idData.dob, ['DD/MM/YYYY', 'D/M/YYYY', 'YYYY-MM-DD'], true);
+            parsedDob = candidate.isValid() ? candidate : dayjs(idData.dob);
+        }
+
+        const updates = {};
+        if (idData.name) updates.name = idData.name;
+        if (idData.license_number) updates.licenseNo = idData.license_number;
+        if (parsedDob && parsedDob.isValid()) updates.dob = parsedDob;
+        if (idData.address) updates.address = idData.address;
+
+        form.setFieldsValue(updates);
+        if (onCustomerFieldsSync) {
+            onCustomerFieldsSync(form.getFieldsValue());
+        }
+
+        message.success('Customer ID details populated from OCR!');
+        if (onCustomerSelect && idData.name) {
+            onCustomerSelect(idData.name);
+        }
+    };
+
     return (
-        <Card title="Customer Details" size="large" style={{ marginBottom: 20 }}>
+        <>
+        <Card
+            title="Customer Details"
+            size="large"
+            style={{ marginBottom: 20 }}
+            extra={
+                <Button
+                    type="primary"
+                    icon={<IdcardOutlined />}
+                    onClick={() => setIdScanOpen(true)}
+                    style={{ backgroundColor: '#1677ff', fontWeight: 600 }}
+                >
+                    Scan Customer ID / Licence
+                </Button>
+            }
+        >
             <Row gutter={16}>
                 <Col xs={24} md={12}>
                     <Form.Item label="Name" name="name">
@@ -222,5 +271,11 @@ export default function CustomerDetails({ onCustomerSelect }) {
                 </Col>
             </Row>
         </Card>
+        <IDScanModal
+            open={idScanOpen}
+            onCancel={() => setIdScanOpen(false)}
+            onApplyCustomerId={handleApplyCustomerIdOcr}
+        />
+        </>
     );
 }

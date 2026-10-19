@@ -13,3 +13,7 @@ jinja2
 pytest
 httpx
 apscheduler
+google-genai>=2.30.1
+anthropic>=0.40.0
+Pillow>=10.0.0
+python-multipart>=0.0.9

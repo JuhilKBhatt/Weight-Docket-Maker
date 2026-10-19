@@ -1,0 +1,223 @@
+/* frontend/src/styles/ocr.css */
+
+/* --- Low-Confidence Row Highlighting (Amber Alert Accents) --- */
+.ant-table .ant-table-tbody > tr.ocr-row-low-confidence > td,
+.ant-table .ant-table-tbody > tr.ocr-row-low-confidence:hover > td {
+  background-color: #fffbe6 !important;
+  color: #000000 !important;
+}
+
+.ant-table .ant-table-tbody > tr.ocr-row-low-confidence > td:first-child {
+  border-left: 4px solid #faad14 !important;
+}
+
+/* Medium-Confidence Row Highlighting (Corrections / Context Disambiguated) */
+.ant-table .ant-table-tbody > tr.ocr-row-medium-confidence > td,
+.ant-table .ant-table-tbody > tr.ocr-row-medium-confidence:hover > td {
+  background-color: #f0f5ff !important;
+  color: #000000 !important;
+}
+
+.ant-table .ant-table-tbody > tr.ocr-row-medium-confidence > td:first-child {
+  border-left: 4px solid #1677ff !important;
+}
+
+/* Review Workspace Split Layout */
+.ocr-review-workspace {
+  display: flex;
+  gap: 20px;
+  min-height: 70vh;
+  max-height: 78vh;
+}
+
+.ocr-review-left-pane {
+  flex: 1 1 46%;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  background: #141414;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #303030;
+}
+
+.ocr-review-right-pane {
+  flex: 1 1 54%;
+  min-width: 400px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Interactive Zoom & Pan Image Canvas */
+.ocr-image-viewer-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #1f1f1f;
+  border-bottom: 1px solid #303030;
+  color: #ffffff;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ocr-image-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  background: radial-gradient(circle, #262626 0%, #141414 100%);
+  min-height: 420px;
+}
+
+.ocr-image-viewport:active {
+  cursor: grabbing;
+}
+
+.ocr-image-viewport img {
+  max-width: 96%;
+  max-height: 96%;
+  object-fit: contain;
+  transition: transform 0.08s ease-out;
+  pointer-events: none;
+}
+
+/* Review Table compact styling so all columns fit cleanly in the 50% pane */
+.ocr-review-table .ant-table {
+  font-size: 15px !important;
+}
+
+.ocr-review-table .ant-table th {
+  font-size: 14px !important;
+  padding: 8px 6px !important;
+}
+
+.ocr-review-table .ant-table td {
+  font-size: 15px !important;
+  padding: 6px !important;
+}
+
+.ocr-review-table .ant-input,
+.ocr-review-table .ant-input-number,
+.ocr-review-table .ant-input-number-input,
+.ocr-review-table .ant-select-selector,
+.ocr-review-table .ant-select-selection-item {
+  font-size: 15px !important;
+  height: 34px !important;
+}
+
+/* Camera Viewfinder & Australian ID Card Alignment Guide (85.6mm x 53.98mm = 1.5858) */
+.ocr-camera-container {
+  position: relative;
+  width: 100%;
+  background: #000000;
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ocr-camera-container video {
+  width: 100%;
+  max-height: 460px;
+  object-fit: cover;
+  display: block;
+}
+
+.ocr-id-card-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.ocr-id-card-guide-box {
+  width: 78%;
+  max-width: 440px;
+  aspect-ratio: 85.6 / 53.98;
+  border: 3px dashed #52c41a;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 10px;
+}
+
+.ocr-id-card-guide-label {
+  background: rgba(0, 0, 0, 0.72);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+/* Multi-Page Inspection Gallery Cards */
+.ocr-page-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.ocr-page-card {
+  border: 2px solid #d9d9d9;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fafafa;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ocr-page-card:hover {
+  border-color: #1677ff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.ocr-page-thumb-wrapper {
+  height: 180px;
+  background: #1f1f1f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+}
+
+.ocr-page-thumb-wrapper img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+@media screen and (max-width: 992px) {
+  .ocr-review-workspace {
+    flex-direction: column;
+    max-height: none;
+  }
+
+  .ocr-review-left-pane {
+    min-height: 320px;
+    max-height: 420px;
+  }
+
+  .ocr-review-right-pane {
+    min-width: 100%;
+  }
+}
+
