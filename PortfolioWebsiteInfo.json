@@ -13,7 +13,8 @@
       "PostgreSQL"
     ],
     "AI": [
-      "Claude API"
+      "Claude API",
+      "GEMINI API"
     ],
     "DevSecOps": [
       "Docker",
@@ -47,7 +48,8 @@
     "Dynamic HTML-to-PDF invoice and weight docket generation powered by WeasyPrint and Jinja2 templating",
     "Automated background database backup scheduler with integrated Google Drive cloud synchronization",
     "Robust relational data architecture with PostgreSQL, SQLAlchemy ORM, and Alembic database versioning",
-    "Comprehensive SMTP email delivery service with customizable notification templates and attachments"
+    "Comprehensive SMTP email delivery service with customizable notification templates and attachments",
+    "AI-driven OCR and data extraction pipeline leveraging Claude API and GEMINI API for accurate document parsing"
   ],
   "Visibilty": true
 }
