@@ -209,26 +209,40 @@ export default function DocketItemsTable({
             title: 'Price / unit',
             dataIndex: 'price',
             width: '12%', // Percentage Width
-            render: (_, record) => (
-                <Input 
-                    addonBefore={
-                        <Select
-                            value={currency} 
-                            popupMatchSelectWidth={false}
-                            showSearch
-                            optionFilterProp="children"
-                            onChange={(val) => setCurrency(val)}
-                        >
-                            {activeCurrencies.map(curr => (
-                            <Option key={curr.code} value={curr.code}>{curr.label}</Option>
-                            ))}
-                        </Select>
-                    }
-                    style={{ width: '100%' }} 
-                    value={audFormatter(record.price)}
-                    onChange={(e) => onInputChange(record.key, 'price', e, 2)}
-                />
-            )
+            render: (_, record) => {
+                const hasRowContent = Boolean(
+                    (record.metal && String(record.metal).trim() !== '') ||
+                    (record.notes && String(record.notes).trim() !== '') ||
+                    (record.gross !== null && record.gross !== undefined && String(record.gross).trim() !== '') ||
+                    (record.tare !== null && record.tare !== undefined && String(record.tare).trim() !== '')
+                );
+                const isPriceEmpty =
+                    record.price === null ||
+                    record.price === undefined ||
+                    String(record.price).trim() === '';
+
+                return (
+                    <Input 
+                        className={hasRowContent && isPriceEmpty ? 'empty-price-input' : ''}
+                        addonBefore={
+                            <Select
+                                value={currency} 
+                                popupMatchSelectWidth={false}
+                                showSearch
+                                optionFilterProp="children"
+                                onChange={(val) => setCurrency(val)}
+                            >
+                                {activeCurrencies.map(curr => (
+                                <Option key={curr.code} value={curr.code}>{curr.label}</Option>
+                                ))}
+                            </Select>
+                        }
+                        style={{ width: '100%' }} 
+                        value={audFormatter(record.price)}
+                        onChange={(e) => onInputChange(record.key, 'price', e, 2)}
+                    />
+                );
+            }
         },
         {
             title: 'Total',

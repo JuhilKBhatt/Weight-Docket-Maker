@@ -248,6 +248,20 @@
     border-color: #999999;
 }
 
+/* Empty Price Field Styling in Metal Item Table */
+.empty-price-input .ant-input {
+    background-color: #e52b2b !important;
+    color: #ffffff !important;
+    border-color: #e52b2b !important;
+    caret-color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.empty-price-input .ant-input-group-addon {
+    background-color: #ffffff;
+    border-color: #999999;
+}
+
 /* --- SMALL SCREEN OVERRIDES --- */
 @media screen and (max-width: 768px) {
     /* 1. Force the Customer Details to have smaller fonts */
