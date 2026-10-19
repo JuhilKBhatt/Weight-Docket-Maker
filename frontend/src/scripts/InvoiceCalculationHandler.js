@@ -23,7 +23,8 @@ export default class InvoiceCalculationHandler {
   }
 
   round(value) {
-    return Math.round(this.safeNumber(value) * 100) / 100;
+    const n = this.safeNumber(value);
+    return Math.round((n + Math.sign(n) * Number.EPSILON) * 100) / 100;
   }
 
   // ---------- ITEMS ----------
@@ -43,19 +44,23 @@ export default class InvoiceCalculationHandler {
 
   // ---------- TRANSPORT ----------
   calculateTransportTotal() {
-    return this.transportItems.reduce((sum, t) => {
-      // CHANGED: NumOfCTR -> numOfCtr, PricePreCTR -> pricePerCtr
-      const count = this.safeNumber(t.numOfCtr);
-      const price = this.safeNumber(t.pricePerCtr);
-      return sum + count * price;
-    }, 0);
+    return this.round(
+      this.transportItems.reduce((sum, t) => {
+        // CHANGED: NumOfCTR -> numOfCtr, PricePreCTR -> pricePerCtr
+        const count = this.safeNumber(t.numOfCtr);
+        const price = this.safeNumber(t.pricePerCtr);
+        return sum + this.round(count * price);
+      }, 0)
+    );
   }
 
   // ---------- DEDUCTIONS ----------
   calculateDeductionsTotal(deductions) {
-    return deductions.reduce((sum, d) => {
-      return sum + this.safeNumber(d.amount);
-    }, 0);
+    return this.round(
+      deductions.reduce((sum, d) => {
+        return sum + this.safeNumber(d.amount);
+      }, 0)
+    );
   }
 
   // ---------- MAIN ----------

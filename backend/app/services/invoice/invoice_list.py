@@ -1,10 +1,22 @@
 # backend/app/services/invoice/invoice_list.py
 
+from decimal import Decimal, ROUND_HALF_UP
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, desc, case, func
 from app.models.invoiceModels import Invoice
 from typing import Optional
 from datetime import date
+
+
+def _to_dec(val) -> Decimal:
+    if val is None:
+        return Decimal("0.00")
+    return Decimal(str(val))
+
+
+def _round_curr(val: Decimal) -> Decimal:
+    return _to_dec(val).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
 
 def get_invoices_paginated(
     db: Session, 
@@ -68,25 +80,29 @@ def get_invoices_paginated(
 
     # --- 6. CALCULATE TOTALS ---
     for inv in invoices:
-        items_total = sum([round((i.quantity or 0) * (i.price or 0), 2) for i in inv.items])
-        transport_total = sum([(t.num_of_ctr or 0) * (t.price_per_ctr or 0) for t in inv.transport_items])
+        items_total = sum([_round_curr(_to_dec(i.quantity) * _to_dec(i.price)) for i in inv.items], Decimal("0.00"))
+        transport_total = sum([_round_curr(_to_dec(t.num_of_ctr) * _to_dec(t.price_per_ctr)) for t in inv.transport_items], Decimal("0.00"))
         
-        pre_deductions = sum([d.amount or 0 for d in inv.deductions if d.type == "pre"])
-        post_deductions = sum([d.amount or 0 for d in inv.deductions if d.type == "post"])
+        pre_deductions = _round_curr(sum([_to_dec(d.amount) for d in inv.deductions if d.type == "pre"], Decimal("0.00")))
+        post_deductions = (
+            _round_curr(sum([_to_dec(d.amount) for d in inv.deductions if d.type == "post"], Decimal("0.00")))
+            if inv.include_gst
+            else Decimal("0.00")
+        )
 
-        subtotal = items_total + transport_total - pre_deductions
+        subtotal = _round_curr(items_total + transport_total - pre_deductions)
         
-        gst_percent = (inv.gst_percentage or 10) / 100
-        gst = subtotal * gst_percent if inv.include_gst else 0
+        gst_percent = _to_dec(inv.gst_percentage if inv.gst_percentage is not None else 10) / Decimal("100")
+        gst = _round_curr(subtotal * gst_percent) if inv.include_gst else Decimal("0.00")
         
-        final_total = subtotal + gst - post_deductions
+        final_total = _round_curr(subtotal + gst - post_deductions)
 
         results.append({
             "id": inv.id,
             "scrinv_number": inv.scrinv_number,
             "bill_to_name": inv.bill_to_name,
             "invoice_date": inv.invoice_date,
-            "total_amount": round(final_total, 2),
+            "total_amount": float(final_total),
             "status": inv.status,
             "currency": inv.currency,
             "private_notes": inv.private_notes,

@@ -85,7 +85,7 @@
                     <td>{{ item.description }}</td>
                     <td class="text-right no-wrap-cell">{{ item.qty_formatted }} {{ item.unit }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
-                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.line_total) }}</td>
 
                 {% elif invoice.invoice_type == 'Pickup' %}
                     <td>{{ loop.index }}</td>
@@ -93,13 +93,13 @@
                     <td>{{ item.description }}</td>
                     <td class="text-right no-wrap-cell">{{ item.qty_formatted }} {{ item.unit }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
-                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.line_total) }}</td>
 
                 {% else %} 
                     <td>{{ item.description }}</td>
                     <td class="text-right no-wrap-cell">{{ item.qty_formatted }} {{ item.unit }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.price) }}</td>
-                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.quantity * item.price) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(item.line_total) }}</td>
                 {% endif %}
             </tr>
             {% endfor %}
@@ -111,7 +111,7 @@
                     <td>{{ trans.name }}</td>
                     <td class="text-right no-wrap-cell">{{ trans.num_formatted }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
-                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.line_total) }}</td>
 
                 {% elif invoice.invoice_type == 'Pickup' %}
                     <td></td>
@@ -119,13 +119,13 @@
                     <td>{{ trans.name }}</td>
                     <td class="text-right no-wrap-cell">{{ trans.num_formatted }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
-                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.line_total) }}</td>
 
                 {% else %}
                     <td>Transport:{{ trans.name }}</td>
                     <td class="text-right no-wrap-cell">{{ trans.num_formatted }}</td>
                     <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.price_per_ctr) }}</td>
-                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.num_of_ctr * trans.price_per_ctr) }}</td>
+                    <td class="text-right no-wrap-cell"><span class="currency-symbol">{{ symbol }}</span>{{ "{:,.2f}".format(trans.line_total) }}</td>
                 {% endif %}
             </tr>
             {% endfor %}
