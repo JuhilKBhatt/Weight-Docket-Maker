@@ -560,7 +560,7 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
         if (activeCustomerName) {
             try {
                 // Autofill customer details if an exact customer match exists in DB
-                const custMatches = await docketService.getUniqueCustomers(activeCustomerName);
+                const custMatches = await docketService.getUniqueCustomers(activeCustomerName, 'name');
                 const exactCust = custMatches.find(
                     c => c.customer_details?.name?.toLowerCase() === activeCustomerName.trim().toLowerCase()
                 );
