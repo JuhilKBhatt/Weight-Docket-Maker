@@ -107,6 +107,7 @@ def _call_gemini_sync(
             ],
             "generation_config": {
                 "thinking_level": "low",
+                "thinking_summaries": "none",
                 "temperature": 0.1,
             },
             "response_format": {
@@ -159,7 +160,13 @@ def _call_gemini_sync(
         "response_mime_type": "application/json",
     }
     if hasattr(types, "ThinkingConfig"):
-        config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=1024)
+        try:
+            config_kwargs["thinking_config"] = types.ThinkingConfig(
+                thinking_level="low",
+                include_thoughts=False,
+            )
+        except Exception:
+            config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=128)
 
     contents = [
         types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
