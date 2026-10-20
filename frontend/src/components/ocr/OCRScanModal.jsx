@@ -341,8 +341,8 @@ export default function OCRScanModal({
               multiple
               accept="image/*"
               showUploadList={false}
-              beforeUpload={(file, fileList) => {
-                addFilesToPages(fileList);
+              beforeUpload={(file) => {
+                addFilesToPages([file]);
                 return false;
               }}
               style={{ padding: '16px 12px', background: '#fafafa' }}
@@ -490,8 +490,8 @@ export default function OCRScanModal({
                   accept="image/*"
                   multiple
                   showUploadList={false}
-                  beforeUpload={(file, fileList) => {
-                    addFilesToPages(fileList);
+                  beforeUpload={(file) => {
+                    addFilesToPages([file]);
                     return false;
                   }}
                 >
