@@ -496,7 +496,11 @@ export default function DocketForm({ mode = 'new', existingDocket = null }) {
             formUpdates.name = customer;
         }
         if (date) {
-            const parsedDate = dayjs(date, ['DD/MM/YYYY', 'D/M/YYYY', 'DD/MM/YY', 'YYYY-MM-DD'], true);
+            const parsedDate = dayjs(
+                date.trim(),
+                ['DD/MM/YYYY', 'D/M/YYYY', 'DD/MM/YY', 'D/M/YY', 'DD/MM', 'D/M', 'YYYY-MM-DD'],
+                true
+            );
             if (parsedDate.isValid()) {
                 formUpdates.date = parsedDate;
             }

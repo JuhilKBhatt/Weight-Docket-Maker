@@ -1,6 +1,7 @@
 # backend/app/services/ocr/ocr_service.py
 
 import asyncio
+from datetime import date
 import logging
 import time
 from typing import List, Tuple, Type, TypeVar
@@ -114,21 +115,19 @@ async def scan_docket_pages(raw_pages: List[bytes]) -> DocketOCRResponse:
         raise HTTPException(status_code=400, detail="No docket images provided.")
 
     start_time = time.perf_counter()
+    total_pages = len(raw_pages)
+    current_year = date.today().year
 
-    # 1. Preprocess all uploaded pages in-memory
-    preprocessed_pages: List[Tuple[int, str, str]] = []
-    for idx, raw_bytes in enumerate(raw_pages, start=1):
-        _, b64_img, mime_type = preprocess_image_bytes(raw_bytes)
-        preprocessed_pages.append((idx, b64_img, mime_type))
-
-    # 2. Extract all pages (in parallel threads so multi-page takes ~2s total)
-    async def _process_single_page(page_num: int, b64_img: str, mime: str) -> Tuple[int, DocketLLMOutput, str]:
+    # 1. Preprocess & extract all pages concurrently in worker threads
+    def _preprocess_and_extract_page_sync(page_num: int, raw_bytes: bytes) -> Tuple[int, DocketLLMOutput, str]:
+        _, b64_img, mime = preprocess_image_bytes(raw_bytes)
         user_prompt = (
             f"Extract all handwritten scrap metal docket data from Page {page_num} "
-            f"(of {len(preprocessed_pages)}). Return strictly valid JSON."
+            f"(of {total_pages}). If the date is written as DD/MM without a year, "
+            f"use the current year ({current_year}) and format as DD/MM/{current_year}. "
+            f"Return strictly valid JSON."
         )
-        parsed_page, model_name = await asyncio.to_thread(
-            _extract_with_failover_sync,
+        parsed_page, model_name = _extract_with_failover_sync(
             b64_img,
             mime,
             DOCKET_OCR_PROMPT,
@@ -137,8 +136,11 @@ async def scan_docket_pages(raw_pages: List[bytes]) -> DocketOCRResponse:
         )
         return page_num, parsed_page, model_name
 
+    async def _process_single_page(page_num: int, raw_bytes: bytes) -> Tuple[int, DocketLLMOutput, str]:
+        return await asyncio.to_thread(_preprocess_and_extract_page_sync, page_num, raw_bytes)
+
     page_results = await asyncio.gather(
-        *[_process_single_page(p_num, b64, mime) for p_num, b64, mime in preprocessed_pages]
+        *[_process_single_page(idx, page_bytes) for idx, page_bytes in enumerate(raw_pages, start=1)]
     )
 
     # Sort by page number to guarantee sequential merging
@@ -198,7 +200,7 @@ async def scan_docket_pages(raw_pages: List[bytes]) -> DocketOCRResponse:
         entries=validated_docket.entries,
         skipped_lines=validated_docket.skipped_lines,
         chaining_warnings=chaining_warnings,
-        pages_processed=len(preprocessed_pages),
+        pages_processed=total_pages,
     )
 
 
@@ -215,21 +217,21 @@ async def scan_customer_id_card(raw_bytes: bytes) -> CustomerIDOCRResponse:
 
     start_time = time.perf_counter()
 
-    _, b64_img, mime_type = preprocess_image_bytes(raw_bytes)
+    def _preprocess_and_extract_id_sync() -> Tuple[CustomerIDLLMOutput, str]:
+        _, b64_img, mime_type = preprocess_image_bytes(raw_bytes)
+        user_prompt = (
+            "Extract customer identity details from this Australian identity document "
+            "(Driver's Licence, Photo Card, or Passport). Return strictly valid JSON."
+        )
+        return _extract_with_failover_sync(
+            b64_img,
+            mime_type,
+            CUSTOMER_ID_OCR_PROMPT,
+            user_prompt,
+            CustomerIDLLMOutput,
+        )
 
-    user_prompt = (
-        "Extract customer identity details from this Australian identity document "
-        "(Driver's Licence, Photo Card, or Passport). Return strictly valid JSON."
-    )
-
-    raw_id_output, model_used = await asyncio.to_thread(
-        _extract_with_failover_sync,
-        b64_img,
-        mime_type,
-        CUSTOMER_ID_OCR_PROMPT,
-        user_prompt,
-        CustomerIDLLMOutput,
-    )
+    raw_id_output, model_used = await asyncio.to_thread(_preprocess_and_extract_id_sync)
 
     # Check if image is not an ID document at all
     if "not_an_id" in (raw_id_output.flags or []) and not any(

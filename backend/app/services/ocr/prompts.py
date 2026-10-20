@@ -91,7 +91,8 @@ DOCKET_OCR_PROMPT = """You are an OCR extraction system for handwritten scrap me
 DOCKET STRUCTURE
 * Header (top line): Customer name on the left, date on the right. Continuation pages may have no header (set both to null).
 * If the header is faint, backwards or mirrored, it is bleed through from the other side of the paper. Set customer and date to null.
-* Date formats: DD/MM, DD/MM/YY, or DD/MM/YYYY separated by a slash (/), period (.), comma (,), or dash. Format output as DD/MM/YYYY.
+* Date formats: DD/MM, D/M, DD/MM/YY, or DD/MM/YYYY separated by a slash (/), period (.), comma (,), or dash (-).
+  * If the date is written as DD/MM or D/M without a year (e.g., "20/10", "5/3", "20.10", "20-10"), ALWAYS use the current year and format output as DD/MM/YYYY. Never return null just because the year is omitted.
 * Body lines: Each line contains weights followed by the scrap metal material name.
   * Standard format: Gross minus Tare Material (e.g., 707 minus 308 steel or 707 minus 308 = Steel). A dash (-) or equal (=) before the material name is just a separator. There is no extra deduction on these lines.
   * Extra deduction format: Gross minus Tare minus Extra Deduction = Material (e.g., 566 minus 300 minus 70 = steel or 566 minus 300 minus 70 steel).
@@ -101,7 +102,7 @@ PHYSICAL CONDITION AND VISUAL ARTEFACTS
 * Bleed through: Dockets are written on the back of used paper. Faint, backwards, or mirrored strokes leaking through from the reverse side are bleed through. Ignore them completely.
 * Occlusion: Fingers holding the paper may cover the customer name, date, weights, or part of a material name. Look carefully at column alignment. If a finger covers the tare weight (e.g., 635 [finger] 25 = Battery), set tare to null and capture 25 as the extra_deduction. Never shift an extra deduction into the tare field. Flag "tare_hidden" and set confidence to "low" for that line.
 * Handwriting: Written quickly at the scale. Watch for look alike digits (1/7, 5/6, 0/6, 4/9) and grease smudges.
-* Never guess. If a value is hidden, missing or unreadable, use null.
+* Never guess. If a value is hidden, missing or unreadable, use null (exception: if a date is written as DD/MM without a year, fill in the current year).
 
 CORRECTIONS AND STRIKE THROUGHS
 * Any field may be crossed out or scribbled over and rewritten nearby (above, below, beside, or on top), possibly in a different pen colour. This includes the material name.

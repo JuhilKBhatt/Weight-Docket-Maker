@@ -1,19 +1,25 @@
 # backend/app/services/ocr/gemini_client.py
 
 import json
+import logging
 import os
 import re
+import threading
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from typing import Optional, Type, TypeVar
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
 
 DEFAULT_GEMINI_MODEL = "gemini-4-argon"
 FALLBACK_GEMINI_MODEL = "gemini-3.8-flash"
+DEFAULT_SERVICE_TIER = os.getenv("GEMINI_SERVICE_TIER", "priority").strip().lower()
 GEMINI_TIMEOUT_SECONDS = float(os.getenv("GEMINI_TIMEOUT_SECONDS", "25.0"))
 
 _CLIENT_CACHE = {}
+_CLIENT_LOCK = threading.Lock()
 
 
 class GeminiInfrastructuralError(Exception):
@@ -24,9 +30,10 @@ class GeminiInfrastructuralError(Exception):
 def _get_genai_client(api_key: str):
     from google import genai
 
-    if api_key not in _CLIENT_CACHE:
-        _CLIENT_CACHE[api_key] = genai.Client(api_key=api_key)
-    return _CLIENT_CACHE[api_key]
+    with _CLIENT_LOCK:
+        if api_key not in _CLIENT_CACHE:
+            _CLIENT_CACHE[api_key] = genai.Client(api_key=api_key)
+        return _CLIENT_CACHE[api_key]
 
 
 def _strip_markdown_fences(text: str) -> str:
@@ -71,6 +78,11 @@ def _call_gemini_sync(
     api_key: str,
 ) -> str:
     client = _get_genai_client(api_key)
+    service_tier = (
+        DEFAULT_SERVICE_TIER
+        if DEFAULT_SERVICE_TIER in ("priority", "flex", "standard")
+        else None
+    )
 
     # Prefer the modern Interactions API (google-genai >= 2.0.0)
     # Note: We use response_format={"type": "text", "mime_type": "application/json"}
@@ -79,10 +91,10 @@ def _call_gemini_sync(
     # because the system prompt already specifies the exact JSON structure and we validate
     # strictly with Pydantic on return.
     if hasattr(client, "interactions"):
-        interaction = client.interactions.create(
-            model=model_name,
-            system_instruction=system_prompt,
-            input=[
+        base_kwargs = {
+            "model": model_name,
+            "system_instruction": system_prompt,
+            "input": [
                 {
                     "type": "image",
                     "data": b64_image,
@@ -93,16 +105,44 @@ def _call_gemini_sync(
                     "text": user_instruction,
                 },
             ],
-            generation_config={
+            "generation_config": {
                 "thinking_level": "low",
                 "temperature": 0.1,
             },
-            response_format={
+            "response_format": {
                 "type": "text",
                 "mime_type": "application/json",
             },
-            store=False,
-        )
+            "store": False,
+        }
+
+        if service_tier and service_tier != "standard":
+            try:
+                interaction = client.interactions.create(
+                    **base_kwargs,
+                    service_tier=service_tier,
+                )
+            except Exception as tier_err:
+                err_text = str(tier_err).lower()
+                if (
+                    isinstance(tier_err, TypeError)
+                    or "service_tier" in err_text
+                    or "servicetier" in err_text
+                    or "invalid_argument" in err_text
+                    or "400" in err_text
+                ):
+                    logger.info(
+                        "Model %s or SDK did not accept service_tier='%s' (%s); retrying with standard tier.",
+                        model_name,
+                        service_tier,
+                        str(tier_err),
+                    )
+                    interaction = client.interactions.create(**base_kwargs)
+                else:
+                    raise
+        else:
+            interaction = client.interactions.create(**base_kwargs)
+
         output_text = _extract_interaction_text(interaction)
         if not output_text:
             raise GeminiInfrastructuralError("Gemini returned an empty response.")
@@ -121,14 +161,30 @@ def _call_gemini_sync(
     if hasattr(types, "ThinkingConfig"):
         config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=1024)
 
-    response = client.models.generate_content(
-        model=model_name,
-        contents=[
-            types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
-            user_instruction,
-        ],
-        config=types.GenerateContentConfig(**config_kwargs),
-    )
+    contents = [
+        types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+        user_instruction,
+    ]
+
+    if service_tier and service_tier != "standard":
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=contents,
+                config=types.GenerateContentConfig(**config_kwargs, service_tier=service_tier),
+            )
+        except Exception:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=contents,
+                config=types.GenerateContentConfig(**config_kwargs),
+            )
+    else:
+        response = client.models.generate_content(
+            model=model_name,
+            contents=contents,
+            config=types.GenerateContentConfig(**config_kwargs),
+        )
     if not response or not response.text:
         raise GeminiInfrastructuralError("Gemini returned an empty response.")
     return response.text
