@@ -424,7 +424,9 @@ def get_unique_metals(db: Session, search: str = None, customer_name: str = None
                 .join(Docket)\
                 .filter(
                     func.lower(func.trim(DocketItem.metal)) == metal_name.strip().lower(),
-                    func.lower(func.trim(Docket.customer_name)) == customer_name.strip().lower()
+                    func.lower(func.trim(Docket.customer_name)) == customer_name.strip().lower(),
+                    DocketItem.price.isnot(None),
+                    DocketItem.price > 0
                 )\
                 .order_by(Docket.docket_date.desc().nullslast(), DocketItem.id.desc())\
                 .first()
@@ -442,20 +444,21 @@ def get_unique_metals(db: Session, search: str = None, customer_name: str = None
 
 def get_customer_price_list(db: Session, customer_name: str):
     """
-    Fetches the last price used for EVERY metal for a specific customer.
+    Fetches the last price used (and date last used) for EVERY metal for a specific customer.
     Optimized for list views (no limit, just distinct metals).
     """
     if not customer_name:
         return []
 
-    # 1. Fetch all items for this customer, ordered by newest first
-    # We allow the DB to just dump the rows, and we filter in Python for speed
-    items = db.query(DocketItem.metal, DocketItem.price)\
+    # 1. Fetch all priced items for this customer, ordered by newest docket date first
+    items = db.query(DocketItem.metal, DocketItem.price, Docket.docket_date)\
         .join(Docket)\
         .filter(
             func.lower(func.trim(Docket.customer_name)) == customer_name.strip().lower(),
             DocketItem.metal.isnot(None), 
-            DocketItem.metal != ""
+            DocketItem.metal != "",
+            DocketItem.price.isnot(None),
+            DocketItem.price > 0
         )\
         .order_by(Docket.docket_date.desc().nullslast(), DocketItem.id.desc())\
         .all()
@@ -464,15 +467,17 @@ def get_customer_price_list(db: Session, customer_name: str):
     seen_metals = set()
     results = []
     
-    for metal, price in items:
+    for metal, price, docket_date in items:
         # Normalize for check, but return original casing
         norm_metal = metal.strip().lower()
         
         if norm_metal not in seen_metals:
             seen_metals.add(norm_metal)
             results.append({
+                "value": norm_metal,
                 "label": metal, # Keep the original casing of the latest usage
-                "price": price
+                "price": price,
+                "last_used_date": docket_date.isoformat() if docket_date else None
             })
             
     # 3. Sort alphabetically for the user

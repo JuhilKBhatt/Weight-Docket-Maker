@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Button, Modal, Table, App, Input } from 'antd';
 import { UnorderedListOutlined, DollarOutlined, SearchOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import docketService from '../../services/docketService';
 
 export default function NetWeightSummary({ items, form }) {
@@ -170,6 +171,7 @@ export default function NetWeightSummary({ items, form }) {
                 title={`Last Prices for: ${currentCustomer}`}
                 open={pricesOpen}
                 onCancel={() => setPricesOpen(false)}
+                width={680}
                 footer={[<Button key="close" onClick={() => setPricesOpen(false)}>Close</Button>]}
             >
                 <Input 
@@ -183,18 +185,36 @@ export default function NetWeightSummary({ items, form }) {
                 <Table 
                     loading={loading}
                     dataSource={filteredPriceList}
-                    rowKey="value"
+                    rowKey={(record) => record.value || record.label}
                     pagination={false}
                     scroll={{ y: 400 }} // Added scroll for long lists
                     columns={[
-                        { title: 'Metal', dataIndex: 'label', key: 'label' },
+                        {
+                            title: 'Metal',
+                            dataIndex: 'label',
+                            key: 'label',
+                            width: '36%',
+                        },
                         { 
                             title: 'Last Price Used', 
                             dataIndex: 'price', 
                             key: 'price', 
+                            width: '28%',
                             align: 'right',
                             render: (val) => `$${Number(val).toFixed(2)}`
-                        }
+                        },
+                        {
+                            title: 'Last Used',
+                            dataIndex: 'last_used_date',
+                            key: 'last_used_date',
+                            width: '36%',
+                            align: 'center',
+                            render: (val) => (
+                                <span style={{ whiteSpace: 'nowrap' }}>
+                                    {val && dayjs(val).isValid() ? dayjs(val).format('DD/MM/YYYY') : '—'}
+                                </span>
+                            )
+                        },
                     ]}
                 />
             </Modal>
