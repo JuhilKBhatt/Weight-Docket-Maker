@@ -47,6 +47,7 @@ MATERIAL_WHITELIST: List[str] = [
     "Eng",
     "Fan",
     "Motor",
+    "B. Comp",
     "E. Motor",
     "RIM",
     "RIM D",
