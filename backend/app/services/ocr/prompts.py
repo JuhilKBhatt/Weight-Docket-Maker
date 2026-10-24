@@ -97,6 +97,7 @@ DOCKET STRUCTURE
 * Body lines: Each line contains weights followed by the scrap metal material name.
   * Standard format: Gross minus Tare Material (e.g., 707 minus 308 steel or 707 minus 308 = Steel). A dash (-) or equal (=) before the material name is just a separator. There is no extra deduction on these lines.
   * Extra deduction format: Gross minus Tare minus Extra Deduction = Material (e.g., 566 minus 300 minus 70 = steel or 566 minus 300 minus 70 steel).
+  * Ditto marks ("| |" or two vertical lines): When a customer brings multiple consecutive bins of the same metal, the first line has the metal name written out (e.g., "Steel"), and the following lines have "| |" (two vertical lines/strokes) written in place of the metal name to indicate the exact same metal as the line above.
   * Price: Occasionally written as a small decimal or number next to, above, or below the material name (e.g., 2.30 or $2.30).
 
 PHYSICAL CONDITION AND VISUAL ARTEFACTS
@@ -132,7 +133,10 @@ MATERIAL NORMALISATION
   * Wir = Wire (e.g., M/Wir = M. Wire, L/Wir = L. Wire)
   * Iony = Irony
   * Cutng or Cuty = Cutting
-* If a material does not clearly match the list above, transcribe the exact written letters and set confidence to "low". If partially covered by a finger (e.g., "st" at the edge of a finger), normalise only if unambiguous, otherwise transcribe what is visible, add the flag "material_partial", and set confidence to "low".
+* Ditto marks ("| |" or "||" or two vertical strokes in place of the material name):
+  * When "| |" (or two vertical lines / ditto marks) is written where the material name belongs, copy the normalised "material" value from the nearest valid line above it (for example, if Line 1 is "Steel" and Lines 2 to 5 have "| |", output "material": "Steel" for all 5 lines while preserving "| |" in "raw_text").
+  * Never misread two vertical lines in the material position as the number "11", "II", or "ll". If the inherited material above is clear, keep confidence as "high".
+* If a material does not clearly match the list above (and is not a "| |" ditto mark), transcribe the exact written letters and set confidence to "low". If partially covered by a finger (e.g., "st" at the edge of a finger), normalise only if unambiguous, otherwise transcribe what is visible, add the flag "material_partial", and set confidence to "low".
 
 CONFIDENCE
 * high: every field clearly readable, no corrections, no occlusion.
@@ -181,7 +185,10 @@ Example 2: A line where "910" is crossed out and "810" is written beside it.
 {"line": 3, "raw_text": "910 (crossed out) 810 - 313 D.RD", "gross": 810, "tare": 313, "extra_deduction": null, "material": "RD. D", "price": null, "flags": ["gross_corrected"], "confidence": "medium"}
 
 Example 3: A finger covers the tare.
-{"line": 1, "raw_text": "635 [finger] 25 = Battry", "gross": 635, "tare": null, "extra_deduction": 25, "material": "Battery", "price": null, "flags": ["tare_hidden"], "confidence": "low"}"""
+{"line": 1, "raw_text": "635 [finger] 25 = Battry", "gross": 635, "tare": null, "extra_deduction": 25, "material": "Battery", "price": null, "flags": ["tare_hidden"], "confidence": "low"}
+
+Example 4: Line 1 has "Steel" and Line 2 has "| |" (two vertical lines indicating the same metal as above).
+{"line": 2, "raw_text": "680 - 305 | |", "gross": 680, "tare": 305, "extra_deduction": null, "material": "Steel", "price": null, "flags": [], "confidence": "high"}"""
 
 
 CUSTOMER_ID_OCR_PROMPT = """You are a high-precision OCR extraction system for Australian identity documents and driver's licences, used for statutory compliance by scrap metal dealers.

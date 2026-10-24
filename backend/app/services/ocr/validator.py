@@ -113,13 +113,57 @@ LOW_CONFIDENCE_DOCKET_FLAGS = {
 }
 
 
+DITTO_MATERIAL_TOKENS = {
+    "|",
+    "||",
+    "| |",
+    "|  |",
+    '"',
+    '""',
+    '" "',
+    "''",
+    "' '",
+    "”",
+    "“",
+    "ditto",
+    "same",
+    "11",
+    "1 1",
+    "ii",
+    "i i",
+    "ll",
+    "l l",
+    "//",
+    "/ /",
+}
+
+
+def _is_ditto_material(raw_material: Optional[str], raw_text: Optional[str]) -> bool:
+    """
+    Detects when an entry represents a handwritten '| |' (two vertical lines / ditto mark)
+    repeating the material name from the line above.
+    """
+    if raw_material and raw_material.strip():
+        cleaned = raw_material.strip().lower()
+        if cleaned in DITTO_MATERIAL_TOKENS:
+            return True
+        if re.match(r"^[\|\'\"”‟“/\\1Il\s]{1,5}$", raw_material.strip()):
+            return True
+
+    if (not raw_material or not raw_material.strip()) and raw_text:
+        if re.search(r"(?:\|\s*\||\"\"|''|”)\s*$", raw_text.strip()):
+            return True
+
+    return False
+
+
 def validate_and_normalize_docket(
     docket: DocketLLMOutput,
 ) -> Tuple[DocketLLMOutput, List[str]]:
     """
     Runs deterministic domain rules on extracted Docket OCR output:
     1. Normalizes date to DD/MM/YYYY.
-    2. Normalizes material names against whitelist & abbreviations.
+    2. Resolves '| |' ditto marks from preceding lines and normalizes material names against whitelist.
     3. Validates Gross - Tare - Extra Deduction >= 0.
     4. Enforces low confidence if required fields are null or low-confidence flags exist.
     5. Checks scale chaining across sequential entries and generates operator warnings.
@@ -130,14 +174,24 @@ def validate_and_normalize_docket(
 
     chaining_warnings: List[str] = []
     skipped_set = set(docket.skipped_lines or [])
+    last_valid_material: Optional[str] = None
+    last_valid_matched: bool = False
 
     for entry in docket.entries:
         flags_set = set(entry.flags or [])
 
-        # Normalize material against whitelist
-        if entry.material:
+        # Resolve "| |" ditto marks (inherits material from the line above, including across pages)
+        if _is_ditto_material(entry.material, entry.raw_text) and last_valid_material:
+            entry.material = last_valid_material
+            if not last_valid_matched:
+                entry.confidence = "low"
+            elif entry.confidence == "low" and not flags_set.intersection(LOW_CONFIDENCE_DOCKET_FLAGS):
+                entry.confidence = "high"
+        elif entry.material:
             norm_mat, matched = normalize_material_name(entry.material)
             entry.material = norm_mat
+            last_valid_material = norm_mat
+            last_valid_matched = matched
             if not matched:
                 entry.confidence = "low"
         else:
