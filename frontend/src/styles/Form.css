@@ -90,44 +90,63 @@
     height: auto !important;
 }
 
-.customer-details-card .ant-input-affix-wrapper {
-    border-color: #999999;
-    border-radius: 4px;
+.customer-details-card .ant-input-group-wrapper {
+    display: block;
+    width: 100%;
 }
 
-.customer-details-card .ant-input-group-addon {
+.customer-details-card .ant-input-wrapper.ant-input-group {
+    display: flex !important;
+    align-items: stretch !important;
+    width: 100%;
+}
+
+.customer-details-card .ant-input-wrapper.ant-input-group > .ant-input,
+.customer-details-card .ant-input-wrapper.ant-input-group > .ant-input-affix-wrapper {
+    flex: 1 1 auto;
+    min-width: 0;
+    border-color: #999999;
+    font-size: 20px !important;
+}
+
+.customer-details-card .customer-input-with-addon .ant-input-wrapper.ant-input-group > .ant-input,
+.customer-details-card .customer-input-with-addon .ant-input-wrapper.ant-input-group > .ant-input-affix-wrapper {
+    border-radius: 4px 0 0 4px !important;
+}
+
+.customer-details-card .customer-input-with-addon .ant-input-group-addon {
+    display: flex !important;
+    align-items: stretch !important;
+    width: auto !important;
     padding: 0 !important;
-    border-color: #999999;
+    border: 1px solid #999999 !important;
+    border-left: 0 !important;
+    border-radius: 0 4px 4px 0 !important;
     background-color: #f5f5f5;
-    border-start-end-radius: 4px;
-    border-end-end-radius: 4px;
 }
 
-.customer-input-empty-addon .ant-input-group-addon {
+.customer-details-card .customer-input-empty-addon .ant-input-group-addon {
     display: none !important;
 }
 
-.customer-input-empty-addon .ant-input,
-.customer-input-empty-addon .ant-input-affix-wrapper {
-    border-start-end-radius: 4px !important;
-    border-end-end-radius: 4px !important;
-    border-top-right-radius: 4px !important;
-    border-bottom-right-radius: 4px !important;
+.customer-details-card .customer-input-empty-addon .ant-input-wrapper.ant-input-group > .ant-input,
+.customer-details-card .customer-input-empty-addon .ant-input-wrapper.ant-input-group > .ant-input-affix-wrapper {
+    border-radius: 4px !important;
 }
 
 .customer-copy-addon-btn {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
-    min-height: 38px;
     padding: 0 12px;
+    margin: 0;
     background: transparent;
     border: none;
+    border-radius: 0 3px 3px 0;
     cursor: pointer;
     color: #333333;
     font-size: 18px;
+    line-height: 1;
     transition: color 0.15s ease, background-color 0.15s ease;
 }
 
@@ -143,24 +162,27 @@
 }
 
 .customer-dob-wrapper .ant-picker {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .customer-dob-wrapper.customer-input-with-addon .ant-picker {
-    border-start-end-radius: 0 !important;
-    border-end-end-radius: 0 !important;
-    border-top-right-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
+    border-radius: 4px 0 0 4px !important;
+}
+
+.customer-dob-wrapper.customer-input-empty-addon .ant-picker {
+    border-radius: 4px !important;
 }
 
 .customer-dob-addon {
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid #999999;
-    border-left: 0;
+    display: flex !important;
+    align-items: stretch !important;
+    width: auto !important;
+    padding: 0 !important;
+    border: 1px solid #999999 !important;
+    border-left: 0 !important;
     background-color: #f5f5f5;
-    border-start-end-radius: 4px;
-    border-end-end-radius: 4px;
+    border-radius: 0 4px 4px 0 !important;
 }
 
 .ant-input:disabled,
